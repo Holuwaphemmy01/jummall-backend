@@ -1,0 +1,43 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Jummall API",
+    "version": "1.0.0",
+    "description": "API documentation for admin, seller, and buyer domains"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    { "name": "admin" },
+    { "name": "seller" },
+    { "name": "buyer" }
+  ]
+}

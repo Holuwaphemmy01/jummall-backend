@@ -1,0 +1,6 @@
+{
+  "watch": ["src", "src/infrastructure/api/openapi.json"],
+  "ext": "ts,json",
+  "exec": "npm run build && node dist/index.js",
+  "ignore": ["dist/**/*.map", "node_modules"]
+}
