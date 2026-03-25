@@ -49,6 +49,16 @@ class MailProviderDouble implements MailProvider {
   sendEmailVerification = jest
     .fn<(input: { to: string; firstName: string | null; code: string }) => Promise<void>>()
     .mockResolvedValue();
+
+  sendWelcomeEmail = jest
+    .fn<
+      (input: {
+        to: string;
+        firstName: string | null;
+        role: "buyer" | "seller";
+      }) => Promise<void>
+    >()
+    .mockResolvedValue();
 }
 
 describe("ResendEmailVerification", () => {

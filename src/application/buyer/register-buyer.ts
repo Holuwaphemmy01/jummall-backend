@@ -1,6 +1,7 @@
 import type { BuyerRepository, BuyerRecord } from "../../ports/buyer-repository";
 import type { PasswordHasher } from "../../ports/password-hasher";
 import { InitiateEmailVerification } from "../auth/initiate-email-verification";
+import { SendWelcomeEmail } from "../notification/send-welcome-email";
 
 export interface RegisterBuyerInput {
   firstName: string;
@@ -31,7 +32,8 @@ export class RegisterBuyer implements RegisterBuyerUseCase {
   constructor(
     private readonly buyerRepository: BuyerRepository,
     private readonly passwordHasher: PasswordHasher,
-    private readonly initiateEmailVerification: InitiateEmailVerification
+    private readonly initiateEmailVerification: InitiateEmailVerification,
+    private readonly sendWelcomeEmail: SendWelcomeEmail
   ) {}
 
   async execute(input: RegisterBuyerInput): Promise<BuyerRecord> {
@@ -77,6 +79,12 @@ export class RegisterBuyer implements RegisterBuyerUseCase {
       userId: buyer.id,
       email: buyer.email,
       firstName: buyer.firstName
+    });
+
+    await this.sendWelcomeEmail.execute({
+      to: buyer.email,
+      firstName: buyer.firstName,
+      role: "buyer"
     });
 
     return buyer;

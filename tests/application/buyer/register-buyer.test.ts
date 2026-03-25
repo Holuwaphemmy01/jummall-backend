@@ -3,6 +3,7 @@ import { describe, expect, it, jest } from "@jest/globals";
 import {
   InitiateEmailVerification
 } from "../../../src/application/auth/initiate-email-verification";
+import { SendWelcomeEmail } from "../../../src/application/notification/send-welcome-email";
 import {
   RegisterBuyer,
   RegisterBuyerError,
@@ -84,6 +85,16 @@ class MailProviderDouble implements MailProvider {
   sendEmailVerification = jest
     .fn<(input: { to: string; firstName: string | null; code: string }) => Promise<void>>()
     .mockResolvedValue();
+
+  sendWelcomeEmail = jest
+    .fn<
+      (input: {
+        to: string;
+        firstName: string | null;
+        role: "buyer" | "seller";
+      }) => Promise<void>
+    >()
+    .mockResolvedValue();
 }
 
 function makeInput(): RegisterBuyerInput {
@@ -113,7 +124,8 @@ describe("RegisterBuyer", () => {
     const registerBuyer = new RegisterBuyer(
       buyerRepository,
       passwordHasher,
-      initiateEmailVerification
+      initiateEmailVerification,
+      new SendWelcomeEmail(mailProvider)
     );
 
     const result = await registerBuyer.execute(makeInput());
@@ -148,6 +160,11 @@ describe("RegisterBuyer", () => {
       firstName: "John",
       code: "123456"
     });
+    expect(mailProvider.sendWelcomeEmail).toHaveBeenCalledWith({
+      to: "john@example.com",
+      firstName: "John",
+      role: "buyer"
+    });
   });
 
   it("throws when password confirmation does not match", async () => {
@@ -161,7 +178,8 @@ describe("RegisterBuyer", () => {
     const registerBuyer = new RegisterBuyer(
       buyerRepository,
       passwordHasher,
-      initiateEmailVerification
+      initiateEmailVerification,
+      new SendWelcomeEmail(new MailProviderDouble())
     );
     const input = {
       ...makeInput(),
@@ -189,7 +207,8 @@ describe("RegisterBuyer", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         new MailProviderDouble()
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
 
     buyerRepository.findExistingIdentifiers.mockResolvedValue({
@@ -218,7 +237,8 @@ describe("RegisterBuyer", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         new MailProviderDouble()
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
 
     buyerRepository.findExistingIdentifiers.mockResolvedValue({
@@ -247,7 +267,8 @@ describe("RegisterBuyer", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         new MailProviderDouble()
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
 
     buyerRepository.findExistingIdentifiers.mockResolvedValue({
@@ -276,7 +297,8 @@ describe("RegisterBuyer", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         new MailProviderDouble()
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
 
     buyerRepository.findExistingIdentifiers.mockResolvedValue({
@@ -305,7 +327,8 @@ describe("RegisterBuyer", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         new MailProviderDouble()
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
 
     buyerRepository.findExistingIdentifiers.mockResolvedValue({
@@ -334,7 +357,8 @@ describe("RegisterBuyer", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         new MailProviderDouble()
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
     const lookupError = new Error("lookup failed");
 
@@ -355,7 +379,8 @@ describe("RegisterBuyer", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         new MailProviderDouble()
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
     const hashError = new Error("hash failed");
 
@@ -375,7 +400,8 @@ describe("RegisterBuyer", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         new MailProviderDouble()
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
     const createError = new Error("create failed");
 
@@ -394,7 +420,8 @@ describe("RegisterBuyer", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         new MailProviderDouble()
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
 
     buyerRepository.findExistingIdentifiers.mockResolvedValue({
@@ -425,9 +452,34 @@ describe("RegisterBuyer", () => {
         emailVerificationRepository,
         verificationCodeGenerator,
         mailProvider
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
 
     await expect(registerBuyer.execute(makeInput())).rejects.toThrow(emailError);
+  });
+
+  it("propagates welcome email failures", async () => {
+    const buyerRepository = new BuyerRepositoryDouble();
+    const passwordHasher = new PasswordHasherDouble();
+    const emailVerificationRepository = new EmailVerificationRepositoryDouble();
+    const verificationCodeGenerator = new VerificationCodeGeneratorDouble();
+    const mailProvider = new MailProviderDouble();
+    const welcomeError = new Error("welcome failed");
+
+    mailProvider.sendWelcomeEmail.mockRejectedValue(welcomeError);
+
+    const registerBuyer = new RegisterBuyer(
+      buyerRepository,
+      passwordHasher,
+      new InitiateEmailVerification(
+        emailVerificationRepository,
+        verificationCodeGenerator,
+        mailProvider
+      ),
+      new SendWelcomeEmail(mailProvider)
+    );
+
+    await expect(registerBuyer.execute(makeInput())).rejects.toThrow(welcomeError);
   });
 });

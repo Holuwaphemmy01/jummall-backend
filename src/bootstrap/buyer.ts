@@ -1,5 +1,6 @@
 import { InitiateEmailVerification } from "../application/auth/initiate-email-verification";
 import { RegisterBuyer } from "../application/buyer/register-buyer";
+import { SendWelcomeEmail } from "../application/notification/send-welcome-email";
 import createBuyerRouter from "../infrastructure/api/routes/buyer-routes";
 import { PostgresBuyerRepository } from "../infrastructure/database/repositories/postgres-buyer-repository";
 import { PostgresEmailVerificationRepository } from "../infrastructure/database/repositories/postgres-email-verification-repository";
@@ -13,6 +14,7 @@ export function createBuyerModule() {
   const passwordHasher = new ScryptPasswordHasher();
   const verificationCodeGenerator = new NumericVerificationCodeGenerator();
   const mailProvider = new ResendMailProvider();
+  const sendWelcomeEmail = new SendWelcomeEmail(mailProvider);
   const initiateEmailVerification = new InitiateEmailVerification(
     emailVerificationRepository,
     verificationCodeGenerator,
@@ -22,7 +24,8 @@ export function createBuyerModule() {
   const registerBuyer = new RegisterBuyer(
     buyerRepository,
     passwordHasher,
-    initiateEmailVerification
+    initiateEmailVerification,
+    sendWelcomeEmail
   );
 
   return createBuyerRouter({ registerBuyer });

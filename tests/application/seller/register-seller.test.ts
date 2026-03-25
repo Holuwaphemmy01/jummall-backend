@@ -1,6 +1,7 @@
 import { describe, expect, it, jest } from "@jest/globals";
 
 import { InitiateEmailVerification } from "../../../src/application/auth/initiate-email-verification";
+import { SendWelcomeEmail } from "../../../src/application/notification/send-welcome-email";
 import {
   RegisterSeller,
   RegisterSellerError,
@@ -86,6 +87,16 @@ class MailProviderDouble implements MailProvider {
   sendEmailVerification = jest
     .fn<(input: { to: string; firstName: string | null; code: string }) => Promise<void>>()
     .mockResolvedValue();
+
+  sendWelcomeEmail = jest
+    .fn<
+      (input: {
+        to: string;
+        firstName: string | null;
+        role: "buyer" | "seller";
+      }) => Promise<void>
+    >()
+    .mockResolvedValue();
 }
 
 function makeInput(): RegisterSellerInput {
@@ -115,7 +126,8 @@ describe("RegisterSeller", () => {
         emailVerificationRepository,
         verificationCodeGenerator,
         mailProvider
-      )
+      ),
+      new SendWelcomeEmail(mailProvider)
     );
 
     const result = await registerSeller.execute(makeInput());
@@ -149,6 +161,11 @@ describe("RegisterSeller", () => {
       firstName: "Jane",
       code: "123456"
     });
+    expect(mailProvider.sendWelcomeEmail).toHaveBeenCalledWith({
+      to: "jane@example.com",
+      firstName: "Jane",
+      role: "seller"
+    });
   });
 
   it("throws when confirm password does not match", async () => {
@@ -161,7 +178,8 @@ describe("RegisterSeller", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         new MailProviderDouble()
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
     const input = {
       ...makeInput(),
@@ -189,7 +207,8 @@ describe("RegisterSeller", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         new MailProviderDouble()
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
 
     sellerRepository.findExistingIdentifiers.mockResolvedValue({
@@ -218,7 +237,8 @@ describe("RegisterSeller", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         new MailProviderDouble()
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
 
     sellerRepository.findExistingIdentifiers.mockResolvedValue({
@@ -247,7 +267,8 @@ describe("RegisterSeller", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         new MailProviderDouble()
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
 
     sellerRepository.findExistingIdentifiers.mockResolvedValue({
@@ -276,7 +297,8 @@ describe("RegisterSeller", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         new MailProviderDouble()
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
     const lookupError = new Error("lookup failed");
 
@@ -297,7 +319,8 @@ describe("RegisterSeller", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         new MailProviderDouble()
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
     const hashError = new Error("hash failed");
 
@@ -317,7 +340,8 @@ describe("RegisterSeller", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         new MailProviderDouble()
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
     const createError = new Error("create failed");
 
@@ -336,7 +360,8 @@ describe("RegisterSeller", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         new MailProviderDouble()
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
 
     sellerRepository.findExistingIdentifiers.mockResolvedValue({
@@ -365,9 +390,32 @@ describe("RegisterSeller", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         mailProvider
-      )
+      ),
+      new SendWelcomeEmail(new MailProviderDouble())
     );
 
     await expect(registerSeller.execute(makeInput())).rejects.toThrow(emailError);
+  });
+
+  it("propagates welcome email failures", async () => {
+    const sellerRepository = new SellerRepositoryDouble();
+    const passwordHasher = new PasswordHasherDouble();
+    const mailProvider = new MailProviderDouble();
+    const welcomeError = new Error("welcome failed");
+
+    mailProvider.sendWelcomeEmail.mockRejectedValue(welcomeError);
+
+    const registerSeller = new RegisterSeller(
+      sellerRepository,
+      passwordHasher,
+      new InitiateEmailVerification(
+        new EmailVerificationRepositoryDouble(),
+        new VerificationCodeGeneratorDouble(),
+        mailProvider
+      ),
+      new SendWelcomeEmail(mailProvider)
+    );
+
+    await expect(registerSeller.execute(makeInput())).rejects.toThrow(welcomeError);
   });
 });

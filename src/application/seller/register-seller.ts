@@ -1,6 +1,7 @@
 import type { PasswordHasher } from "../../ports/password-hasher";
 import type { SellerRecord, SellerRepository } from "../../ports/seller-repository";
 import { InitiateEmailVerification } from "../auth/initiate-email-verification";
+import { SendWelcomeEmail } from "../notification/send-welcome-email";
 
 export interface RegisterSellerInput {
   firstName: string;
@@ -32,7 +33,8 @@ export class RegisterSeller implements RegisterSellerUseCase {
   constructor(
     private readonly sellerRepository: SellerRepository,
     private readonly passwordHasher: PasswordHasher,
-    private readonly initiateEmailVerification: InitiateEmailVerification
+    private readonly initiateEmailVerification: InitiateEmailVerification,
+    private readonly sendWelcomeEmail: SendWelcomeEmail
   ) {}
 
   async execute(input: RegisterSellerInput): Promise<SellerRecord> {
@@ -79,6 +81,12 @@ export class RegisterSeller implements RegisterSellerUseCase {
       userId: seller.id,
       email: seller.email,
       firstName: seller.firstName
+    });
+
+    await this.sendWelcomeEmail.execute({
+      to: seller.email,
+      firstName: seller.firstName,
+      role: "seller"
     });
 
     return seller;

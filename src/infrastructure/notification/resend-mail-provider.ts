@@ -1,6 +1,10 @@
 import { Resend } from "resend";
 
-import type { MailProvider, SendEmailVerificationInput } from "../../ports/mail-provider";
+import type {
+  MailProvider,
+  SendEmailVerificationInput,
+  SendWelcomeEmailInput
+} from "../../ports/mail-provider";
 
 export class ResendMailProvider implements MailProvider {
   constructor(
@@ -39,6 +43,48 @@ export class ResendMailProvider implements MailProvider {
         </div>
       `,
       text: `Hello ${recipientName}, your Jummall verification code is ${input.code}.`
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async sendWelcomeEmail(input: SendWelcomeEmailInput): Promise<void> {
+    if (!this.apiKey) {
+      throw new Error("RESEND_API_KEY is not set.");
+    }
+
+    if (!this.fromAddress) {
+      throw new Error("MAIL_FROM_ADDRESS is not set.");
+    }
+
+    const resend = new Resend(this.apiKey);
+    const recipientName = input.firstName ?? "there";
+    const from = this.fromName
+      ? `${this.fromName} <${this.fromAddress}>`
+      : this.fromAddress;
+    const subject =
+      input.role === "buyer"
+        ? "Welcome to Jummall Buyer"
+        : "Welcome to Jummall Seller";
+    const roleSpecificMessage =
+      input.role === "buyer"
+        ? "You can now explore products, save favorites, and complete your orders with confidence."
+        : "Your seller account is ready. Complete your onboarding and KYC steps to start selling on Jummall.";
+
+    const { error } = await resend.emails.send({
+      from,
+      to: [input.to],
+      subject,
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.5;">
+          <p>Hello ${recipientName},</p>
+          <p>Welcome to Jummall.</p>
+          <p>${roleSpecificMessage}</p>
+        </div>
+      `,
+      text: `Hello ${recipientName}, welcome to Jummall. ${roleSpecificMessage}`
     });
 
     if (error) {
