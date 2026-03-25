@@ -1,4 +1,8 @@
-import { randomBytes, scrypt as scryptCallback } from "crypto";
+import {
+  randomBytes,
+  scrypt as scryptCallback,
+  timingSafeEqual
+} from "crypto";
 import { promisify } from "util";
 
 import type { PasswordHasher } from "../../ports/password-hasher";
@@ -11,5 +15,22 @@ export class ScryptPasswordHasher implements PasswordHasher {
     const derivedKey = (await scrypt(value, salt, 64)) as Buffer;
 
     return `${salt}:${derivedKey.toString("hex")}`;
+  }
+
+  async compare(value: string, hash: string): Promise<boolean> {
+    const [salt, storedHash] = hash.split(":");
+
+    if (!salt || !storedHash) {
+      return false;
+    }
+
+    const derivedKey = (await scrypt(value, salt, 64)) as Buffer;
+    const storedKey = Buffer.from(storedHash, "hex");
+
+    if (derivedKey.length !== storedKey.length) {
+      return false;
+    }
+
+    return timingSafeEqual(derivedKey, storedKey);
   }
 }

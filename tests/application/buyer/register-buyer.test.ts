@@ -42,6 +42,10 @@ class PasswordHasherDouble implements PasswordHasher {
   hash = jest
     .fn<(value: string) => Promise<string>>()
     .mockResolvedValue("hashed-password");
+
+  compare = jest
+    .fn<(value: string, hash: string) => Promise<boolean>>()
+    .mockResolvedValue(true);
 }
 
 function makeInput(): RegisterBuyerInput {
