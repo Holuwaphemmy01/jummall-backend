@@ -1,16 +1,24 @@
 import { describe, expect, it, jest } from "@jest/globals";
 
+import { InitiateEmailVerification } from "../../../src/application/auth/initiate-email-verification";
 import {
   Login,
   LoginError,
   type LoginInput
 } from "../../../src/application/auth/login";
 import type {
+  EmailVerificationRecord,
+  EmailVerificationRepository,
+  SaveEmailVerificationInput
+} from "../../../src/ports/email-verification-repository";
+import type { MailProvider } from "../../../src/ports/mail-provider";
+import type {
   AuthenticationRepository,
   AuthUser
 } from "../../../src/ports/authentication-repository";
 import type { PasswordHasher } from "../../../src/ports/password-hasher";
 import type { TokenPayload, TokenSigner } from "../../../src/ports/token-signer";
+import type { VerificationCodeGenerator } from "../../../src/ports/verification-code-generator";
 
 class AuthenticationRepositoryDouble implements AuthenticationRepository {
   findByEmail = jest
@@ -46,6 +54,43 @@ class TokenSignerDouble implements TokenSigner {
     .mockResolvedValue("jwt-token");
 }
 
+class EmailVerificationRepositoryDouble implements EmailVerificationRepository {
+  save = jest.fn<(input: SaveEmailVerificationInput) => Promise<void>>()
+    .mockResolvedValue();
+
+  findByEmail = jest
+    .fn<(email: string) => Promise<EmailVerificationRecord | null>>()
+    .mockResolvedValue(null);
+
+  markVerificationAsUsed = jest
+    .fn<(input: { verificationId: string; userId: string }) => Promise<void>>()
+    .mockResolvedValue();
+
+  markVerificationAsExpired = jest
+    .fn<(verificationId: string) => Promise<void>>()
+    .mockResolvedValue();
+}
+
+class VerificationCodeGeneratorDouble implements VerificationCodeGenerator {
+  generate = jest.fn<() => Promise<string>>().mockResolvedValue("123456");
+}
+
+class MailProviderDouble implements MailProvider {
+  sendEmailVerification = jest
+    .fn<(input: { to: string; firstName: string | null; code: string }) => Promise<void>>()
+    .mockResolvedValue();
+
+  sendWelcomeEmail = jest
+    .fn<
+      (input: {
+        to: string;
+        firstName: string | null;
+        role: "buyer" | "seller";
+      }) => Promise<void>
+    >()
+    .mockResolvedValue();
+}
+
 function makeInput(): LoginInput {
   return {
     email: "john@example.com",
@@ -58,10 +103,16 @@ describe("Login", () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
     const tokenSigner = new TokenSignerDouble();
+    const initiateEmailVerification = new InitiateEmailVerification(
+      new EmailVerificationRepositoryDouble(),
+      new VerificationCodeGeneratorDouble(),
+      new MailProviderDouble()
+    );
     const login = new Login(
       authenticationRepository,
       passwordHasher,
-      tokenSigner
+      tokenSigner,
+      initiateEmailVerification
     );
 
     const result = await login.execute(makeInput());
@@ -93,10 +144,16 @@ describe("Login", () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
     const tokenSigner = new TokenSignerDouble();
+    const initiateEmailVerification = new InitiateEmailVerification(
+      new EmailVerificationRepositoryDouble(),
+      new VerificationCodeGeneratorDouble(),
+      new MailProviderDouble()
+    );
     const login = new Login(
       authenticationRepository,
       passwordHasher,
-      tokenSigner
+      tokenSigner,
+      initiateEmailVerification
     );
 
     authenticationRepository.findByEmail.mockResolvedValue(null);
@@ -114,10 +171,19 @@ describe("Login", () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
     const tokenSigner = new TokenSignerDouble();
+    const emailVerificationRepository = new EmailVerificationRepositoryDouble();
+    const verificationCodeGenerator = new VerificationCodeGeneratorDouble();
+    const mailProvider = new MailProviderDouble();
+    const initiateEmailVerification = new InitiateEmailVerification(
+      emailVerificationRepository,
+      verificationCodeGenerator,
+      mailProvider
+    );
     const login = new Login(
       authenticationRepository,
       passwordHasher,
-      tokenSigner
+      tokenSigner,
+      initiateEmailVerification
     );
 
     authenticationRepository.findByEmail.mockResolvedValue({
@@ -139,6 +205,16 @@ describe("Login", () => {
       message: "Account is not verified.",
       statusCode: 403
     });
+    expect(emailVerificationRepository.save).toHaveBeenCalledWith({
+      userId: "user-id",
+      code: "123456",
+      expiresAt: expect.any(Date)
+    });
+    expect(mailProvider.sendEmailVerification).toHaveBeenCalledWith({
+      to: "john@example.com",
+      firstName: "John",
+      code: "123456"
+    });
     expect(tokenSigner.sign).not.toHaveBeenCalled();
   });
 
@@ -146,10 +222,16 @@ describe("Login", () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
     const tokenSigner = new TokenSignerDouble();
+    const initiateEmailVerification = new InitiateEmailVerification(
+      new EmailVerificationRepositoryDouble(),
+      new VerificationCodeGeneratorDouble(),
+      new MailProviderDouble()
+    );
     const login = new Login(
       authenticationRepository,
       passwordHasher,
-      tokenSigner
+      tokenSigner,
+      initiateEmailVerification
     );
 
     passwordHasher.compare.mockResolvedValue(false);
@@ -166,10 +248,16 @@ describe("Login", () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
     const tokenSigner = new TokenSignerDouble();
+    const initiateEmailVerification = new InitiateEmailVerification(
+      new EmailVerificationRepositoryDouble(),
+      new VerificationCodeGeneratorDouble(),
+      new MailProviderDouble()
+    );
     const login = new Login(
       authenticationRepository,
       passwordHasher,
-      tokenSigner
+      tokenSigner,
+      initiateEmailVerification
     );
     const lookupError = new Error("lookup failed");
 
@@ -184,10 +272,16 @@ describe("Login", () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
     const tokenSigner = new TokenSignerDouble();
+    const initiateEmailVerification = new InitiateEmailVerification(
+      new EmailVerificationRepositoryDouble(),
+      new VerificationCodeGeneratorDouble(),
+      new MailProviderDouble()
+    );
     const login = new Login(
       authenticationRepository,
       passwordHasher,
-      tokenSigner
+      tokenSigner,
+      initiateEmailVerification
     );
     const compareError = new Error("compare failed");
 
@@ -201,10 +295,16 @@ describe("Login", () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
     const tokenSigner = new TokenSignerDouble();
+    const initiateEmailVerification = new InitiateEmailVerification(
+      new EmailVerificationRepositoryDouble(),
+      new VerificationCodeGeneratorDouble(),
+      new MailProviderDouble()
+    );
     const login = new Login(
       authenticationRepository,
       passwordHasher,
-      tokenSigner
+      tokenSigner,
+      initiateEmailVerification
     );
     const tokenError = new Error("token failed");
 
@@ -217,14 +317,57 @@ describe("Login", () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
     const tokenSigner = new TokenSignerDouble();
+    const initiateEmailVerification = new InitiateEmailVerification(
+      new EmailVerificationRepositoryDouble(),
+      new VerificationCodeGeneratorDouble(),
+      new MailProviderDouble()
+    );
     const login = new Login(
       authenticationRepository,
       passwordHasher,
-      tokenSigner
+      tokenSigner,
+      initiateEmailVerification
     );
 
     authenticationRepository.findByEmail.mockResolvedValue(null);
 
     await expect(login.execute(makeInput())).rejects.toBeInstanceOf(LoginError);
+  });
+
+  it("propagates email verification initiation failures for unverified users", async () => {
+    const authenticationRepository = new AuthenticationRepositoryDouble();
+    const passwordHasher = new PasswordHasherDouble();
+    const tokenSigner = new TokenSignerDouble();
+    const mailProvider = new MailProviderDouble();
+    const emailError = new Error("email failed");
+
+    authenticationRepository.findByEmail.mockResolvedValue({
+      id: "user-id",
+      firstName: "John",
+      lastName: "Doe",
+      username: "john.doe",
+      email: "john@example.com",
+      phone: "+2348012345678",
+      passwordHash: "stored-password-hash",
+      role: "buyer",
+      accountStatus: "not_verified",
+      createdAt: new Date("2026-03-24T00:00:00.000Z"),
+      updatedAt: new Date("2026-03-24T00:00:00.000Z")
+    });
+    mailProvider.sendEmailVerification.mockRejectedValue(emailError);
+
+    const login = new Login(
+      authenticationRepository,
+      passwordHasher,
+      tokenSigner,
+      new InitiateEmailVerification(
+        new EmailVerificationRepositoryDouble(),
+        new VerificationCodeGeneratorDouble(),
+        mailProvider
+      )
+    );
+
+    await expect(login.execute(makeInput())).rejects.toThrow(emailError);
+    expect(tokenSigner.sign).not.toHaveBeenCalled();
   });
 });

@@ -26,7 +26,8 @@ export function createAuthModule() {
   const login = new Login(
     authenticationRepository,
     passwordHasher,
-    tokenSigner
+    tokenSigner,
+    initiateEmailVerification
   );
   const verifyEmail = new VerifyEmail(emailVerificationRepository);
   const resendEmailVerification = new ResendEmailVerification(

@@ -1,6 +1,7 @@
 import type { AuthenticationRepository } from "../../ports/authentication-repository";
 import type { PasswordHasher } from "../../ports/password-hasher";
 import type { TokenSigner } from "../../ports/token-signer";
+import { InitiateEmailVerification } from "./initiate-email-verification";
 
 export interface LoginInput {
   email: string;
@@ -43,7 +44,8 @@ export class Login implements LoginUseCase {
   constructor(
     private readonly authenticationRepository: AuthenticationRepository,
     private readonly passwordHasher: PasswordHasher,
-    private readonly tokenSigner: TokenSigner
+    private readonly tokenSigner: TokenSigner,
+    private readonly initiateEmailVerification: InitiateEmailVerification
   ) {}
 
   async execute(input: LoginInput): Promise<LoginResult> {
@@ -63,6 +65,12 @@ export class Login implements LoginUseCase {
     }
 
     if (user.accountStatus !== "verified") {
+      await this.initiateEmailVerification.execute({
+        userId: user.id,
+        email: user.email,
+        firstName: user.firstName
+      });
+
       throw new LoginError("Account is not verified.", 403);
     }
 
