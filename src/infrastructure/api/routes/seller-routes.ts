@@ -33,6 +33,7 @@ export default function createSellerRouter({
       const seller = await registerSeller.execute({
         firstName: value.first_name,
         lastName: value.last_name,
+        username: value.username,
         email: value.email,
         phone: value.phone_number,
         password: value.password,
@@ -46,6 +47,7 @@ export default function createSellerRouter({
           id: seller.id,
           first_name: seller.firstName,
           last_name: seller.lastName,
+          username: seller.username,
           email: seller.email,
           phone_number: seller.phone,
           role: seller.role,

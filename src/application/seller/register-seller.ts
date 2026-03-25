@@ -4,6 +4,7 @@ import type { SellerRecord, SellerRepository } from "../../ports/seller-reposito
 export interface RegisterSellerInput {
   firstName: string;
   lastName: string;
+  username: string;
   email: string;
   phone: string;
   password: string;
@@ -44,11 +45,16 @@ export class RegisterSeller implements RegisterSellerUseCase {
     const existingIdentifiers =
       await this.sellerRepository.findExistingIdentifiers({
         email: input.email,
+        username: input.username,
         phone: input.phone
       });
 
     if (existingIdentifiers.email) {
       throw new RegisterSellerError("Email is already in use.", 409, "email");
+    }
+
+    if (existingIdentifiers.username) {
+      throw new RegisterSellerError("Username is already in use.", 409, "username");
     }
 
     if (existingIdentifiers.phone) {
@@ -60,6 +66,7 @@ export class RegisterSeller implements RegisterSellerUseCase {
     return this.sellerRepository.createSeller({
       firstName: input.firstName,
       lastName: input.lastName,
+      username: input.username,
       email: input.email,
       phone: input.phone,
       passwordHash,

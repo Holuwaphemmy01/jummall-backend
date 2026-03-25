@@ -1,16 +1,19 @@
 export interface FindExistingSellerIdentifiersInput {
   email: string;
+  username: string;
   phone: string;
 }
 
 export interface ExistingSellerIdentifiers {
   email: boolean;
+  username: boolean;
   phone: boolean;
 }
 
 export interface CreateSellerInput {
   firstName: string;
   lastName: string;
+  username: string;
   email: string;
   phone: string;
   passwordHash: string;
@@ -21,6 +24,7 @@ export interface SellerRecord {
   id: string;
   firstName: string;
   lastName: string;
+  username: string;
   email: string;
   phone: string;
   role: string;

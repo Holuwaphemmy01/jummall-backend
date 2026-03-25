@@ -11,6 +11,7 @@ import type {
 
 interface ExistingIdentifierRow {
   email: string;
+  username: string | null;
   phone: string | null;
 }
 
@@ -18,6 +19,7 @@ interface SellerUserRow {
   id: string;
   firstName: string | null;
   lastName: string | null;
+  username: string | null;
   email: string;
   phone: string | null;
   role: string;
@@ -38,15 +40,16 @@ export class PostgresSellerRepository implements SellerRepository {
   ): Promise<ExistingSellerIdentifiers> {
     const result = await this.pool.query<ExistingIdentifierRow>(
       `
-        SELECT "email", "phone"
+        SELECT "email", "username", "phone"
         FROM "User"
-        WHERE "email" = $1 OR "phone" = $2
+        WHERE "email" = $1 OR "username" = $2 OR "phone" = $3
       `,
-      [input.email, input.phone]
+      [input.email, input.username, input.phone]
     );
 
     return {
       email: result.rows.some((user) => user.email === input.email),
+      username: result.rows.some((user) => user.username === input.username),
       phone: result.rows.some((user) => user.phone === input.phone)
     };
   }
@@ -64,6 +67,7 @@ export class PostgresSellerRepository implements SellerRepository {
         !seller ||
         !seller.firstName ||
         !seller.lastName ||
+        !seller.username ||
         !seller.phone ||
         !kyc
       ) {
@@ -76,6 +80,7 @@ export class PostgresSellerRepository implements SellerRepository {
         id: seller.id,
         firstName: seller.firstName,
         lastName: seller.lastName,
+        username: seller.username,
         email: seller.email,
         phone: seller.phone,
         role: seller.role,
@@ -101,16 +106,18 @@ export class PostgresSellerRepository implements SellerRepository {
         INSERT INTO "User" (
           "firstName",
           "lastName",
+          "username",
           "email",
           "phone",
           "password",
           "role"
         )
-        VALUES ($1, $2, $3, $4, $5, 'seller')
+        VALUES ($1, $2, $3, $4, $5, $6, 'seller')
         RETURNING
           "id",
           "firstName",
           "lastName",
+          "username",
           "email",
           "phone",
           "role",
@@ -120,6 +127,7 @@ export class PostgresSellerRepository implements SellerRepository {
       [
         input.firstName,
         input.lastName,
+        input.username,
         input.email,
         input.phone,
         input.passwordHash

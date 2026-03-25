@@ -21,6 +21,7 @@ class SellerRepositoryDouble implements SellerRepository {
     >()
     .mockResolvedValue({
       email: false,
+      username: false,
       phone: false
     });
 
@@ -30,6 +31,7 @@ class SellerRepositoryDouble implements SellerRepository {
       id: "seller-id",
       firstName: input.firstName,
       lastName: input.lastName,
+      username: input.username,
       email: input.email,
       phone: input.phone,
       role: "seller",
@@ -54,6 +56,7 @@ function makeInput(): RegisterSellerInput {
   return {
     firstName: "Jane",
     lastName: "Doe",
+    username: "jane.doe",
     email: "jane@example.com",
     phone: "+2348012345678",
     password: "Password123",
@@ -72,12 +75,14 @@ describe("RegisterSeller", () => {
 
     expect(sellerRepository.findExistingIdentifiers).toHaveBeenCalledWith({
       email: "jane@example.com",
+      username: "jane.doe",
       phone: "+2348012345678"
     });
     expect(passwordHasher.hash).toHaveBeenCalledWith("Password123");
     expect(sellerRepository.createSeller).toHaveBeenCalledWith({
       firstName: "Jane",
       lastName: "Doe",
+      username: "jane.doe",
       email: "jane@example.com",
       phone: "+2348012345678",
       passwordHash: "hashed-password",
@@ -85,6 +90,7 @@ describe("RegisterSeller", () => {
     });
     expect(result).toMatchObject({
       id: "seller-id",
+      username: "jane.doe",
       role: "seller",
       accountType: "individual",
       kycStatus: "not_started"
@@ -118,6 +124,7 @@ describe("RegisterSeller", () => {
 
     sellerRepository.findExistingIdentifiers.mockResolvedValue({
       email: true,
+      username: false,
       phone: false
     });
 
@@ -131,6 +138,27 @@ describe("RegisterSeller", () => {
     expect(sellerRepository.createSeller).not.toHaveBeenCalled();
   });
 
+  it("throws when username is already in use", async () => {
+    const sellerRepository = new SellerRepositoryDouble();
+    const passwordHasher = new PasswordHasherDouble();
+    const registerSeller = new RegisterSeller(sellerRepository, passwordHasher);
+
+    sellerRepository.findExistingIdentifiers.mockResolvedValue({
+      email: false,
+      username: true,
+      phone: false
+    });
+
+    await expect(registerSeller.execute(makeInput())).rejects.toMatchObject({
+      name: "RegisterSellerError",
+      message: "Username is already in use.",
+      statusCode: 409,
+      field: "username"
+    });
+    expect(passwordHasher.hash).not.toHaveBeenCalled();
+    expect(sellerRepository.createSeller).not.toHaveBeenCalled();
+  });
+
   it("throws when phone number is already in use", async () => {
     const sellerRepository = new SellerRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
@@ -138,6 +166,7 @@ describe("RegisterSeller", () => {
 
     sellerRepository.findExistingIdentifiers.mockResolvedValue({
       email: false,
+      username: false,
       phone: true
     });
 
@@ -194,6 +223,7 @@ describe("RegisterSeller", () => {
 
     sellerRepository.findExistingIdentifiers.mockResolvedValue({
       email: true,
+      username: false,
       phone: false
     });
 

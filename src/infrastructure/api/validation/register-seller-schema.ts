@@ -3,6 +3,12 @@ import Joi from "joi";
 export const registerSellerSchema = Joi.object({
   first_name: Joi.string().trim().min(2).max(50).required(),
   last_name: Joi.string().trim().min(2).max(50).required(),
+  username: Joi.string()
+    .trim()
+    .min(3)
+    .max(30)
+    .pattern(/^[a-zA-Z0-9_.-]+$/)
+    .required(),
   email: Joi.string().trim().email().required(),
   phone_number: Joi.string()
     .trim()

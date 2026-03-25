@@ -318,6 +318,7 @@
         "required": [
           "first_name",
           "last_name",
+          "username",
           "email",
           "phone_number",
           "password",
@@ -332,6 +333,10 @@
           "last_name": {
             "type": "string",
             "example": "Doe"
+          },
+          "username": {
+            "type": "string",
+            "example": "jane.doe"
           },
           "email": {
             "type": "string",
@@ -377,6 +382,9 @@
                 "type": "string"
               },
               "last_name": {
+                "type": "string"
+              },
+              "username": {
                 "type": "string"
               },
               "email": {
