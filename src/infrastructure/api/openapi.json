@@ -111,6 +111,46 @@
         }
       }
     },
+    "/auth/resend-verification-email": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Resend a verification email",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResendVerificationEmailRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Verification email resent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResendVerificationEmailResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "404": {
+            "description": "Verification request not found"
+          },
+          "409": {
+            "description": "Account already verified"
+          },
+          "429": {
+            "description": "Resend requested too soon"
+          }
+        }
+      }
+    },
     "/buyers/register": {
       "post": {
         "tags": ["buyer"],
@@ -298,6 +338,35 @@
               "account_status": {
                 "type": "string",
                 "example": "verified"
+              }
+            }
+          }
+        }
+      },
+      "ResendVerificationEmailRequest": {
+        "type": "object",
+        "required": ["email"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "john@example.com"
+          }
+        }
+      },
+      "ResendVerificationEmailResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Verification email resent successfully."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string",
+                "format": "email"
               }
             }
           }

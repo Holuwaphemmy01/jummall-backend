@@ -8,13 +8,16 @@ import type {
 } from "../../../ports/email-verification-repository";
 
 interface EmailVerificationRow {
+  id: string;
   userId: string;
   email: string;
   firstName: string | null;
   accountStatus: string;
   code: string;
+  status: string;
   expiresAt: Date;
   verifiedAt: Date | null;
+  createdAt: Date;
 }
 
 export class PostgresEmailVerificationRepository
@@ -23,25 +26,41 @@ export class PostgresEmailVerificationRepository
   constructor(private readonly pool: Pool = databasePool) {}
 
   async save(input: SaveEmailVerificationInput): Promise<void> {
-    await this.pool.query(
-      `
-        INSERT INTO "EmailVerification" (
-          "userId",
-          "code",
-          "expiresAt",
-          "verifiedAt",
-          "updatedAt"
-        )
-        VALUES ($1, $2, $3, NULL, CURRENT_TIMESTAMP)
-        ON CONFLICT ("userId")
-        DO UPDATE SET
-          "code" = EXCLUDED."code",
-          "expiresAt" = EXCLUDED."expiresAt",
-          "verifiedAt" = NULL,
-          "updatedAt" = CURRENT_TIMESTAMP
-      `,
-      [input.userId, input.code, input.expiresAt]
-    );
+    const client = await this.pool.connect();
+
+    try {
+      await client.query("BEGIN");
+      await client.query(
+        `
+          UPDATE "EmailVerification"
+          SET
+            "status" = 'invalidated',
+            "updatedAt" = CURRENT_TIMESTAMP
+          WHERE "userId" = $1 AND "status" = 'active'
+        `,
+        [input.userId]
+      );
+      await client.query(
+        `
+          INSERT INTO "EmailVerification" (
+            "userId",
+            "code",
+            "status",
+            "expiresAt",
+            "verifiedAt",
+            "updatedAt"
+          )
+          VALUES ($1, $2, 'active', $3, NULL, CURRENT_TIMESTAMP)
+        `,
+        [input.userId, input.code, input.expiresAt]
+      );
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   async findByEmail(email: string): Promise<EmailVerificationRecord | null> {
@@ -52,12 +71,16 @@ export class PostgresEmailVerificationRepository
           u."email",
           u."firstName",
           u."accountStatus",
+          ev."id",
           ev."code",
+          ev."status",
           ev."expiresAt",
           ev."verifiedAt"
+          ,ev."createdAt"
         FROM "User" u
         INNER JOIN "EmailVerification" ev ON ev."userId" = u."id"
         WHERE u."email" = $1
+        ORDER BY ev."createdAt" DESC
         LIMIT 1
       `,
       [email]
@@ -70,17 +93,23 @@ export class PostgresEmailVerificationRepository
     }
 
     return {
+      id: verification.id,
       userId: verification.userId,
       email: verification.email,
       firstName: verification.firstName,
       accountStatus: verification.accountStatus,
       code: verification.code,
+      status: verification.status,
       expiresAt: verification.expiresAt,
-      verifiedAt: verification.verifiedAt
+      verifiedAt: verification.verifiedAt,
+      createdAt: verification.createdAt
     };
   }
 
-  async markUserAsVerified(userId: string): Promise<void> {
+  async markVerificationAsUsed(input: {
+    verificationId: string;
+    userId: string;
+  }): Promise<void> {
     const client = await this.pool.connect();
 
     try {
@@ -93,17 +122,18 @@ export class PostgresEmailVerificationRepository
             "updatedAt" = CURRENT_TIMESTAMP
           WHERE "id" = $1
         `,
-        [userId]
+        [input.userId]
       );
       await client.query(
         `
           UPDATE "EmailVerification"
           SET
+            "status" = 'used',
             "verifiedAt" = CURRENT_TIMESTAMP,
             "updatedAt" = CURRENT_TIMESTAMP
-          WHERE "userId" = $1
+          WHERE "id" = $1
         `,
-        [userId]
+        [input.verificationId]
       );
       await client.query("COMMIT");
     } catch (error) {
@@ -112,5 +142,18 @@ export class PostgresEmailVerificationRepository
     } finally {
       client.release();
     }
+  }
+
+  async markVerificationAsExpired(verificationId: string): Promise<void> {
+    await this.pool.query(
+      `
+        UPDATE "EmailVerification"
+        SET
+          "status" = 'expired',
+          "updatedAt" = CURRENT_TIMESTAMP
+        WHERE "id" = $1 AND "status" = 'active'
+      `,
+      [verificationId]
+    );
   }
 }

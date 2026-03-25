@@ -3,15 +3,11 @@ import { Resend } from "resend";
 import type { MailProvider, SendEmailVerificationInput } from "../../ports/mail-provider";
 
 export class ResendMailProvider implements MailProvider {
-  private readonly resend: Resend;
-
   constructor(
     private readonly fromAddress: string = process.env.MAIL_FROM_ADDRESS ?? "",
     private readonly fromName: string = process.env.MAIL_FROM_NAME ?? "Jummall",
     private readonly apiKey: string = process.env.RESEND_API_KEY ?? ""
-  ) {
-    this.resend = new Resend(this.apiKey);
-  }
+  ) {}
 
   async sendEmailVerification(
     input: SendEmailVerificationInput
@@ -28,8 +24,9 @@ export class ResendMailProvider implements MailProvider {
     const from = this.fromName
       ? `${this.fromName} <${this.fromAddress}>`
       : this.fromAddress;
+    const resend = new Resend(this.apiKey);
 
-    const { error } = await this.resend.emails.send({
+    const { error } = await resend.emails.send({
       from,
       to: [input.to],
       subject: "Verify your Jummall account",

@@ -67,8 +67,12 @@ class EmailVerificationRepositoryDouble implements EmailVerificationRepository {
     .fn<(email: string) => Promise<EmailVerificationRecord | null>>()
     .mockResolvedValue(null);
 
-  markUserAsVerified = jest
-    .fn<(userId: string) => Promise<void>>()
+  markVerificationAsUsed = jest
+    .fn<(input: { verificationId: string; userId: string }) => Promise<void>>()
+    .mockResolvedValue();
+
+  markVerificationAsExpired = jest
+    .fn<(verificationId: string) => Promise<void>>()
     .mockResolvedValue();
 }
 

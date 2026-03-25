@@ -43,15 +43,25 @@ export class VerifyEmail implements VerifyEmailUseCase {
       throw new VerifyEmailError("Account is already verified.", 409, "email");
     }
 
+    if (verification.status !== "active") {
+      throw new VerifyEmailError("Invalid verification code.", 400, "code");
+    }
+
     if (verification.code !== input.code) {
       throw new VerifyEmailError("Invalid verification code.", 400, "code");
     }
 
     if (verification.expiresAt.getTime() < Date.now()) {
+      await this.emailVerificationRepository.markVerificationAsExpired(
+        verification.id
+      );
       throw new VerifyEmailError("Verification code has expired.", 400, "code");
     }
 
-    await this.emailVerificationRepository.markUserAsVerified(verification.userId);
+    await this.emailVerificationRepository.markVerificationAsUsed({
+      verificationId: verification.id,
+      userId: verification.userId
+    });
 
     return {
       email: verification.email,

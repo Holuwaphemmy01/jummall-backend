@@ -17,16 +17,24 @@ class EmailVerificationRepositoryDouble implements EmailVerificationRepository {
   findByEmail = jest
     .fn<(email: string) => Promise<EmailVerificationRecord | null>>()
     .mockResolvedValue({
+      id: "verification-id",
       userId: "user-id",
       email: "john@example.com",
       firstName: "John",
       accountStatus: "not_verified",
       code: "123456",
+      status: "active",
       expiresAt: new Date("2099-01-01T00:00:00.000Z"),
-      verifiedAt: null
+      verifiedAt: null,
+      createdAt: new Date("2026-03-25T00:00:00.000Z")
     });
 
-  markUserAsVerified = jest.fn<(userId: string) => Promise<void>>()
+  markVerificationAsUsed = jest
+    .fn<(input: { verificationId: string; userId: string }) => Promise<void>>()
+    .mockResolvedValue();
+
+  markVerificationAsExpired = jest
+    .fn<(verificationId: string) => Promise<void>>()
     .mockResolvedValue();
 }
 
@@ -41,7 +49,10 @@ describe("VerifyEmail", () => {
     });
 
     expect(repository.findByEmail).toHaveBeenCalledWith("john@example.com");
-    expect(repository.markUserAsVerified).toHaveBeenCalledWith("user-id");
+    expect(repository.markVerificationAsUsed).toHaveBeenCalledWith({
+      verificationId: "verification-id",
+      userId: "user-id"
+    });
     expect(result).toEqual({
       email: "john@example.com",
       accountStatus: "verified"
@@ -69,13 +80,16 @@ describe("VerifyEmail", () => {
   it("throws when the account is already verified", async () => {
     const repository = new EmailVerificationRepositoryDouble();
     repository.findByEmail.mockResolvedValue({
+      id: "verification-id",
       userId: "user-id",
       email: "john@example.com",
       firstName: "John",
       accountStatus: "verified",
       code: "123456",
+      status: "used",
       expiresAt: new Date("2099-01-01T00:00:00.000Z"),
-      verifiedAt: new Date("2026-03-25T00:00:00.000Z")
+      verifiedAt: new Date("2026-03-25T00:00:00.000Z"),
+      createdAt: new Date("2026-03-25T00:00:00.000Z")
     });
     const verifyEmail = new VerifyEmail(repository);
 
@@ -112,13 +126,16 @@ describe("VerifyEmail", () => {
   it("throws when the verification code has expired", async () => {
     const repository = new EmailVerificationRepositoryDouble();
     repository.findByEmail.mockResolvedValue({
+      id: "verification-id",
       userId: "user-id",
       email: "john@example.com",
       firstName: "John",
       accountStatus: "not_verified",
       code: "123456",
+      status: "active",
       expiresAt: new Date("2000-01-01T00:00:00.000Z"),
-      verifiedAt: null
+      verifiedAt: null,
+      createdAt: new Date("2026-03-25T00:00:00.000Z")
     });
     const verifyEmail = new VerifyEmail(repository);
 
@@ -133,12 +150,15 @@ describe("VerifyEmail", () => {
       statusCode: 400,
       field: "code"
     });
+    expect(repository.markVerificationAsExpired).toHaveBeenCalledWith(
+      "verification-id"
+    );
   });
 
   it("propagates repository update failures", async () => {
     const repository = new EmailVerificationRepositoryDouble();
     const verificationError = new Error("update failed");
-    repository.markUserAsVerified.mockRejectedValue(verificationError);
+    repository.markVerificationAsUsed.mockRejectedValue(verificationError);
     const verifyEmail = new VerifyEmail(repository);
 
     await expect(
