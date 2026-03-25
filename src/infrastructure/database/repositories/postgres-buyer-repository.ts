@@ -23,6 +23,7 @@ interface BuyerRow {
   email: string;
   phone: string | null;
   role: string;
+  accountStatus: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -59,9 +60,10 @@ export class PostgresBuyerRepository implements BuyerRepository {
           "email",
           "phone",
           "password",
-          "role"
+          "role",
+          "accountStatus"
         )
-        VALUES ($1, $2, $3, $4, $5, $6, 'buyer')
+        VALUES ($1, $2, $3, $4, $5, $6, 'buyer', 'not_verified')
         RETURNING
           "id",
           "firstName",
@@ -70,6 +72,7 @@ export class PostgresBuyerRepository implements BuyerRepository {
           "email",
           "phone",
           "role",
+          "accountStatus",
           "createdAt",
           "updatedAt"
       `,
@@ -103,6 +106,7 @@ export class PostgresBuyerRepository implements BuyerRepository {
       email: buyer.email,
       phone: buyer.phone,
       role: buyer.role,
+      accountStatus: buyer.accountStatus,
       createdAt: buyer.createdAt,
       updatedAt: buyer.updatedAt
     };

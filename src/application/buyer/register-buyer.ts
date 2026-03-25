@@ -1,5 +1,6 @@
 import type { BuyerRepository, BuyerRecord } from "../../ports/buyer-repository";
 import type { PasswordHasher } from "../../ports/password-hasher";
+import { InitiateEmailVerification } from "../auth/initiate-email-verification";
 
 export interface RegisterBuyerInput {
   firstName: string;
@@ -29,7 +30,8 @@ export class RegisterBuyerError extends Error {
 export class RegisterBuyer implements RegisterBuyerUseCase {
   constructor(
     private readonly buyerRepository: BuyerRepository,
-    private readonly passwordHasher: PasswordHasher
+    private readonly passwordHasher: PasswordHasher,
+    private readonly initiateEmailVerification: InitiateEmailVerification
   ) {}
 
   async execute(input: RegisterBuyerInput): Promise<BuyerRecord> {
@@ -62,7 +64,7 @@ export class RegisterBuyer implements RegisterBuyerUseCase {
 
     const passwordHash = await this.passwordHasher.hash(input.password);
 
-    return this.buyerRepository.createBuyer({
+    const buyer = await this.buyerRepository.createBuyer({
       firstName: input.firstName,
       lastName: input.lastName,
       username: input.username,
@@ -70,5 +72,13 @@ export class RegisterBuyer implements RegisterBuyerUseCase {
       phone: input.phone,
       passwordHash
     });
+
+    await this.initiateEmailVerification.execute({
+      userId: buyer.id,
+      email: buyer.email,
+      firstName: buyer.firstName
+    });
+
+    return buyer;
   }
 }

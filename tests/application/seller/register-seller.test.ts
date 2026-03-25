@@ -1,10 +1,17 @@
 import { describe, expect, it, jest } from "@jest/globals";
 
+import { InitiateEmailVerification } from "../../../src/application/auth/initiate-email-verification";
 import {
   RegisterSeller,
   RegisterSellerError,
   type RegisterSellerInput
 } from "../../../src/application/seller/register-seller";
+import type {
+  EmailVerificationRecord,
+  EmailVerificationRepository,
+  SaveEmailVerificationInput
+} from "../../../src/ports/email-verification-repository";
+import type { MailProvider } from "../../../src/ports/mail-provider";
 import type { PasswordHasher } from "../../../src/ports/password-hasher";
 import type {
   CreateSellerInput,
@@ -13,6 +20,7 @@ import type {
   SellerRecord,
   SellerRepository
 } from "../../../src/ports/seller-repository";
+import type { VerificationCodeGenerator } from "../../../src/ports/verification-code-generator";
 
 class SellerRepositoryDouble implements SellerRepository {
   findExistingIdentifiers = jest
@@ -35,6 +43,7 @@ class SellerRepositoryDouble implements SellerRepository {
       email: input.email,
       phone: input.phone,
       role: "seller",
+      accountStatus: "not_verified",
       accountType: input.accountType,
       kycStatus: "not_started",
       createdAt: new Date("2026-03-25T00:00:00.000Z"),
@@ -50,6 +59,29 @@ class PasswordHasherDouble implements PasswordHasher {
   compare = jest
     .fn<(value: string, hash: string) => Promise<boolean>>()
     .mockResolvedValue(true);
+}
+
+class EmailVerificationRepositoryDouble implements EmailVerificationRepository {
+  save = jest.fn<(input: SaveEmailVerificationInput) => Promise<void>>()
+    .mockResolvedValue();
+
+  findByEmail = jest
+    .fn<(email: string) => Promise<EmailVerificationRecord | null>>()
+    .mockResolvedValue(null);
+
+  markUserAsVerified = jest
+    .fn<(userId: string) => Promise<void>>()
+    .mockResolvedValue();
+}
+
+class VerificationCodeGeneratorDouble implements VerificationCodeGenerator {
+  generate = jest.fn<() => Promise<string>>().mockResolvedValue("123456");
+}
+
+class MailProviderDouble implements MailProvider {
+  sendEmailVerification = jest
+    .fn<(input: { to: string; firstName: string | null; code: string }) => Promise<void>>()
+    .mockResolvedValue();
 }
 
 function makeInput(): RegisterSellerInput {
@@ -69,7 +101,18 @@ describe("RegisterSeller", () => {
   it("registers a seller successfully and initializes KYC", async () => {
     const sellerRepository = new SellerRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
-    const registerSeller = new RegisterSeller(sellerRepository, passwordHasher);
+    const emailVerificationRepository = new EmailVerificationRepositoryDouble();
+    const verificationCodeGenerator = new VerificationCodeGeneratorDouble();
+    const mailProvider = new MailProviderDouble();
+    const registerSeller = new RegisterSeller(
+      sellerRepository,
+      passwordHasher,
+      new InitiateEmailVerification(
+        emailVerificationRepository,
+        verificationCodeGenerator,
+        mailProvider
+      )
+    );
 
     const result = await registerSeller.execute(makeInput());
 
@@ -92,15 +135,30 @@ describe("RegisterSeller", () => {
       id: "seller-id",
       username: "jane.doe",
       role: "seller",
+      accountStatus: "not_verified",
       accountType: "individual",
       kycStatus: "not_started"
+    });
+    expect(emailVerificationRepository.save).toHaveBeenCalled();
+    expect(mailProvider.sendEmailVerification).toHaveBeenCalledWith({
+      to: "jane@example.com",
+      firstName: "Jane",
+      code: "123456"
     });
   });
 
   it("throws when confirm password does not match", async () => {
     const sellerRepository = new SellerRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
-    const registerSeller = new RegisterSeller(sellerRepository, passwordHasher);
+    const registerSeller = new RegisterSeller(
+      sellerRepository,
+      passwordHasher,
+      new InitiateEmailVerification(
+        new EmailVerificationRepositoryDouble(),
+        new VerificationCodeGeneratorDouble(),
+        new MailProviderDouble()
+      )
+    );
     const input = {
       ...makeInput(),
       confirmPassword: "AnotherPassword123"
@@ -120,7 +178,15 @@ describe("RegisterSeller", () => {
   it("throws when email is already in use", async () => {
     const sellerRepository = new SellerRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
-    const registerSeller = new RegisterSeller(sellerRepository, passwordHasher);
+    const registerSeller = new RegisterSeller(
+      sellerRepository,
+      passwordHasher,
+      new InitiateEmailVerification(
+        new EmailVerificationRepositoryDouble(),
+        new VerificationCodeGeneratorDouble(),
+        new MailProviderDouble()
+      )
+    );
 
     sellerRepository.findExistingIdentifiers.mockResolvedValue({
       email: true,
@@ -141,7 +207,15 @@ describe("RegisterSeller", () => {
   it("throws when username is already in use", async () => {
     const sellerRepository = new SellerRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
-    const registerSeller = new RegisterSeller(sellerRepository, passwordHasher);
+    const registerSeller = new RegisterSeller(
+      sellerRepository,
+      passwordHasher,
+      new InitiateEmailVerification(
+        new EmailVerificationRepositoryDouble(),
+        new VerificationCodeGeneratorDouble(),
+        new MailProviderDouble()
+      )
+    );
 
     sellerRepository.findExistingIdentifiers.mockResolvedValue({
       email: false,
@@ -162,7 +236,15 @@ describe("RegisterSeller", () => {
   it("throws when phone number is already in use", async () => {
     const sellerRepository = new SellerRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
-    const registerSeller = new RegisterSeller(sellerRepository, passwordHasher);
+    const registerSeller = new RegisterSeller(
+      sellerRepository,
+      passwordHasher,
+      new InitiateEmailVerification(
+        new EmailVerificationRepositoryDouble(),
+        new VerificationCodeGeneratorDouble(),
+        new MailProviderDouble()
+      )
+    );
 
     sellerRepository.findExistingIdentifiers.mockResolvedValue({
       email: false,
@@ -183,7 +265,15 @@ describe("RegisterSeller", () => {
   it("propagates lookup failures", async () => {
     const sellerRepository = new SellerRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
-    const registerSeller = new RegisterSeller(sellerRepository, passwordHasher);
+    const registerSeller = new RegisterSeller(
+      sellerRepository,
+      passwordHasher,
+      new InitiateEmailVerification(
+        new EmailVerificationRepositoryDouble(),
+        new VerificationCodeGeneratorDouble(),
+        new MailProviderDouble()
+      )
+    );
     const lookupError = new Error("lookup failed");
 
     sellerRepository.findExistingIdentifiers.mockRejectedValue(lookupError);
@@ -196,7 +286,15 @@ describe("RegisterSeller", () => {
   it("propagates password hashing failures", async () => {
     const sellerRepository = new SellerRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
-    const registerSeller = new RegisterSeller(sellerRepository, passwordHasher);
+    const registerSeller = new RegisterSeller(
+      sellerRepository,
+      passwordHasher,
+      new InitiateEmailVerification(
+        new EmailVerificationRepositoryDouble(),
+        new VerificationCodeGeneratorDouble(),
+        new MailProviderDouble()
+      )
+    );
     const hashError = new Error("hash failed");
 
     passwordHasher.hash.mockRejectedValue(hashError);
@@ -208,7 +306,15 @@ describe("RegisterSeller", () => {
   it("propagates seller creation failures", async () => {
     const sellerRepository = new SellerRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
-    const registerSeller = new RegisterSeller(sellerRepository, passwordHasher);
+    const registerSeller = new RegisterSeller(
+      sellerRepository,
+      passwordHasher,
+      new InitiateEmailVerification(
+        new EmailVerificationRepositoryDouble(),
+        new VerificationCodeGeneratorDouble(),
+        new MailProviderDouble()
+      )
+    );
     const createError = new Error("create failed");
 
     sellerRepository.createSeller.mockRejectedValue(createError);
@@ -219,7 +325,15 @@ describe("RegisterSeller", () => {
   it("returns a RegisterSellerError instance for business validation failures", async () => {
     const sellerRepository = new SellerRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
-    const registerSeller = new RegisterSeller(sellerRepository, passwordHasher);
+    const registerSeller = new RegisterSeller(
+      sellerRepository,
+      passwordHasher,
+      new InitiateEmailVerification(
+        new EmailVerificationRepositoryDouble(),
+        new VerificationCodeGeneratorDouble(),
+        new MailProviderDouble()
+      )
+    );
 
     sellerRepository.findExistingIdentifiers.mockResolvedValue({
       email: true,
@@ -230,5 +344,26 @@ describe("RegisterSeller", () => {
     await expect(registerSeller.execute(makeInput())).rejects.toBeInstanceOf(
       RegisterSellerError
     );
+  });
+
+  it("propagates email verification initiation failures", async () => {
+    const sellerRepository = new SellerRepositoryDouble();
+    const passwordHasher = new PasswordHasherDouble();
+    const mailProvider = new MailProviderDouble();
+    const emailError = new Error("email failed");
+
+    mailProvider.sendEmailVerification.mockRejectedValue(emailError);
+
+    const registerSeller = new RegisterSeller(
+      sellerRepository,
+      passwordHasher,
+      new InitiateEmailVerification(
+        new EmailVerificationRepositoryDouble(),
+        new VerificationCodeGeneratorDouble(),
+        mailProvider
+      )
+    );
+
+    await expect(registerSeller.execute(makeInput())).rejects.toThrow(emailError);
   });
 });

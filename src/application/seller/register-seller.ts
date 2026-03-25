@@ -1,5 +1,6 @@
 import type { PasswordHasher } from "../../ports/password-hasher";
 import type { SellerRecord, SellerRepository } from "../../ports/seller-repository";
+import { InitiateEmailVerification } from "../auth/initiate-email-verification";
 
 export interface RegisterSellerInput {
   firstName: string;
@@ -30,7 +31,8 @@ export class RegisterSellerError extends Error {
 export class RegisterSeller implements RegisterSellerUseCase {
   constructor(
     private readonly sellerRepository: SellerRepository,
-    private readonly passwordHasher: PasswordHasher
+    private readonly passwordHasher: PasswordHasher,
+    private readonly initiateEmailVerification: InitiateEmailVerification
   ) {}
 
   async execute(input: RegisterSellerInput): Promise<SellerRecord> {
@@ -63,7 +65,7 @@ export class RegisterSeller implements RegisterSellerUseCase {
 
     const passwordHash = await this.passwordHasher.hash(input.password);
 
-    return this.sellerRepository.createSeller({
+    const seller = await this.sellerRepository.createSeller({
       firstName: input.firstName,
       lastName: input.lastName,
       username: input.username,
@@ -72,5 +74,13 @@ export class RegisterSeller implements RegisterSellerUseCase {
       passwordHash,
       accountType: input.accountType
     });
+
+    await this.initiateEmailVerification.execute({
+      userId: seller.id,
+      email: seller.email,
+      firstName: seller.firstName
+    });
+
+    return seller;
   }
 }

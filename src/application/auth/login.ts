@@ -15,6 +15,7 @@ export interface LoginUserProfile {
   email: string;
   phone: string | null;
   role: string;
+  accountStatus: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -61,6 +62,10 @@ export class Login implements LoginUseCase {
       throw new LoginError("Invalid email or password.", 401);
     }
 
+    if (user.accountStatus !== "verified") {
+      throw new LoginError("Account is not verified.", 403);
+    }
+
     const accessToken = await this.tokenSigner.sign({
       sub: user.id,
       email: user.email,
@@ -77,6 +82,7 @@ export class Login implements LoginUseCase {
         email: user.email,
         phone: user.phone,
         role: user.role,
+        accountStatus: user.accountStatus,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
       }

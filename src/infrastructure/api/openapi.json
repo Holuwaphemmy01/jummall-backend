@@ -65,8 +65,48 @@
           "401": {
             "description": "Invalid credentials"
           },
+          "403": {
+            "description": "Account is not verified"
+          },
           "429": {
             "description": "Too many login attempts"
+          }
+        }
+      }
+    },
+    "/auth/verify-email": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Verify a user's email with a code",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email verified successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyEmailResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or expired verification code"
+          },
+          "404": {
+            "description": "Verification request not found"
+          },
+          "409": {
+            "description": "Account already verified"
           }
         }
       }
@@ -208,6 +248,10 @@
                     "type": "string",
                     "example": "buyer"
                   },
+                  "account_status": {
+                    "type": "string",
+                    "example": "verified"
+                  },
                   "created_at": {
                     "type": "string",
                     "format": "date-time"
@@ -217,6 +261,43 @@
                     "format": "date-time"
                   }
                 }
+              }
+            }
+          }
+        }
+      },
+      "VerifyEmailRequest": {
+        "type": "object",
+        "required": ["email", "code"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "john@example.com"
+          },
+          "code": {
+            "type": "string",
+            "example": "123456"
+          }
+        }
+      },
+      "VerifyEmailResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Email verified successfully."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "account_status": {
+                "type": "string",
+                "example": "verified"
               }
             }
           }
@@ -300,6 +381,10 @@
               "role": {
                 "type": "string",
                 "example": "buyer"
+              },
+              "account_status": {
+                "type": "string",
+                "example": "not_verified"
               },
               "created_at": {
                 "type": "string",
@@ -397,6 +482,10 @@
               "role": {
                 "type": "string",
                 "example": "seller"
+              },
+              "account_status": {
+                "type": "string",
+                "example": "not_verified"
               },
               "account_type": {
                 "type": "string",

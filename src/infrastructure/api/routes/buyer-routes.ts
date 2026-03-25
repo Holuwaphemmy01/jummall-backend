@@ -50,6 +50,7 @@ export default function createBuyerRouter({
           email: buyer.email,
           phone: buyer.phone,
           role: buyer.role,
+          account_status: buyer.accountStatus,
           created_at: buyer.createdAt.toISOString(),
           updated_at: buyer.updatedAt.toISOString()
         }

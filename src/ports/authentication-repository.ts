@@ -7,6 +7,7 @@ export interface AuthUser {
   phone: string | null;
   passwordHash: string;
   role: string;
+  accountStatus: string;
   createdAt: Date;
   updatedAt: Date;
 }

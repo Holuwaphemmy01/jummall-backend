@@ -15,6 +15,7 @@ interface AuthUserRow {
   phone: string | null;
   password: string;
   role: string;
+  accountStatus: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,6 +37,7 @@ export class PostgresAuthenticationRepository
           "phone",
           "password",
           "role",
+          "accountStatus",
           "createdAt",
           "updatedAt"
         FROM "User"
@@ -60,6 +62,7 @@ export class PostgresAuthenticationRepository
       phone: user.phone,
       passwordHash: user.password,
       role: user.role,
+      accountStatus: user.accountStatus,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt
     };

@@ -24,6 +24,7 @@ class AuthenticationRepositoryDouble implements AuthenticationRepository {
       phone: "+2348012345678",
       passwordHash: "stored-password-hash",
       role: "buyer",
+      accountStatus: "verified",
       createdAt: new Date("2026-03-24T00:00:00.000Z"),
       updatedAt: new Date("2026-03-24T00:00:00.000Z")
     });
@@ -82,7 +83,8 @@ describe("Login", () => {
       user: {
         id: "user-id",
         email: "john@example.com",
-        role: "buyer"
+        role: "buyer",
+        accountStatus: "verified"
       }
     });
   });
@@ -105,6 +107,38 @@ describe("Login", () => {
       statusCode: 401
     });
     expect(passwordHasher.compare).not.toHaveBeenCalled();
+    expect(tokenSigner.sign).not.toHaveBeenCalled();
+  });
+
+  it("throws when the account is not verified", async () => {
+    const authenticationRepository = new AuthenticationRepositoryDouble();
+    const passwordHasher = new PasswordHasherDouble();
+    const tokenSigner = new TokenSignerDouble();
+    const login = new Login(
+      authenticationRepository,
+      passwordHasher,
+      tokenSigner
+    );
+
+    authenticationRepository.findByEmail.mockResolvedValue({
+      id: "user-id",
+      firstName: "John",
+      lastName: "Doe",
+      username: "john.doe",
+      email: "john@example.com",
+      phone: "+2348012345678",
+      passwordHash: "stored-password-hash",
+      role: "buyer",
+      accountStatus: "not_verified",
+      createdAt: new Date("2026-03-24T00:00:00.000Z"),
+      updatedAt: new Date("2026-03-24T00:00:00.000Z")
+    });
+
+    await expect(login.execute(makeInput())).rejects.toMatchObject({
+      name: "LoginError",
+      message: "Account is not verified.",
+      statusCode: 403
+    });
     expect(tokenSigner.sign).not.toHaveBeenCalled();
   });
 

@@ -23,6 +23,7 @@ interface SellerUserRow {
   email: string;
   phone: string | null;
   role: string;
+  accountStatus: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -84,6 +85,7 @@ export class PostgresSellerRepository implements SellerRepository {
         email: seller.email,
         phone: seller.phone,
         role: seller.role,
+        accountStatus: seller.accountStatus,
         accountType: kyc.sellerType,
         kycStatus: kyc.status,
         createdAt: seller.createdAt,
@@ -110,9 +112,10 @@ export class PostgresSellerRepository implements SellerRepository {
           "email",
           "phone",
           "password",
-          "role"
+          "role",
+          "accountStatus"
         )
-        VALUES ($1, $2, $3, $4, $5, $6, 'seller')
+        VALUES ($1, $2, $3, $4, $5, $6, 'seller', 'not_verified')
         RETURNING
           "id",
           "firstName",
@@ -121,6 +124,7 @@ export class PostgresSellerRepository implements SellerRepository {
           "email",
           "phone",
           "role",
+          "accountStatus",
           "createdAt",
           "updatedAt"
       `,

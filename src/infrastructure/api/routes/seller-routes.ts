@@ -51,6 +51,7 @@ export default function createSellerRouter({
           email: seller.email,
           phone_number: seller.phone,
           role: seller.role,
+          account_status: seller.accountStatus,
           account_type: seller.accountType,
           kyc_status: seller.kycStatus,
           created_at: seller.createdAt.toISOString(),

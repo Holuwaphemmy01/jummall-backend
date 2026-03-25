@@ -27,6 +27,7 @@ export interface BuyerRecord {
   email: string;
   phone: string;
   role: string;
+  accountStatus: string;
   createdAt: Date;
   updatedAt: Date;
 }

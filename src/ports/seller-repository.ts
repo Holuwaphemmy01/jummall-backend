@@ -28,6 +28,7 @@ export interface SellerRecord {
   email: string;
   phone: string;
   role: string;
+  accountStatus: string;
   accountType: "individual" | "business";
   kycStatus: string;
   createdAt: Date;
