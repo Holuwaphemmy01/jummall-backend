@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import type { LoginUseCase } from "../../../application/auth/login";
 import { LoginError } from "../../../application/auth/login";
+import { createRateLimiter } from "../middleware/create-rate-limiter";
 import { loginSchema } from "../validation/login-schema";
 
 interface AuthRouterDependencies {
@@ -10,8 +11,13 @@ interface AuthRouterDependencies {
 
 export default function createAuthRouter({ login }: AuthRouterDependencies) {
   const authRouter = Router();
+  const loginRateLimiter = createRateLimiter({
+    windowMs: 15 * 60 * 1000,
+    maxRequests: 5,
+    message: "Too many login attempts. Please try again later."
+  });
 
-  authRouter.post("/login", async (req, res) => {
+  authRouter.post("/login", loginRateLimiter, async (req, res) => {
     const { error, value } = loginSchema.validate(req.body, {
       abortEarly: false,
       stripUnknown: true
