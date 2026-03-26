@@ -200,6 +200,53 @@
         }
       }
     },
+    "/admin/kyc/{kycId}/approve": {
+      "post": {
+        "tags": ["admin"],
+        "summary": "Approve a seller KYC submission",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "kycId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveSellerKycRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Seller KYC approved successfully"
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Seller KYC submission not found"
+          },
+          "409": {
+            "description": "Seller KYC cannot be approved in the current state"
+          }
+        }
+      }
+    },
     "/buyers/register": {
       "post": {
         "tags": ["buyer"],
@@ -838,6 +885,15 @@
           "confirm": {
             "type": "boolean",
             "example": true
+          }
+        }
+      },
+      "ApproveSellerKycRequest": {
+        "type": "object",
+        "properties": {
+          "review_note": {
+            "type": "string",
+            "example": "All required seller KYC documents were valid."
           }
         }
       }

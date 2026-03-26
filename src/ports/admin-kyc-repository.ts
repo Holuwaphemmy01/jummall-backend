@@ -48,4 +48,9 @@ export interface AdminSellerKycDetail extends AdminSellerKycSummary {
 export interface AdminKycRepository {
   listCompletedSellerKyc(): Promise<AdminSellerKycSummary[]>;
   findCompletedSellerKycById(kycId: string): Promise<AdminSellerKycDetail | null>;
+  approveSellerKyc(input: {
+    kycId: string;
+    reviewNote?: string;
+    reviewedAt: Date;
+  }): Promise<AdminSellerKycDetail | null>;
 }

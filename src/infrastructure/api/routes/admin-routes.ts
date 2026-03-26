@@ -1,17 +1,24 @@
 import { Router } from "express";
 
 import {
+  ApproveSellerKycError,
+  type ApproveSellerKycUseCase
+} from "../../../application/admin/approve-seller-kyc";
+import {
   GetCompletedSellerKycError,
   type GetCompletedSellerKycUseCase
 } from "../../../application/admin/get-completed-seller-kyc";
 import type { ListCompletedSellerKycUseCase } from "../../../application/admin/list-completed-seller-kyc";
+import { approveSellerKycSchema } from "../validation/approve-seller-kyc-schema";
 
 interface AdminRouterDependencies {
+  approveSellerKyc: ApproveSellerKycUseCase;
   listCompletedSellerKyc: ListCompletedSellerKycUseCase;
   getCompletedSellerKyc: GetCompletedSellerKycUseCase;
 }
 
 export default function createAdminRouter({
+  approveSellerKyc,
   listCompletedSellerKyc,
   getCompletedSellerKyc
 }: AdminRouterDependencies) {
@@ -113,6 +120,50 @@ export default function createAdminRouter({
 
       return res.status(500).json({
         message: "Unable to fetch seller KYC submission."
+      });
+    }
+  });
+
+  adminRouter.post("/kyc/:kycId/approve", async (req, res) => {
+    const { error, value } = approveSellerKycSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    try {
+      const approvedSubmission = await approveSellerKyc.execute({
+        kycId: req.params.kycId,
+        reviewNote: value.review_note
+      });
+
+      return res.status(200).json({
+        message: "Seller KYC approved successfully.",
+        data: {
+          id: approvedSubmission.id,
+          status: approvedSubmission.status,
+          reviewed_at: approvedSubmission.reviewedAt?.toISOString() ?? null,
+          review_note: approvedSubmission.reviewNote
+        }
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ApproveSellerKycError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to approve seller KYC submission."
       });
     }
   });

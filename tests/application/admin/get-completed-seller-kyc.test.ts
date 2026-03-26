@@ -54,6 +54,16 @@ class AdminKycRepositoryDouble implements AdminKycRepository {
       reviewNote: null,
       documents: []
     });
+
+  approveSellerKyc = jest
+    .fn<
+      (input: {
+        kycId: string;
+        reviewNote?: string;
+        reviewedAt: Date;
+      }) => Promise<AdminSellerKycDetail | null>
+    >()
+    .mockResolvedValue(null);
 }
 
 describe("GetCompletedSellerKyc", () => {

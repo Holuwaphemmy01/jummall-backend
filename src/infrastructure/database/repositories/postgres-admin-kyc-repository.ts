@@ -181,6 +181,92 @@ export class PostgresAdminKycRepository implements AdminKycRepository {
     };
   }
 
+  async approveSellerKyc(input: {
+    kycId: string;
+    reviewNote?: string;
+    reviewedAt: Date;
+  }): Promise<AdminSellerKycDetail | null> {
+    const result = await this.pool.query<AdminKycDetailRow>(
+      `
+        UPDATE "Kyc" k
+        SET
+          "status" = 'approved',
+          "reviewedAt" = $2,
+          "reviewNote" = $3,
+          "updatedAt" = CURRENT_TIMESTAMP
+        FROM "User" u
+        WHERE k."id" = $1
+          AND u."id" = k."userId"
+        RETURNING
+          k."id",
+          k."userId",
+          u."firstName" AS "sellerFirstName",
+          u."lastName" AS "sellerLastName",
+          u."username" AS "sellerUsername",
+          u."email" AS "sellerEmail",
+          u."phone" AS "sellerPhone",
+          k."sellerType" AS "accountType",
+          k."status",
+          k."submittedAt",
+          k."reviewedAt",
+          k."createdAt",
+          k."updatedAt",
+          k."email",
+          k."phone",
+          k."address",
+          k."city",
+          k."state",
+          k."country",
+          k."bankName",
+          k."bankAccountNumber",
+          k."bankAccountName",
+          k."fullName",
+          k."dateOfBirth",
+          k."gender",
+          k."idType",
+          k."idNumber",
+          k."businessName",
+          k."registrationNumber",
+          k."registeredBusinessAddress",
+          k."representativeFirstName",
+          k."representativeLastName",
+          k."representativeRole",
+          k."reviewNote"
+      `,
+      [input.kycId, input.reviewedAt, input.reviewNote ?? null]
+    );
+
+    const approvedKyc = result.rows[0];
+
+    if (!approvedKyc) {
+      return null;
+    }
+
+    const documentResult = await this.pool.query<KycDocumentRow>(
+      `
+        SELECT
+          "id",
+          "documentType",
+          "storagePath",
+          "mimeType",
+          "originalFileName",
+          "createdAt",
+          "updatedAt"
+        FROM "KycDocument"
+        WHERE "kycId" = $1
+        ORDER BY "createdAt" ASC
+      `,
+      [approvedKyc.id]
+    );
+
+    return {
+      ...approvedKyc,
+      documents: documentResult.rows.map((document) =>
+        this.mapDocument(document)
+      )
+    };
+  }
+
   private mapDocument(document: KycDocumentRow): SellerKycDocumentRecord {
     return {
       id: document.id,
