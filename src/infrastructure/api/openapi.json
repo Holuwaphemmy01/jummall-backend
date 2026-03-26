@@ -218,6 +218,99 @@
           }
         }
       }
+    },
+    "/sellers/kyc": {
+      "put": {
+        "tags": ["seller"],
+        "summary": "Save seller KYC draft",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveSellerKycDraftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Seller KYC draft saved successfully"
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "409": {
+            "description": "KYC cannot be updated in the current state"
+          }
+        }
+      }
+    },
+    "/sellers/kyc/documents": {
+      "post": {
+        "tags": ["seller"],
+        "summary": "Upload a seller KYC document",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadSellerKycDocumentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Seller KYC document uploaded successfully"
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "409": {
+            "description": "Document cannot be updated in the current KYC state"
+          }
+        }
+      }
+    },
+    "/sellers/kyc/submit": {
+      "post": {
+        "tags": ["seller"],
+        "summary": "Submit seller KYC for review",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitSellerKycRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Seller KYC submitted successfully"
+          },
+          "400": {
+            "description": "KYC submission is incomplete"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "409": {
+            "description": "KYC cannot be submitted in the current state"
+          }
+        }
+      }
     }
   },
   "tags": [
@@ -227,6 +320,13 @@
     { "name": "buyer" }
   ],
   "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
     "schemas": {
       "LoginRequest": {
         "type": "object",
@@ -573,6 +673,122 @@
                 "format": "date-time"
               }
             }
+          }
+        }
+      },
+      "SaveSellerKycDraftRequest": {
+        "type": "object",
+        "required": ["account_type"],
+        "properties": {
+          "account_type": {
+            "type": "string",
+            "enum": ["individual", "business"]
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "phone_number": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string",
+            "example": "Nigeria"
+          },
+          "bank_name": {
+            "type": "string"
+          },
+          "bank_account_number": {
+            "type": "string",
+            "example": "0123456789"
+          },
+          "bank_account_name": {
+            "type": "string"
+          },
+          "full_name": {
+            "type": "string"
+          },
+          "date_of_birth": {
+            "type": "string",
+            "format": "date"
+          },
+          "gender": {
+            "type": "string"
+          },
+          "id_type": {
+            "type": "string",
+            "enum": [
+              "national_id",
+              "international_passport",
+              "drivers_license",
+              "voters_card"
+            ]
+          },
+          "id_number": {
+            "type": "string"
+          },
+          "business_name": {
+            "type": "string"
+          },
+          "registration_number": {
+            "type": "string"
+          },
+          "registered_business_address": {
+            "type": "string"
+          },
+          "representative_first_name": {
+            "type": "string"
+          },
+          "representative_last_name": {
+            "type": "string"
+          },
+          "representative_role": {
+            "type": "string"
+          }
+        }
+      },
+      "UploadSellerKycDocumentRequest": {
+        "type": "object",
+        "required": ["document_type", "file_name", "mime_type", "file_base64"],
+        "properties": {
+          "document_type": {
+            "type": "string",
+            "enum": [
+              "proof_of_address",
+              "id_document",
+              "selfie",
+              "cac_certificate"
+            ]
+          },
+          "file_name": {
+            "type": "string",
+            "example": "utility-bill.jpg"
+          },
+          "mime_type": {
+            "type": "string",
+            "enum": ["image/jpeg", "image/png", "application/pdf"]
+          },
+          "file_base64": {
+            "type": "string",
+            "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."
+          }
+        }
+      },
+      "SubmitSellerKycRequest": {
+        "type": "object",
+        "properties": {
+          "confirm": {
+            "type": "boolean",
+            "example": true
           }
         }
       }
