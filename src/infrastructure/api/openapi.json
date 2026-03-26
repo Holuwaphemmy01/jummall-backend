@@ -151,6 +151,55 @@
         }
       }
     },
+    "/admin/kyc": {
+      "get": {
+        "tags": ["admin"],
+        "summary": "List completed seller KYC submissions",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Completed seller KYC submissions fetched successfully"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          }
+        }
+      }
+    },
+    "/admin/kyc/{kycId}": {
+      "get": {
+        "tags": ["admin"],
+        "summary": "Get a completed seller KYC submission",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "kycId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seller KYC submission fetched successfully"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Seller KYC submission not found"
+          }
+        }
+      }
+    },
     "/buyers/register": {
       "post": {
         "tags": ["buyer"],
