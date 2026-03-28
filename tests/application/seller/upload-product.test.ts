@@ -21,6 +21,10 @@ import type {
   UpdateProductCategoryInput
 } from "../../../src/ports/product-category-repository";
 import type {
+  GenerateProductSkuInput,
+  ProductSkuGenerator
+} from "../../../src/ports/product-sku-generator";
+import type {
   CreateProductInput,
   ProductRecord,
   ProductRepository,
@@ -189,6 +193,12 @@ class DocumentStorageDouble implements DocumentStorage {
     }));
 }
 
+class ProductSkuGeneratorDouble implements ProductSkuGenerator {
+  generate = jest
+    .fn<(input: GenerateProductSkuInput) => Promise<string>>()
+    .mockResolvedValue("WIRELESS-HEADSET-A1B2C3");
+}
+
 describe("UploadProduct", () => {
   it("uploads a product successfully for a verified seller with approved KYC", async () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
@@ -196,12 +206,14 @@ describe("UploadProduct", () => {
     const productCategoryRepository = new ProductCategoryRepositoryDouble();
     const productRepository = new ProductRepositoryDouble();
     const documentStorage = new DocumentStorageDouble();
+    const productSkuGenerator = new ProductSkuGeneratorDouble();
     const uploadProduct = new UploadProduct(
       authenticationRepository,
       sellerKycRepository,
       productCategoryRepository,
       productRepository,
-      documentStorage
+      documentStorage,
+      productSkuGenerator
     );
 
     const result = await uploadProduct.execute({
@@ -234,6 +246,7 @@ describe("UploadProduct", () => {
     expect(sellerKycRepository.findByUserId).toHaveBeenCalledWith("seller-id");
     expect(productCategoryRepository.findById).toHaveBeenCalledWith("category-id");
     expect(documentStorage.uploadProductImage).toHaveBeenCalledTimes(2);
+    expect(productSkuGenerator.generate).not.toHaveBeenCalled();
     expect(productRepository.create).toHaveBeenCalledWith({
       sellerId: "seller-id",
       categoryId: "category-id",
@@ -276,7 +289,8 @@ describe("UploadProduct", () => {
       sellerKycRepository,
       new ProductCategoryRepositoryDouble(),
       new ProductRepositoryDouble(),
-      new DocumentStorageDouble()
+      new DocumentStorageDouble(),
+      new ProductSkuGeneratorDouble()
     );
 
     await expect(
@@ -309,7 +323,8 @@ describe("UploadProduct", () => {
       new SellerKycRepositoryDouble(),
       productCategoryRepository,
       new ProductRepositoryDouble(),
-      new DocumentStorageDouble()
+      new DocumentStorageDouble(),
+      new ProductSkuGeneratorDouble()
     );
 
     await expect(
@@ -332,6 +347,47 @@ describe("UploadProduct", () => {
         ]
       })
     ).rejects.toBeInstanceOf(UploadProductError);
+  });
+
+  it("generates a sku when the seller does not provide one", async () => {
+    const productRepository = new ProductRepositoryDouble();
+    const productSkuGenerator = new ProductSkuGeneratorDouble();
+    const uploadProduct = new UploadProduct(
+      new AuthenticationRepositoryDouble(),
+      new SellerKycRepositoryDouble(),
+      new ProductCategoryRepositoryDouble(),
+      productRepository,
+      new DocumentStorageDouble(),
+      productSkuGenerator
+    );
+
+    await uploadProduct.execute({
+      sellerId: "seller-id",
+      categoryId: "category-id",
+      name: "Wireless Headset",
+      description: "Noise-cancelling wireless headset with long battery life",
+      price: 85000,
+      quantity: 10,
+      currency: "NGN",
+      condition: "new",
+      weightKg: 0.4,
+      images: [
+        {
+          fileName: "front.jpg",
+          mimeType: "image/jpeg",
+          fileContents: Buffer.from("front")
+        }
+      ]
+    });
+
+    expect(productSkuGenerator.generate).toHaveBeenCalledWith({
+      productName: "Wireless Headset"
+    });
+    expect(productRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sku: "WIRELESS-HEADSET-A1B2C3"
+      })
+    );
   });
 });
 

@@ -22,6 +22,7 @@ import { ResendMailProvider } from "../infrastructure/notification/resend-mail-p
 import { SupabaseDocumentStorage } from "../infrastructure/storage/supabase-document-storage";
 import { JwtTokenVerifier } from "../infrastructure/security/jwt-token-verifier";
 import { NumericVerificationCodeGenerator } from "../infrastructure/security/numeric-verification-code-generator";
+import { RandomProductSkuGenerator } from "../infrastructure/security/random-product-sku-generator";
 import { ScryptPasswordHasher } from "../infrastructure/security/scrypt-password-hasher";
 
 export function createSellerModule() {
@@ -34,6 +35,7 @@ export function createSellerModule() {
   const emailVerificationRepository = new PostgresEmailVerificationRepository();
   const passwordHasher = new ScryptPasswordHasher();
   const verificationCodeGenerator = new NumericVerificationCodeGenerator();
+  const productSkuGenerator = new RandomProductSkuGenerator();
   const mailProvider = new ResendMailProvider();
   const tokenVerifier = new JwtTokenVerifier();
   const documentStorage = new SupabaseDocumentStorage();
@@ -60,14 +62,15 @@ export function createSellerModule() {
     sellerKycRepository,
     productCategoryRepository,
     productRepository,
-    documentStorage
+    documentStorage,
+    productSkuGenerator
   );
   const submitSellerKyc = new SubmitSellerKyc(sellerKycRepository);
   const authenticateSeller = createAuthMiddleware(tokenVerifier, "seller");
 
   sellerRouter.use(createSellerRouter({ registerSeller }));
   sellerRouter.use(
-    "/products",
+    "/create-product",
     authenticateSeller,
     createProtectedSellerProductRouter({ uploadProduct })
   );

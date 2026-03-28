@@ -638,7 +638,7 @@
         }
       }
     },
-    "/sellers/products": {
+    "/sellers/create-product": {
       "post": {
         "tags": ["seller"],
         "summary": "Upload a product as a verified seller",

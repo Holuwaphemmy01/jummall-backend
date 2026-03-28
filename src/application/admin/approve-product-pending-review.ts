@@ -32,8 +32,7 @@ export class ApproveProductPendingReview
   ): Promise<ProductRecord> {
     const existingProduct = await this.productRepository.findById(input.productId);
 
-    if (!existingProduct) {
-      throw new ApproveProductPendingReviewError(
+    if (!existingProduct) {      throw new ApproveProductPendingReviewError(
         "Product pending review not found.",
         404
       );

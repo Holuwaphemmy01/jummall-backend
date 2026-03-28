@@ -1,6 +1,7 @@
 import type { AuthenticationRepository } from "../../ports/authentication-repository";
 import type { DocumentStorage } from "../../ports/document-storage";
 import type { ProductCategoryRepository } from "../../ports/product-category-repository";
+import type { ProductSkuGenerator } from "../../ports/product-sku-generator";
 import type {
   ProductRecord,
   ProductRepository
@@ -51,7 +52,8 @@ export class UploadProduct implements UploadProductUseCase {
     private readonly sellerKycRepository: SellerKycRepository,
     private readonly productCategoryRepository: ProductCategoryRepository,
     private readonly productRepository: ProductRepository,
-    private readonly documentStorage: DocumentStorage
+    private readonly documentStorage: DocumentStorage,
+    private readonly productSkuGenerator: ProductSkuGenerator
   ) {}
 
   async execute(input: UploadProductInput): Promise<ProductRecord> {
@@ -149,12 +151,18 @@ export class UploadProduct implements UploadProductUseCase {
       })
     );
 
+    const sku =
+      input.sku?.trim() ||
+      (await this.productSkuGenerator.generate({
+        productName: input.name
+      }));
+
     return this.productRepository.create({
       sellerId: input.sellerId,
       categoryId: input.categoryId,
       name: input.name,
       description: input.description,
-      sku: input.sku,
+      sku,
       price: input.price,
       quantity: input.quantity,
       currency: input.currency,
