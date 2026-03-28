@@ -1,14 +1,20 @@
 import { Router } from "express";
 
+import { PostgresAuthenticationRepository } from "../infrastructure/database/repositories/postgres-authentication-repository";
+import { PostgresProductCategoryRepository } from "../infrastructure/database/repositories/postgres-product-category-repository";
+import { PostgresProductRepository } from "../infrastructure/database/repositories/postgres-product-repository";
 import { InitiateEmailVerification } from "../application/auth/initiate-email-verification";
 import { SendWelcomeEmail } from "../application/notification/send-welcome-email";
 import { RegisterSeller } from "../application/seller/register-seller";
+import { UploadProduct } from "../application/seller/upload-product";
 import { SaveSellerKycDraft } from "../application/seller-kyc/save-seller-kyc-draft";
 import { SubmitSellerKyc } from "../application/seller-kyc/submit-seller-kyc";
 import { UploadSellerKycDocument } from "../application/seller-kyc/upload-seller-kyc-document";
 import { createAuthMiddleware } from "../infrastructure/api/middleware/create-auth-middleware";
 import createSellerKycRouter from "../infrastructure/api/routes/seller-kyc-routes";
-import createSellerRouter from "../infrastructure/api/routes/seller-routes";
+import createSellerRouter, {
+  createProtectedSellerProductRouter
+} from "../infrastructure/api/routes/seller-routes";
 import { PostgresEmailVerificationRepository } from "../infrastructure/database/repositories/postgres-email-verification-repository";
 import { PostgresSellerKycRepository } from "../infrastructure/database/repositories/postgres-seller-kyc-repository";
 import { PostgresSellerRepository } from "../infrastructure/database/repositories/postgres-seller-repository";
@@ -20,6 +26,9 @@ import { ScryptPasswordHasher } from "../infrastructure/security/scrypt-password
 
 export function createSellerModule() {
   const sellerRouter = Router();
+  const authenticationRepository = new PostgresAuthenticationRepository();
+  const productCategoryRepository = new PostgresProductCategoryRepository();
+  const productRepository = new PostgresProductRepository();
   const sellerRepository = new PostgresSellerRepository();
   const sellerKycRepository = new PostgresSellerKycRepository();
   const emailVerificationRepository = new PostgresEmailVerificationRepository();
@@ -46,10 +55,22 @@ export function createSellerModule() {
     sellerKycRepository,
     documentStorage
   );
+  const uploadProduct = new UploadProduct(
+    authenticationRepository,
+    sellerKycRepository,
+    productCategoryRepository,
+    productRepository,
+    documentStorage
+  );
   const submitSellerKyc = new SubmitSellerKyc(sellerKycRepository);
   const authenticateSeller = createAuthMiddleware(tokenVerifier, "seller");
 
   sellerRouter.use(createSellerRouter({ registerSeller }));
+  sellerRouter.use(
+    "/products",
+    authenticateSeller,
+    createProtectedSellerProductRouter({ uploadProduct })
+  );
   sellerRouter.use(
     "/kyc",
     authenticateSeller,
