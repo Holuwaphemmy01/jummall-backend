@@ -1,0 +1,81 @@
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals";
+
+import { SupabaseDocumentStorage } from "../../../src/infrastructure/storage/supabase-document-storage";
+
+describe("SupabaseDocumentStorage", () => {
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    const fetchMock = jest.fn<typeof fetch>();
+    fetchMock.mockResolvedValue({
+      ok: true,
+      text: async () => ""
+    } as Response);
+    global.fetch = fetchMock;
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.restoreAllMocks();
+  });
+
+  it("uploads seller KYC documents to the configured KYC bucket", async () => {
+    const storage = new SupabaseDocumentStorage(
+      "https://example.supabase.co",
+      "service-role-key",
+      "seller-kyc-documents",
+      "product-images"
+    );
+
+    const result = await storage.uploadSellerKycDocument({
+      userId: "seller-id",
+      documentType: "proof_of_address",
+      fileName: "utility-bill.jpg",
+      mimeType: "image/jpeg",
+      fileContents: Buffer.from("proof")
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "/storage/v1/object/seller-kyc-documents/seller-kyc/seller-id/proof_of_address/"
+      ),
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          "Content-Type": "image/jpeg"
+        })
+      })
+    );
+    expect(result.storagePath).toContain("seller-kyc/seller-id/proof_of_address/");
+  });
+
+  it("uploads product images to the configured product image bucket", async () => {
+    const storage = new SupabaseDocumentStorage(
+      "https://example.supabase.co",
+      "service-role-key",
+      "seller-kyc-documents",
+      "product-images"
+    );
+
+    const result = await storage.uploadProductImage({
+      sellerId: "seller-id",
+      fileName: "front.jpg",
+      mimeType: "image/jpeg",
+      fileContents: Buffer.from("image")
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "/storage/v1/object/product-images/products/seller-id/"
+      ),
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          "Content-Type": "image/jpeg"
+        })
+      })
+    );
+    expect(result.storagePath).toContain("products/seller-id/");
+    expect(result.storagePath).toContain("front.jpg");
+  });
+});

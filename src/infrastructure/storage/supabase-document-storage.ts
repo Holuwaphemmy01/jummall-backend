@@ -10,8 +10,10 @@ export class SupabaseDocumentStorage implements DocumentStorage {
     private readonly supabaseUrl: string = process.env.SUPABASE_URL ?? "",
     private readonly serviceRoleKey: string =
       process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
-    private readonly bucketName: string =
-      process.env.SUPABASE_STORAGE_BUCKET ?? "seller-kyc-documents"
+    private readonly sellerKycBucketName: string =
+      process.env.SUPABASE_STORAGE_BUCKET ?? "seller-kyc-documents",
+    private readonly productImageBucketName: string =
+      process.env.SUPABASE_PRODUCT_IMAGE_BUCKET ?? "product-images"
   ) {}
 
   async uploadSellerKycDocument(
@@ -26,7 +28,7 @@ export class SupabaseDocumentStorage implements DocumentStorage {
     }
 
     const storagePath = this.buildStoragePath(input);
-    const uploadUrl = `${this.supabaseUrl.replace(/\/$/, "")}/storage/v1/object/${this.bucketName}/${storagePath}`;
+    const uploadUrl = `${this.supabaseUrl.replace(/\/$/, "")}/storage/v1/object/${this.sellerKycBucketName}/${storagePath}`;
 
     const response = await fetch(uploadUrl, {
       method: "POST",
@@ -63,7 +65,7 @@ export class SupabaseDocumentStorage implements DocumentStorage {
     }
 
     const storagePath = this.buildProductImageStoragePath(input);
-    const uploadUrl = `${this.supabaseUrl.replace(/\/$/, "")}/storage/v1/object/${this.bucketName}/${storagePath}`;
+    const uploadUrl = `${this.supabaseUrl.replace(/\/$/, "")}/storage/v1/object/${this.productImageBucketName}/${storagePath}`;
 
     const response = await fetch(uploadUrl, {
       method: "POST",
