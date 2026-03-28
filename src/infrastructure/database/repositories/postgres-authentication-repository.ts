@@ -67,4 +67,20 @@ export class PostgresAuthenticationRepository
       updatedAt: user.updatedAt
     };
   }
+
+  async updatePassword(input: {
+    userId: string;
+    passwordHash: string;
+  }): Promise<void> {
+    await this.pool.query(
+      `
+        UPDATE "User"
+        SET
+          "password" = $2,
+          "updatedAt" = CURRENT_TIMESTAMP
+        WHERE "id" = $1
+      `,
+      [input.userId, input.passwordHash]
+    );
+  }
 }

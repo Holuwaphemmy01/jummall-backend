@@ -36,6 +36,10 @@ class AuthenticationRepositoryDouble implements AuthenticationRepository {
       createdAt: new Date("2026-03-24T00:00:00.000Z"),
       updatedAt: new Date("2026-03-24T00:00:00.000Z")
     });
+
+  updatePassword = jest
+    .fn<(input: { userId: string; passwordHash: string }) => Promise<void>>()
+    .mockResolvedValue();
 }
 
 class PasswordHasherDouble implements PasswordHasher {
@@ -88,6 +92,10 @@ class MailProviderDouble implements MailProvider {
         role: "buyer" | "seller";
       }) => Promise<void>
     >()
+    .mockResolvedValue();
+
+  sendPasswordResetEmail = jest
+    .fn<(input: { to: string; firstName: string | null; code: string }) => Promise<void>>()
     .mockResolvedValue();
 }
 
