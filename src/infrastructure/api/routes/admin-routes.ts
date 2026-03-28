@@ -5,24 +5,162 @@ import {
   type ApproveSellerKycUseCase
 } from "../../../application/admin/approve-seller-kyc";
 import {
+  GetProductCategoryUseCase
+} from "../../../application/admin/get-product-category";
+import {
   GetCompletedSellerKycError,
   type GetCompletedSellerKycUseCase
 } from "../../../application/admin/get-completed-seller-kyc";
+import type { CreateProductCategoryUseCase } from "../../../application/admin/create-product-category";
 import type { ListCompletedSellerKycUseCase } from "../../../application/admin/list-completed-seller-kyc";
+import type { ListProductCategoriesUseCase } from "../../../application/admin/list-product-categories";
+import type { UpdateProductCategoryUseCase } from "../../../application/admin/update-product-category";
+import { ProductCategoryError } from "../../../application/admin/product-category-errors";
 import { approveSellerKycSchema } from "../validation/approve-seller-kyc-schema";
+import { createProductCategorySchema } from "../validation/create-product-category-schema";
+import { updateProductCategorySchema } from "../validation/update-product-category-schema";
 
 interface AdminRouterDependencies {
   approveSellerKyc: ApproveSellerKycUseCase;
+  createProductCategory: CreateProductCategoryUseCase;
   listCompletedSellerKyc: ListCompletedSellerKycUseCase;
+  listProductCategories: ListProductCategoriesUseCase;
   getCompletedSellerKyc: GetCompletedSellerKycUseCase;
+  getProductCategory: GetProductCategoryUseCase;
+  updateProductCategory: UpdateProductCategoryUseCase;
 }
 
 export default function createAdminRouter({
   approveSellerKyc,
+  createProductCategory,
   listCompletedSellerKyc,
-  getCompletedSellerKyc
+  listProductCategories,
+  getCompletedSellerKyc,
+  getProductCategory,
+  updateProductCategory
 }: AdminRouterDependencies) {
   const adminRouter = Router();
+
+  adminRouter.post("/product-categories", async (req, res) => {
+    const { error, value } = createProductCategorySchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    try {
+      const category = await createProductCategory.execute({
+        name: value.name,
+        description: value.description,
+        deductionPercentage: value.deduction_percentage
+      });
+
+      return res.status(201).json({
+        message: "Product category created successfully.",
+        data: thisCategoryResponse(category)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ProductCategoryError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to create product category."
+      });
+    }
+  });
+
+  adminRouter.get("/product-categories", async (_req, res) => {
+    try {
+      const categories = await listProductCategories.execute();
+
+      return res.status(200).json({
+        message: "Product categories fetched successfully.",
+        data: categories.map((category) => thisCategoryResponse(category))
+      });
+    } catch {
+      return res.status(500).json({
+        message: "Unable to fetch product categories."
+      });
+    }
+  });
+
+  adminRouter.get("/product-categories/:categoryId", async (req, res) => {
+    try {
+      const category = await getProductCategory.execute({
+        categoryId: req.params.categoryId
+      });
+
+      return res.status(200).json({
+        message: "Product category fetched successfully.",
+        data: thisCategoryResponse(category)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ProductCategoryError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch product category."
+      });
+    }
+  });
+
+  adminRouter.patch("/product-categories/:categoryId", async (req, res) => {
+    const { error, value } = updateProductCategorySchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    try {
+      const category = await updateProductCategory.execute({
+        categoryId: req.params.categoryId,
+        name: value.name,
+        description: value.description,
+        deductionPercentage: value.deduction_percentage
+      });
+
+      return res.status(200).json({
+        message: "Product category updated successfully.",
+        data: thisCategoryResponse(category)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ProductCategoryError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to update product category."
+      });
+    }
+  });
 
   adminRouter.get("/kyc", async (_req, res) => {
     try {
@@ -169,4 +307,22 @@ export default function createAdminRouter({
   });
 
   return adminRouter;
+}
+
+function thisCategoryResponse(category: {
+  id: string;
+  name: string;
+  description: string;
+  deductionPercentage: number;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: category.id,
+    name: category.name,
+    description: category.description,
+    deduction_percentage: category.deductionPercentage,
+    created_at: category.createdAt.toISOString(),
+    updated_at: category.updatedAt.toISOString()
+  };
 }
