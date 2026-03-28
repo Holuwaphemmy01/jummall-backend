@@ -1,40 +1,61 @@
 import { Router } from "express";
 
 import {
+  ApproveProductPendingReviewError,
+  type ApproveProductPendingReviewUseCase
+} from "../../../application/admin/approve-product-pending-review";
+import {
   ApproveSellerKycError,
   type ApproveSellerKycUseCase
 } from "../../../application/admin/approve-seller-kyc";
+import type { CreateProductCategoryUseCase } from "../../../application/admin/create-product-category";
 import {
-  GetProductCategoryUseCase
-} from "../../../application/admin/get-product-category";
+  GetProductPendingReviewDetailError,
+  type GetProductPendingReviewDetailUseCase
+} from "../../../application/admin/get-product-pending-review-detail";
+import type { GetProductCategoryUseCase } from "../../../application/admin/get-product-category";
 import {
   GetCompletedSellerKycError,
   type GetCompletedSellerKycUseCase
 } from "../../../application/admin/get-completed-seller-kyc";
-import type { CreateProductCategoryUseCase } from "../../../application/admin/create-product-category";
 import type { ListCompletedSellerKycUseCase } from "../../../application/admin/list-completed-seller-kyc";
+import type { ListProductsPendingReviewUseCase } from "../../../application/admin/list-products-pending-review";
 import type { ListProductCategoriesUseCase } from "../../../application/admin/list-product-categories";
+import {
+  RejectProductPendingReviewError,
+  type RejectProductPendingReviewUseCase
+} from "../../../application/admin/reject-product-pending-review";
 import type { UpdateProductCategoryUseCase } from "../../../application/admin/update-product-category";
+import { approveProductPendingReviewSchema } from "../validation/approve-product-pending-review-schema";
 import { ProductCategoryError } from "../../../application/admin/product-category-errors";
 import { approveSellerKycSchema } from "../validation/approve-seller-kyc-schema";
 import { createProductCategorySchema } from "../validation/create-product-category-schema";
+import { rejectProductPendingReviewSchema } from "../validation/reject-product-pending-review-schema";
 import { updateProductCategorySchema } from "../validation/update-product-category-schema";
 
 interface AdminRouterDependencies {
+  approveProductPendingReview: ApproveProductPendingReviewUseCase;
   approveSellerKyc: ApproveSellerKycUseCase;
   createProductCategory: CreateProductCategoryUseCase;
+  getProductPendingReviewDetail: GetProductPendingReviewDetailUseCase;
   listCompletedSellerKyc: ListCompletedSellerKycUseCase;
+  listProductsPendingReview: ListProductsPendingReviewUseCase;
   listProductCategories: ListProductCategoriesUseCase;
+  rejectProductPendingReview: RejectProductPendingReviewUseCase;
   getCompletedSellerKyc: GetCompletedSellerKycUseCase;
   getProductCategory: GetProductCategoryUseCase;
   updateProductCategory: UpdateProductCategoryUseCase;
 }
 
 export default function createAdminRouter({
+  approveProductPendingReview,
   approveSellerKyc,
   createProductCategory,
+  getProductPendingReviewDetail,
   listCompletedSellerKyc,
+  listProductsPendingReview,
   listProductCategories,
+  rejectProductPendingReview,
   getCompletedSellerKyc,
   getProductCategory,
   updateProductCategory
@@ -158,6 +179,125 @@ export default function createAdminRouter({
 
       return res.status(500).json({
         message: "Unable to update product category."
+      });
+    }
+  });
+
+  adminRouter.get("/products/pending-review", async (_req, res) => {
+    try {
+      const productsPendingReview = await listProductsPendingReview.execute();
+
+      return res.status(200).json({
+        message: "Products pending review fetched successfully.",
+        data: productsPendingReview.map((product) => thisProductResponse(product))
+      });
+    } catch {
+      return res.status(500).json({
+        message: "Unable to fetch products pending review."
+      });
+    }
+  });
+
+  adminRouter.get("/products/pending-review/:productId", async (req, res) => {
+    try {
+      const product = await getProductPendingReviewDetail.execute({
+        productId: req.params.productId
+      });
+
+      return res.status(200).json({
+        message: "Product pending review fetched successfully.",
+        data: thisProductResponse(product)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof GetProductPendingReviewDetailError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch product pending review."
+      });
+    }
+  });
+
+  adminRouter.post("/products/:productId/approve", async (req, res) => {
+    const { error, value } = approveProductPendingReviewSchema.validate(
+      req.body,
+      {
+        abortEarly: false,
+        stripUnknown: true
+      }
+    );
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    try {
+      const approvedProduct = await approveProductPendingReview.execute({
+        productId: req.params.productId,
+        reviewNote: value.review_note
+      });
+
+      return res.status(200).json({
+        message: "Product approved successfully.",
+        data: thisProductResponse(approvedProduct)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ApproveProductPendingReviewError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to approve product pending review."
+      });
+    }
+  });
+
+  adminRouter.post("/products/:productId/reject", async (req, res) => {
+    const { error, value } = rejectProductPendingReviewSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    try {
+      const rejectedProduct = await rejectProductPendingReview.execute({
+        productId: req.params.productId,
+        reviewNote: value.review_note
+      });
+
+      return res.status(200).json({
+        message: "Product rejected successfully.",
+        data: thisProductResponse(rejectedProduct)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof RejectProductPendingReviewError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to reject product pending review."
       });
     }
   });
@@ -324,5 +464,63 @@ function thisCategoryResponse(category: {
     deduction_percentage: category.deductionPercentage,
     created_at: category.createdAt.toISOString(),
     updated_at: category.updatedAt.toISOString()
+  };
+}
+
+function thisProductResponse(product: {
+  id: string;
+  sellerId: string;
+  categoryId: string;
+  name: string;
+  description: string;
+  sku: string | null;
+  price: number;
+  quantity: number;
+  currency: string;
+  condition: string;
+  brand: string | null;
+  weightKg: number;
+  status: string;
+  reviewNote: string | null;
+  reviewedAt: Date | null;
+  images: Array<{
+    id: string;
+    storagePath: string;
+    mimeType: string;
+    originalFileName: string;
+    position: number;
+    createdAt: Date;
+    updatedAt: Date;
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: product.id,
+    seller_id: product.sellerId,
+    category_id: product.categoryId,
+    name: product.name,
+    description: product.description,
+    sku: product.sku,
+    price: product.price,
+    quantity: product.quantity,
+    currency: product.currency,
+    condition: product.condition,
+    brand: product.brand,
+    weight_kg: product.weightKg,
+    status: product.status,
+    review_note: product.reviewNote,
+    reviewed_at: product.reviewedAt?.toISOString() ?? null,
+    images: product.images.map((image) => ({
+      id: image.id,
+      storage_path: image.storagePath,
+      mime_type: image.mimeType,
+      original_file_name: image.originalFileName,
+      position: image.position,
+      created_at: image.createdAt.toISOString(),
+      updated_at: image.updatedAt.toISOString()
+    })),
+    created_at: product.createdAt.toISOString(),
+    updated_at: product.updatedAt.toISOString()
   };
 }

@@ -331,6 +331,149 @@
         }
       }
     },
+    "/admin/products/pending-review": {
+      "get": {
+        "tags": ["admin"],
+        "summary": "List products pending review",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Products pending review fetched successfully"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          }
+        }
+      }
+    },
+    "/admin/products/pending-review/{productId}": {
+      "get": {
+        "tags": ["admin"],
+        "summary": "Get a product pending review",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product pending review fetched successfully"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Product pending review not found"
+          }
+        }
+      }
+    },
+    "/admin/products/{productId}/approve": {
+      "post": {
+        "tags": ["admin"],
+        "summary": "Approve a product pending review",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveProductPendingReviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product approved successfully"
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Product pending review not found"
+          },
+          "409": {
+            "description": "Product cannot be approved in the current state"
+          }
+        }
+      }
+    },
+    "/admin/products/{productId}/reject": {
+      "post": {
+        "tags": ["admin"],
+        "summary": "Reject a product pending review",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectProductPendingReviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product rejected successfully"
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Product pending review not found"
+          },
+          "409": {
+            "description": "Product cannot be rejected in the current state"
+          }
+        }
+      }
+    },
     "/admin/kyc": {
       "get": {
         "tags": ["admin"],
@@ -1139,12 +1282,31 @@
           }
         }
       },
+      "ApproveProductPendingReviewRequest": {
+        "type": "object",
+        "properties": {
+          "review_note": {
+            "type": "string",
+            "example": "Approved for listing."
+          }
+        }
+      },
       "ApproveSellerKycRequest": {
         "type": "object",
         "properties": {
           "review_note": {
             "type": "string",
             "example": "All required seller KYC documents were valid."
+          }
+        }
+      },
+      "RejectProductPendingReviewRequest": {
+        "type": "object",
+        "required": ["review_note"],
+        "properties": {
+          "review_note": {
+            "type": "string",
+            "example": "Product images are too blurry."
           }
         }
       }
