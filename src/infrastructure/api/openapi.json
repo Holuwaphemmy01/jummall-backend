@@ -205,6 +205,132 @@
         }
       }
     },
+    "/admin/product-categories": {
+      "post": {
+        "tags": ["admin"],
+        "summary": "Create product category",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProductCategoryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product category created successfully"
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "409": {
+            "description": "Product category name already exists"
+          }
+        }
+      },
+      "get": {
+        "tags": ["admin"],
+        "summary": "List product categories",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Product categories fetched successfully"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          }
+        }
+      }
+    },
+    "/admin/product-categories/{categoryId}": {
+      "get": {
+        "tags": ["admin"],
+        "summary": "Get product category",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "categoryId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product category fetched successfully"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Product category not found"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["admin"],
+        "summary": "Update product category",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "categoryId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductCategoryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product category updated successfully"
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Product category not found"
+          },
+          "409": {
+            "description": "Product category name already exists"
+          }
+        }
+      }
+    },
     "/admin/kyc": {
       "get": {
         "tags": ["admin"],
@@ -655,6 +781,41 @@
             "type": "string",
             "format": "password",
             "example": "NewPassword123"
+          }
+        }
+      },
+      "CreateProductCategoryRequest": {
+        "type": "object",
+        "required": ["name", "description", "deduction_percentage"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Electronics"
+          },
+          "description": {
+            "type": "string",
+            "example": "Phones, gadgets, and accessories"
+          },
+          "deduction_percentage": {
+            "type": "number",
+            "example": 12.5
+          }
+        }
+      },
+      "UpdateProductCategoryRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Electronics"
+          },
+          "description": {
+            "type": "string",
+            "example": "Updated category description"
+          },
+          "deduction_percentage": {
+            "type": "number",
+            "example": 15
           }
         }
       },
