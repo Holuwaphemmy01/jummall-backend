@@ -37,6 +37,10 @@ class AuthenticationRepositoryDouble implements AuthenticationRepository {
       updatedAt: new Date("2026-03-24T00:00:00.000Z")
     });
 
+  findById = jest
+    .fn<(userId: string) => Promise<AuthUser | null>>()
+    .mockResolvedValue(null);
+
   updatePassword = jest
     .fn<(input: { userId: string; passwordHash: string }) => Promise<void>>()
     .mockResolvedValue();

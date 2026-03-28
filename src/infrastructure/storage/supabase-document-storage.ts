@@ -1,5 +1,6 @@
 import type {
   DocumentStorage,
+  UploadProductImageInput,
   UploadSellerKycDocumentInput,
   UploadedDocument
 } from "../../ports/document-storage";
@@ -50,6 +51,43 @@ export class SupabaseDocumentStorage implements DocumentStorage {
     };
   }
 
+  async uploadProductImage(
+    input: UploadProductImageInput
+  ): Promise<UploadedDocument> {
+    if (!this.supabaseUrl) {
+      throw new Error("SUPABASE_URL is not set.");
+    }
+
+    if (!this.serviceRoleKey) {
+      throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set.");
+    }
+
+    const storagePath = this.buildProductImageStoragePath(input);
+    const uploadUrl = `${this.supabaseUrl.replace(/\/$/, "")}/storage/v1/object/${this.bucketName}/${storagePath}`;
+
+    const response = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {
+        apikey: this.serviceRoleKey,
+        Authorization: `Bearer ${this.serviceRoleKey}`,
+        "Content-Type": input.mimeType,
+        "x-upsert": "true"
+      },
+      body: new Uint8Array(input.fileContents)
+    });
+
+    if (!response.ok) {
+      const errorResponse = await response.text();
+      throw new Error(
+        `Unable to upload product image to storage. ${errorResponse}`.trim()
+      );
+    }
+
+    return {
+      storagePath
+    };
+  }
+
   private buildStoragePath(input: UploadSellerKycDocumentInput): string {
     const sanitizedFileName = input.fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
 
@@ -57,6 +95,16 @@ export class SupabaseDocumentStorage implements DocumentStorage {
       "seller-kyc",
       input.userId,
       input.documentType,
+      `${Date.now()}-${sanitizedFileName}`
+    ].join("/");
+  }
+
+  private buildProductImageStoragePath(input: UploadProductImageInput): string {
+    const sanitizedFileName = input.fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
+
+    return [
+      "products",
+      input.sellerId,
       `${Date.now()}-${sanitizedFileName}`
     ].join("/");
   }

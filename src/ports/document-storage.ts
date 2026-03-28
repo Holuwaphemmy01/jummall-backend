@@ -8,6 +8,13 @@ export interface UploadSellerKycDocumentInput {
   fileContents: Buffer;
 }
 
+export interface UploadProductImageInput {
+  sellerId: string;
+  fileName: string;
+  mimeType: string;
+  fileContents: Buffer;
+}
+
 export interface UploadedDocument {
   storagePath: string;
 }
@@ -16,4 +23,5 @@ export interface DocumentStorage {
   uploadSellerKycDocument(
     input: UploadSellerKycDocumentInput
   ): Promise<UploadedDocument>;
+  uploadProductImage(input: UploadProductImageInput): Promise<UploadedDocument>;
 }
