@@ -74,6 +74,33 @@
         }
       }
     },
+    "/auth/forgot-password": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Initiate password reset",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset initiation completed"
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "429": {
+            "description": "Too many password reset requests"
+          }
+        }
+      }
+    },
     "/auth/verify-email": {
       "post": {
         "tags": ["auth"],
@@ -147,6 +174,33 @@
           },
           "429": {
             "description": "Resend requested too soon"
+          }
+        }
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Reset password with a code",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset successful"
+          },
+          "400": {
+            "description": "Invalid code or validation failed"
+          },
+          "429": {
+            "description": "Too many reset attempts"
           }
         }
       }
@@ -502,6 +556,17 @@
           }
         }
       },
+      "ForgotPasswordRequest": {
+        "type": "object",
+        "required": ["email"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "john@example.com"
+          }
+        }
+      },
       "VerifyEmailRequest": {
         "type": "object",
         "required": ["email", "code"],
@@ -565,6 +630,31 @@
                 "format": "email"
               }
             }
+          }
+        }
+      },
+      "ResetPasswordRequest": {
+        "type": "object",
+        "required": ["email", "code", "password", "confirm_password"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "john@example.com"
+          },
+          "code": {
+            "type": "string",
+            "example": "123456"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "NewPassword123"
+          },
+          "confirm_password": {
+            "type": "string",
+            "format": "password",
+            "example": "NewPassword123"
           }
         }
       },

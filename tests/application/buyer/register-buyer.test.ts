@@ -95,6 +95,10 @@ class MailProviderDouble implements MailProvider {
       }) => Promise<void>
     >()
     .mockResolvedValue();
+
+  sendPasswordResetEmail = jest
+    .fn<(input: { to: string; firstName: string | null; code: string }) => Promise<void>>()
+    .mockResolvedValue();
 }
 
 function makeInput(): RegisterBuyerInput {
