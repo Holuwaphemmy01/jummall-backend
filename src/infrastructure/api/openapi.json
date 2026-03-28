@@ -638,6 +638,43 @@
         }
       }
     },
+    "/sellers/products": {
+      "post": {
+        "tags": ["seller"],
+        "summary": "Upload a product as a verified seller",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadProductRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product uploaded successfully and is pending review"
+          },
+          "400": {
+            "description": "Validation failed or product data is invalid"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required"
+          },
+          "404": {
+            "description": "Product category not found"
+          },
+          "409": {
+            "description": "Seller account cannot upload products in the current state"
+          }
+        }
+      }
+    },
     "/sellers/kyc": {
       "put": {
         "tags": ["seller"],
@@ -1161,6 +1198,84 @@
               "updated_at": {
                 "type": "string",
                 "format": "date-time"
+              }
+            }
+          }
+        }
+      },
+      "UploadProductRequest": {
+        "type": "object",
+        "required": [
+          "category_id",
+          "name",
+          "description",
+          "price",
+          "quantity",
+          "currency",
+          "condition",
+          "weight_kg",
+          "images"
+        ],
+        "properties": {
+          "category_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Wireless Headset"
+          },
+          "description": {
+            "type": "string",
+            "example": "Noise-cancelling wireless headset with long battery life."
+          },
+          "sku": {
+            "type": "string",
+            "example": "HEADSET-001"
+          },
+          "price": {
+            "type": "number",
+            "example": 85000
+          },
+          "quantity": {
+            "type": "integer",
+            "example": 10
+          },
+          "currency": {
+            "type": "string",
+            "example": "NGN"
+          },
+          "condition": {
+            "type": "string",
+            "example": "new"
+          },
+          "brand": {
+            "type": "string",
+            "example": "Jummall Audio"
+          },
+          "weight_kg": {
+            "type": "number",
+            "example": 0.4
+          },
+          "images": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["file_name", "mime_type", "file_base64"],
+              "properties": {
+                "file_name": {
+                  "type": "string",
+                  "example": "front.jpg"
+                },
+                "mime_type": {
+                  "type": "string",
+                  "enum": ["image/jpeg", "image/png", "image/webp"]
+                },
+                "file_base64": {
+                  "type": "string",
+                  "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."
+                }
               }
             }
           }
