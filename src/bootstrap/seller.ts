@@ -8,6 +8,7 @@ import { InitiateEmailVerification } from "../application/auth/initiate-email-ve
 import { SendWelcomeEmail } from "../application/notification/send-welcome-email";
 import { ListAvailableProductBrands } from "../application/seller/list-available-product-brands";
 import { ListAvailableProductCategories } from "../application/seller/list-available-product-categories";
+import { ListSellerProducts } from "../application/seller/list-seller-products";
 import { RegisterSeller } from "../application/seller/register-seller";
 import { UploadProduct } from "../application/seller/upload-product";
 import { SaveSellerKycDraft } from "../application/seller-kyc/save-seller-kyc-draft";
@@ -18,6 +19,7 @@ import createSellerKycRouter from "../infrastructure/api/routes/seller-kyc-route
 import createSellerRouter, {
   createProtectedSellerBrandRouter,
   createProtectedSellerCategoryRouter,
+  createProtectedSellerProductListRouter,
   createProtectedSellerProductRouter
 } from "../infrastructure/api/routes/seller-routes";
 import { PostgresEmailVerificationRepository } from "../infrastructure/database/repositories/postgres-email-verification-repository";
@@ -65,6 +67,10 @@ export function createSellerModule() {
   const listAvailableProductCategories = new ListAvailableProductCategories(
     productCategoryRepository
   );
+  const listSellerProducts = new ListSellerProducts(
+    authenticationRepository,
+    productRepository
+  );
   const uploadSellerKycDocument = new UploadSellerKycDocument(
     sellerKycRepository,
     documentStorage
@@ -91,6 +97,11 @@ export function createSellerModule() {
     "/product-categories",
     authenticateSeller,
     createProtectedSellerCategoryRouter({ listAvailableProductCategories })
+  );
+  sellerRouter.use(
+    "/get-all-products",
+    authenticateSeller,
+    createProtectedSellerProductListRouter({ listSellerProducts })
   );
   sellerRouter.use(
     "/create-product",
