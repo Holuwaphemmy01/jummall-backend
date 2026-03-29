@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import type { ListAvailableProductBrandsUseCase } from "../../../application/seller/list-available-product-brands";
+import type { ListAvailableProductCategoriesUseCase } from "../../../application/seller/list-available-product-categories";
 import type { RegisterSellerUseCase } from "../../../application/seller/register-seller";
 import { RegisterSellerError } from "../../../application/seller/register-seller";
 import type { UploadProductUseCase } from "../../../application/seller/upload-product";
@@ -20,6 +21,10 @@ interface SellerProductRouterDependencies {
 
 interface SellerBrandRouterDependencies {
   listAvailableProductBrands: ListAvailableProductBrandsUseCase;
+}
+
+interface SellerCategoryRouterDependencies {
+  listAvailableProductCategories: ListAvailableProductCategoriesUseCase;
 }
 
 export default function createSellerRouter({
@@ -220,4 +225,34 @@ export function createProtectedSellerBrandRouter({
   });
 
   return sellerBrandRouter;
+}
+
+export function createProtectedSellerCategoryRouter({
+  listAvailableProductCategories
+}: SellerCategoryRouterDependencies) {
+  const sellerCategoryRouter = Router();
+
+  sellerCategoryRouter.get("/", async (_req, res) => {
+    try {
+      const categories = await listAvailableProductCategories.execute();
+
+      return res.status(200).json({
+        message: "Product categories fetched successfully.",
+        data: categories.map((category) => ({
+          id: category.id,
+          name: category.name,
+          description: category.description,
+          deduction_percentage: category.deductionPercentage,
+          created_at: category.createdAt.toISOString(),
+          updated_at: category.updatedAt.toISOString()
+        }))
+      });
+    } catch {
+      return res.status(500).json({
+        message: "Unable to fetch product categories."
+      });
+    }
+  });
+
+  return sellerCategoryRouter;
 }

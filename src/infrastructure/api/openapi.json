@@ -819,6 +819,24 @@
         }
       }
     },
+    "/sellers/product-categories": {
+      "get": {
+        "tags": ["seller"],
+        "summary": "List available product categories for sellers",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Product categories fetched successfully"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required"
+          }
+        }
+      }
+    },
     "/sellers/kyc": {
       "put": {
         "tags": ["seller"],
