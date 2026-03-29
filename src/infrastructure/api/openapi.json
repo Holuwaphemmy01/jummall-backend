@@ -1307,6 +1307,50 @@
         }
       }
     },
+    "/users/profile": {
+      "get": {
+        "tags": ["user-account"],
+        "summary": "Get the authenticated buyer or seller profile",
+        "description": "Returns the current authenticated user's profile. This endpoint is available only to buyer and seller accounts. Seller responses can include `account_type` and `kyc_status`.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "User profile fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "User profile fetched successfully.",
+                  "data": {
+                    "id": "seller-id",
+                    "first_name": "Jane",
+                    "last_name": "Doe",
+                    "username": "jane.doe",
+                    "email": "jane@example.com",
+                    "phone": "+2348012345678",
+                    "role": "seller",
+                    "account_status": "verified",
+                    "account_type": "individual",
+                    "kyc_status": "approved"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Only buyer and seller accounts can access this endpoint"
+          },
+          "404": {
+            "description": "User profile not found"
+          }
+        }
+      }
+    },
     "/sellers/register": {
       "post": {
         "tags": ["seller-account"],
@@ -1753,6 +1797,10 @@
     {
       "name": "buyer-wishlist",
       "description": "Buyer wishlist endpoints for saving approved products."
+    },
+    {
+      "name": "user-account",
+      "description": "Authenticated buyer and seller profile endpoints."
     },
     {
       "name": "seller-account",

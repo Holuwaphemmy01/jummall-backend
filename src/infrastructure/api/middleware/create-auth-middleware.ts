@@ -7,7 +7,7 @@ export interface AuthenticatedUser extends TokenPayload {}
 
 export function createAuthMiddleware(
   tokenVerifier: TokenVerifier,
-  requiredRole?: string
+  requiredRole?: string | string[]
 ) {
   return async (req: Request, res: Response, next: NextFunction) => {
     const authorizationHeader = req.header("authorization");
@@ -29,7 +29,13 @@ export function createAuthMiddleware(
     try {
       const authUser = await tokenVerifier.verify(token);
 
-      if (requiredRole && authUser.role !== requiredRole) {
+      const requiredRoles = Array.isArray(requiredRole)
+        ? requiredRole
+        : requiredRole
+          ? [requiredRole]
+          : [];
+
+      if (requiredRoles.length > 0 && !requiredRoles.includes(authUser.role)) {
         return res.status(403).json({
           message: "You are not authorized to perform this action."
         });
