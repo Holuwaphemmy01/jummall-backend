@@ -17,4 +17,8 @@ export interface WishlistRepository {
     buyerId: string,
     productId: string
   ): Promise<WishlistItemRecord | null>;
+  deleteByBuyerIdAndProductId(
+    buyerId: string,
+    productId: string
+  ): Promise<WishlistItemRecord | null>;
 }

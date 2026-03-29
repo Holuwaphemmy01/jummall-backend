@@ -785,6 +785,38 @@
         }
       }
     },
+    "/buyers/wishlist/{productId}": {
+      "delete": {
+        "tags": ["buyer-wishlist"],
+        "summary": "Remove a product from buyer wishlist",
+        "description": "Removes the specified product from the authenticated buyer's wishlist. The removal is scoped to the current buyer only.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product removed from wishlist successfully"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Wishlist item or buyer not found"
+          }
+        }
+      }
+    },
     "/sellers/register": {
       "post": {
         "tags": ["seller-account"],

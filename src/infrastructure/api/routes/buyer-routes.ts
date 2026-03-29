@@ -2,6 +2,8 @@ import { Router } from "express";
 
 import type { AddProductToWishlistUseCase } from "../../../application/buyer/add-product-to-wishlist";
 import { AddProductToWishlistError } from "../../../application/buyer/add-product-to-wishlist";
+import type { RemoveProductFromWishlistUseCase } from "../../../application/buyer/remove-product-from-wishlist";
+import { RemoveProductFromWishlistError } from "../../../application/buyer/remove-product-from-wishlist";
 import type { RegisterBuyerUseCase } from "../../../application/buyer/register-buyer";
 import { RegisterBuyerError } from "../../../application/buyer/register-buyer";
 import type { AuthenticatedUser } from "../middleware/create-auth-middleware";
@@ -14,6 +16,7 @@ interface BuyerRouterDependencies {
 
 interface BuyerWishlistRouterDependencies {
   addProductToWishlist: AddProductToWishlistUseCase;
+  removeProductFromWishlist: RemoveProductFromWishlistUseCase;
 }
 
 export default function createBuyerRouter({
@@ -81,7 +84,8 @@ export default function createBuyerRouter({
 }
 
 export function createProtectedBuyerWishlistRouter({
-  addProductToWishlist
+  addProductToWishlist,
+  removeProductFromWishlist
 }: BuyerWishlistRouterDependencies) {
   const buyerWishlistRouter = Router();
 
@@ -129,6 +133,32 @@ export function createProtectedBuyerWishlistRouter({
 
       return res.status(500).json({
         message: "Unable to add product to wishlist."
+      });
+    }
+  });
+
+  buyerWishlistRouter.delete("/:productId", async (req, res) => {
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      await removeProductFromWishlist.execute({
+        buyerId: authUser.sub,
+        productId: req.params.productId
+      });
+
+      return res.status(200).json({
+        message: "Product removed from wishlist successfully."
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof RemoveProductFromWishlistError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to remove product from wishlist."
       });
     }
   });

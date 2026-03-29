@@ -101,6 +101,10 @@ class WishlistRepositoryDouble implements WishlistRepository {
   findByBuyerIdAndProductId = jest
     .fn<(buyerId: string, productId: string) => Promise<WishlistItemRecord | null>>()
     .mockResolvedValue(null);
+
+  deleteByBuyerIdAndProductId = jest
+    .fn<(buyerId: string, productId: string) => Promise<WishlistItemRecord | null>>()
+    .mockResolvedValue(null);
 }
 
 describe("AddProductToWishlist", () => {

@@ -1,5 +1,6 @@
 import { AddProductToWishlist } from "../application/buyer/add-product-to-wishlist";
 import { InitiateEmailVerification } from "../application/auth/initiate-email-verification";
+import { RemoveProductFromWishlist } from "../application/buyer/remove-product-from-wishlist";
 import { RegisterBuyer } from "../application/buyer/register-buyer";
 import { SendWelcomeEmail } from "../application/notification/send-welcome-email";
 import { createAuthMiddleware } from "../infrastructure/api/middleware/create-auth-middleware";
@@ -46,13 +47,20 @@ export function createBuyerModule() {
     productRepository,
     wishlistRepository
   );
+  const removeProductFromWishlist = new RemoveProductFromWishlist(
+    authenticationRepository,
+    wishlistRepository
+  );
   const authenticateBuyer = createAuthMiddleware(tokenVerifier, "buyer");
 
   buyerRouter.use(createBuyerRouter({ registerBuyer }));
   buyerRouter.use(
     "/wishlist",
     authenticateBuyer,
-    createProtectedBuyerWishlistRouter({ addProductToWishlist })
+    createProtectedBuyerWishlistRouter({
+      addProductToWishlist,
+      removeProductFromWishlist
+    })
   );
 
   return buyerRouter;

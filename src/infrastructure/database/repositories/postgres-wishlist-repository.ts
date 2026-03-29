@@ -60,4 +60,25 @@ export class PostgresWishlistRepository implements WishlistRepository {
 
     return result.rows[0] ?? null;
   }
+
+  async deleteByBuyerIdAndProductId(
+    buyerId: string,
+    productId: string
+  ): Promise<WishlistItemRecord | null> {
+    const result = await this.pool.query<WishlistItemRow>(
+      `
+        DELETE FROM "WishlistItem"
+        WHERE "buyerId" = $1 AND "productId" = $2
+        RETURNING
+          "id",
+          "buyerId",
+          "productId",
+          "createdAt",
+          "updatedAt"
+      `,
+      [buyerId, productId]
+    );
+
+    return result.rows[0] ?? null;
+  }
 }
