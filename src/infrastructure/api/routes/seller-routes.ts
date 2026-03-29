@@ -2,6 +2,8 @@ import { Router } from "express";
 
 import type { ListAvailableProductBrandsUseCase } from "../../../application/seller/list-available-product-brands";
 import type { ListAvailableProductCategoriesUseCase } from "../../../application/seller/list-available-product-categories";
+import type { ListSellerProductsUseCase } from "../../../application/seller/list-seller-products";
+import { ListSellerProductsError } from "../../../application/seller/list-seller-products";
 import type { RegisterSellerUseCase } from "../../../application/seller/register-seller";
 import { RegisterSellerError } from "../../../application/seller/register-seller";
 import type { UploadProductUseCase } from "../../../application/seller/upload-product";
@@ -17,6 +19,10 @@ interface SellerRouterDependencies {
 
 interface SellerProductRouterDependencies {
   uploadProduct: UploadProductUseCase;
+}
+
+interface SellerProductListRouterDependencies {
+  listSellerProducts: ListSellerProductsUseCase;
 }
 
 interface SellerBrandRouterDependencies {
@@ -196,6 +202,68 @@ export function createProtectedSellerProductRouter({
   });
 
   return sellerProductRouter;
+}
+
+export function createProtectedSellerProductListRouter({
+  listSellerProducts
+}: SellerProductListRouterDependencies) {
+  const sellerProductListRouter = Router();
+
+  sellerProductListRouter.get("/", async (_req, res) => {
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      const products = await listSellerProducts.execute({
+        sellerId: authUser.sub
+      });
+
+      return res.status(200).json({
+        message: "Seller products retrieved successfully.",
+        data: products.map((product) => ({
+          id: product.id,
+          seller_id: product.sellerId,
+          category_id: product.categoryId,
+          brand_id: product.brandId,
+          brand_name: product.brandName,
+          name: product.name,
+          description: product.description,
+          sku: product.sku,
+          price: product.price,
+          quantity: product.quantity,
+          currency: product.currency,
+          condition: product.condition,
+          weight_kg: product.weightKg,
+          status: product.status,
+          review_note: product.reviewNote,
+          reviewed_at: product.reviewedAt?.toISOString() ?? null,
+          images: product.images.map((image) => ({
+            id: image.id,
+            storage_path: image.storagePath,
+            mime_type: image.mimeType,
+            original_file_name: image.originalFileName,
+            position: image.position,
+            created_at: image.createdAt.toISOString(),
+            updated_at: image.updatedAt.toISOString()
+          })),
+          created_at: product.createdAt.toISOString(),
+          updated_at: product.updatedAt.toISOString()
+        }))
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ListSellerProductsError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch seller products."
+      });
+    }
+  });
+
+  return sellerProductListRouter;
 }
 
 export function createProtectedSellerBrandRouter({

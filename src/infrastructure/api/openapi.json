@@ -890,6 +890,28 @@
         }
       }
     },
+    "/sellers/get-all-products": {
+      "get": {
+        "tags": ["seller-catalog"],
+        "summary": "Get all products created by the authenticated seller",
+        "description": "Returns all products created by the current seller, including review status and uploaded images. Frontend can use this for the seller dashboard, inventory view, and review feedback states.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Seller products retrieved successfully"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required"
+          },
+          "404": {
+            "description": "Seller account not found"
+          }
+        }
+      }
+    },
     "/sellers/product-brands": {
       "get": {
         "tags": ["seller-catalog"],
