@@ -8,7 +8,9 @@ import {
   ApproveSellerKycError,
   type ApproveSellerKycUseCase
 } from "../../../application/admin/approve-seller-kyc";
+import type { CreateProductBrandUseCase } from "../../../application/admin/create-product-brand";
 import type { CreateProductCategoryUseCase } from "../../../application/admin/create-product-category";
+import type { GetProductBrandUseCase } from "../../../application/admin/get-product-brand";
 import {
   GetProductPendingReviewDetailError,
   type GetProductPendingReviewDetailUseCase
@@ -19,48 +21,180 @@ import {
   type GetCompletedSellerKycUseCase
 } from "../../../application/admin/get-completed-seller-kyc";
 import type { ListCompletedSellerKycUseCase } from "../../../application/admin/list-completed-seller-kyc";
+import type { ListProductBrandsUseCase } from "../../../application/admin/list-product-brands";
 import type { ListProductsPendingReviewUseCase } from "../../../application/admin/list-products-pending-review";
 import type { ListProductCategoriesUseCase } from "../../../application/admin/list-product-categories";
 import {
   RejectProductPendingReviewError,
   type RejectProductPendingReviewUseCase
 } from "../../../application/admin/reject-product-pending-review";
+import { ProductBrandError } from "../../../application/admin/product-brand-errors";
+import type { UpdateProductBrandUseCase } from "../../../application/admin/update-product-brand";
 import type { UpdateProductCategoryUseCase } from "../../../application/admin/update-product-category";
 import { approveProductPendingReviewSchema } from "../validation/approve-product-pending-review-schema";
+import { createProductBrandSchema } from "../validation/create-product-brand-schema";
 import { ProductCategoryError } from "../../../application/admin/product-category-errors";
 import { approveSellerKycSchema } from "../validation/approve-seller-kyc-schema";
 import { createProductCategorySchema } from "../validation/create-product-category-schema";
 import { rejectProductPendingReviewSchema } from "../validation/reject-product-pending-review-schema";
+import { updateProductBrandSchema } from "../validation/update-product-brand-schema";
 import { updateProductCategorySchema } from "../validation/update-product-category-schema";
 
 interface AdminRouterDependencies {
   approveProductPendingReview: ApproveProductPendingReviewUseCase;
   approveSellerKyc: ApproveSellerKycUseCase;
+  createProductBrand: CreateProductBrandUseCase;
   createProductCategory: CreateProductCategoryUseCase;
+  getProductBrand: GetProductBrandUseCase;
   getProductPendingReviewDetail: GetProductPendingReviewDetailUseCase;
   listCompletedSellerKyc: ListCompletedSellerKycUseCase;
+  listProductBrands: ListProductBrandsUseCase;
   listProductsPendingReview: ListProductsPendingReviewUseCase;
   listProductCategories: ListProductCategoriesUseCase;
   rejectProductPendingReview: RejectProductPendingReviewUseCase;
   getCompletedSellerKyc: GetCompletedSellerKycUseCase;
   getProductCategory: GetProductCategoryUseCase;
+  updateProductBrand: UpdateProductBrandUseCase;
   updateProductCategory: UpdateProductCategoryUseCase;
 }
 
 export default function createAdminRouter({
   approveProductPendingReview,
   approveSellerKyc,
+  createProductBrand,
   createProductCategory,
+  getProductBrand,
   getProductPendingReviewDetail,
   listCompletedSellerKyc,
+  listProductBrands,
   listProductsPendingReview,
   listProductCategories,
   rejectProductPendingReview,
   getCompletedSellerKyc,
   getProductCategory,
+  updateProductBrand,
   updateProductCategory
 }: AdminRouterDependencies) {
   const adminRouter = Router();
+
+  adminRouter.post("/product-brands", async (req, res) => {
+    const { error, value } = createProductBrandSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    try {
+      const brand = await createProductBrand.execute({
+        name: value.name,
+        description: value.description
+      });
+
+      return res.status(201).json({
+        message: "Product brand created successfully.",
+        data: thisBrandResponse(brand)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ProductBrandError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to create product brand."
+      });
+    }
+  });
+
+  adminRouter.get("/product-brands", async (_req, res) => {
+    try {
+      const brands = await listProductBrands.execute();
+
+      return res.status(200).json({
+        message: "Product brands fetched successfully.",
+        data: brands.map((brand) => thisBrandResponse(brand))
+      });
+    } catch {
+      return res.status(500).json({
+        message: "Unable to fetch product brands."
+      });
+    }
+  });
+
+  adminRouter.get("/product-brands/:brandId", async (req, res) => {
+    try {
+      const brand = await getProductBrand.execute({
+        brandId: req.params.brandId
+      });
+
+      return res.status(200).json({
+        message: "Product brand fetched successfully.",
+        data: thisBrandResponse(brand)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ProductBrandError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch product brand."
+      });
+    }
+  });
+
+  adminRouter.patch("/product-brands/:brandId", async (req, res) => {
+    const { error, value } = updateProductBrandSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    try {
+      const brand = await updateProductBrand.execute({
+        brandId: req.params.brandId,
+        name: value.name,
+        description: value.description
+      });
+
+      return res.status(200).json({
+        message: "Product brand updated successfully.",
+        data: thisBrandResponse(brand)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ProductBrandError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to update product brand."
+      });
+    }
+  });
 
   adminRouter.post("/product-categories", async (req, res) => {
     const { error, value } = createProductCategorySchema.validate(req.body, {
@@ -467,10 +601,28 @@ function thisCategoryResponse(category: {
   };
 }
 
+function thisBrandResponse(brand: {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: brand.id,
+    name: brand.name,
+    description: brand.description,
+    created_at: brand.createdAt.toISOString(),
+    updated_at: brand.updatedAt.toISOString()
+  };
+}
+
 function thisProductResponse(product: {
   id: string;
   sellerId: string;
   categoryId: string;
+  brandId: string | null;
+  brandName: string | null;
   name: string;
   description: string;
   sku: string | null;
@@ -478,7 +630,6 @@ function thisProductResponse(product: {
   quantity: number;
   currency: string;
   condition: string;
-  brand: string | null;
   weightKg: number;
   status: string;
   reviewNote: string | null;
@@ -499,6 +650,8 @@ function thisProductResponse(product: {
     id: product.id,
     seller_id: product.sellerId,
     category_id: product.categoryId,
+    brand_id: product.brandId,
+    brand_name: product.brandName,
     name: product.name,
     description: product.description,
     sku: product.sku,
@@ -506,7 +659,6 @@ function thisProductResponse(product: {
     quantity: product.quantity,
     currency: product.currency,
     condition: product.condition,
-    brand: product.brand,
     weight_kg: product.weightKg,
     status: product.status,
     review_note: product.reviewNote,

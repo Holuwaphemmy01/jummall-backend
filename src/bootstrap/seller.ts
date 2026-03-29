@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { PostgresAuthenticationRepository } from "../infrastructure/database/repositories/postgres-authentication-repository";
+import { PostgresProductBrandRepository } from "../infrastructure/database/repositories/postgres-product-brand-repository";
 import { PostgresProductCategoryRepository } from "../infrastructure/database/repositories/postgres-product-category-repository";
 import { PostgresProductRepository } from "../infrastructure/database/repositories/postgres-product-repository";
 import { InitiateEmailVerification } from "../application/auth/initiate-email-verification";
@@ -28,6 +29,7 @@ import { ScryptPasswordHasher } from "../infrastructure/security/scrypt-password
 export function createSellerModule() {
   const sellerRouter = Router();
   const authenticationRepository = new PostgresAuthenticationRepository();
+  const productBrandRepository = new PostgresProductBrandRepository();
   const productCategoryRepository = new PostgresProductCategoryRepository();
   const productRepository = new PostgresProductRepository();
   const sellerRepository = new PostgresSellerRepository();
@@ -60,6 +62,7 @@ export function createSellerModule() {
   const uploadProduct = new UploadProduct(
     authenticationRepository,
     sellerKycRepository,
+    productBrandRepository,
     productCategoryRepository,
     productRepository,
     documentStorage,

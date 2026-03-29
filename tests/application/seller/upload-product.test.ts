@@ -15,6 +15,12 @@ import type {
   UploadedDocument
 } from "../../../src/ports/document-storage";
 import type {
+  CreateProductBrandInput,
+  ProductBrandRecord,
+  ProductBrandRepository,
+  UpdateProductBrandInput
+} from "../../../src/ports/product-brand-repository";
+import type {
   CreateProductCategoryInput,
   ProductCategoryRecord,
   ProductCategoryRepository,
@@ -137,6 +143,31 @@ class ProductCategoryRepositoryDouble implements ProductCategoryRepository {
     .mockResolvedValue(null);
 }
 
+class ProductBrandRepositoryDouble implements ProductBrandRepository {
+  create = jest
+    .fn<(input: CreateProductBrandInput) => Promise<ProductBrandRecord>>();
+
+  findAll = jest.fn<() => Promise<ProductBrandRecord[]>>().mockResolvedValue([]);
+
+  findById = jest
+    .fn<(brandId: string) => Promise<ProductBrandRecord | null>>()
+    .mockResolvedValue({
+      id: "brand-id",
+      name: "Apple",
+      description: "Consumer electronics brand",
+      createdAt: new Date("2026-03-28T00:00:00.000Z"),
+      updatedAt: new Date("2026-03-28T00:00:00.000Z")
+    });
+
+  findByName = jest
+    .fn<(name: string) => Promise<ProductBrandRecord | null>>()
+    .mockResolvedValue(null);
+
+  update = jest
+    .fn<(input: UpdateProductBrandInput) => Promise<ProductBrandRecord | null>>()
+    .mockResolvedValue(null);
+}
+
 class ProductRepositoryDouble implements ProductRepository {
   create = jest
     .fn<(input: CreateProductInput) => Promise<ProductRecord>>()
@@ -144,6 +175,8 @@ class ProductRepositoryDouble implements ProductRepository {
       id: "product-id",
       sellerId: input.sellerId,
       categoryId: input.categoryId,
+      brandId: input.brandId ?? null,
+      brandName: input.brandId ? "Apple" : null,
       name: input.name,
       description: input.description,
       sku: input.sku ?? null,
@@ -151,7 +184,6 @@ class ProductRepositoryDouble implements ProductRepository {
       quantity: input.quantity,
       currency: input.currency,
       condition: input.condition,
-      brand: input.brand ?? null,
       weightKg: input.weightKg,
       status: "pending_review",
       reviewNote: null,
@@ -202,6 +234,7 @@ class ProductSkuGeneratorDouble implements ProductSkuGenerator {
 describe("UploadProduct", () => {
   it("uploads a product successfully for a verified seller with approved KYC", async () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
+    const productBrandRepository = new ProductBrandRepositoryDouble();
     const sellerKycRepository = new SellerKycRepositoryDouble();
     const productCategoryRepository = new ProductCategoryRepositoryDouble();
     const productRepository = new ProductRepositoryDouble();
@@ -210,6 +243,7 @@ describe("UploadProduct", () => {
     const uploadProduct = new UploadProduct(
       authenticationRepository,
       sellerKycRepository,
+      productBrandRepository,
       productCategoryRepository,
       productRepository,
       documentStorage,
@@ -219,6 +253,7 @@ describe("UploadProduct", () => {
     const result = await uploadProduct.execute({
       sellerId: "seller-id",
       categoryId: "category-id",
+      brandId: "brand-id",
       name: "iPhone 13",
       description: "Clean iPhone 13 with 128GB storage",
       sku: "IPH13-128",
@@ -226,7 +261,6 @@ describe("UploadProduct", () => {
       quantity: 4,
       currency: "NGN",
       condition: "new",
-      brand: "Apple",
       weightKg: 0.24,
       images: [
         {
@@ -244,12 +278,14 @@ describe("UploadProduct", () => {
 
     expect(authenticationRepository.findById).toHaveBeenCalledWith("seller-id");
     expect(sellerKycRepository.findByUserId).toHaveBeenCalledWith("seller-id");
+    expect(productBrandRepository.findById).toHaveBeenCalledWith("brand-id");
     expect(productCategoryRepository.findById).toHaveBeenCalledWith("category-id");
     expect(documentStorage.uploadProductImage).toHaveBeenCalledTimes(2);
     expect(productSkuGenerator.generate).not.toHaveBeenCalled();
     expect(productRepository.create).toHaveBeenCalledWith({
       sellerId: "seller-id",
       categoryId: "category-id",
+      brandId: "brand-id",
       name: "iPhone 13",
       description: "Clean iPhone 13 with 128GB storage",
       sku: "IPH13-128",
@@ -257,7 +293,6 @@ describe("UploadProduct", () => {
       quantity: 4,
       currency: "NGN",
       condition: "new",
-      brand: "Apple",
       weightKg: 0.24,
       images: [
         {
@@ -287,6 +322,7 @@ describe("UploadProduct", () => {
     const uploadProduct = new UploadProduct(
       authenticationRepository,
       sellerKycRepository,
+      new ProductBrandRepositoryDouble(),
       new ProductCategoryRepositoryDouble(),
       new ProductRepositoryDouble(),
       new DocumentStorageDouble(),
@@ -321,6 +357,7 @@ describe("UploadProduct", () => {
     const uploadProduct = new UploadProduct(
       new AuthenticationRepositoryDouble(),
       new SellerKycRepositoryDouble(),
+      new ProductBrandRepositoryDouble(),
       productCategoryRepository,
       new ProductRepositoryDouble(),
       new DocumentStorageDouble(),
@@ -355,6 +392,7 @@ describe("UploadProduct", () => {
     const uploadProduct = new UploadProduct(
       new AuthenticationRepositoryDouble(),
       new SellerKycRepositoryDouble(),
+      new ProductBrandRepositoryDouble(),
       new ProductCategoryRepositoryDouble(),
       productRepository,
       new DocumentStorageDouble(),
@@ -388,6 +426,42 @@ describe("UploadProduct", () => {
         sku: "WIRELESS-HEADSET-A1B2C3"
       })
     );
+  });
+
+  it("throws when the provided brand does not exist", async () => {
+    const productBrandRepository = new ProductBrandRepositoryDouble();
+    productBrandRepository.findById.mockResolvedValue(null);
+    const uploadProduct = new UploadProduct(
+      new AuthenticationRepositoryDouble(),
+      new SellerKycRepositoryDouble(),
+      productBrandRepository,
+      new ProductCategoryRepositoryDouble(),
+      new ProductRepositoryDouble(),
+      new DocumentStorageDouble(),
+      new ProductSkuGeneratorDouble()
+    );
+
+    await expect(
+      uploadProduct.execute({
+        sellerId: "seller-id",
+        categoryId: "category-id",
+        brandId: "missing-brand-id",
+        name: "Wireless Headset",
+        description: "Noise-cancelling wireless headset with long battery life",
+        price: 85000,
+        quantity: 10,
+        currency: "NGN",
+        condition: "new",
+        weightKg: 0.4,
+        images: [
+          {
+            fileName: "front.jpg",
+            mimeType: "image/jpeg",
+            fileContents: Buffer.from("front")
+          }
+        ]
+      })
+    ).rejects.toBeInstanceOf(UploadProductError);
   });
 });
 

@@ -111,6 +111,7 @@ export function createProtectedSellerProductRouter({
       const product = await uploadProduct.execute({
         sellerId: authUser.sub,
         categoryId: value.category_id,
+        brandId: value.brand_id,
         name: value.name,
         description: value.description,
         sku: value.sku,
@@ -118,7 +119,6 @@ export function createProtectedSellerProductRouter({
         quantity: value.quantity,
         currency: value.currency,
         condition: value.condition,
-        brand: value.brand,
         weightKg: value.weight_kg,
         images: value.images.map(
           (image: {
@@ -139,6 +139,8 @@ export function createProtectedSellerProductRouter({
           id: product.id,
           seller_id: product.sellerId,
           category_id: product.categoryId,
+          brand_id: product.brandId,
+          brand_name: product.brandName,
           name: product.name,
           description: product.description,
           sku: product.sku,
@@ -146,7 +148,6 @@ export function createProtectedSellerProductRouter({
           quantity: product.quantity,
           currency: product.currency,
           condition: product.condition,
-          brand: product.brand,
           weight_kg: product.weightKg,
           status: product.status,
           review_note: product.reviewNote,
