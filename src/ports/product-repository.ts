@@ -15,6 +15,8 @@ export interface ProductRecord {
   id: string;
   sellerId: string;
   categoryId: string;
+  brandId: string | null;
+  brandName: string | null;
   name: string;
   description: string;
   sku: string | null;
@@ -22,7 +24,6 @@ export interface ProductRecord {
   quantity: number;
   currency: string;
   condition: string;
-  brand: string | null;
   weightKg: number;
   status: ProductStatus;
   reviewNote: string | null;
@@ -42,6 +43,7 @@ export interface CreateProductImageInput {
 export interface CreateProductInput {
   sellerId: string;
   categoryId: string;
+  brandId?: string;
   name: string;
   description: string;
   sku?: string;
@@ -49,7 +51,6 @@ export interface CreateProductInput {
   quantity: number;
   currency: string;
   condition: string;
-  brand?: string;
   weightKg: number;
   images: CreateProductImageInput[];
 }

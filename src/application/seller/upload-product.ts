@@ -1,5 +1,6 @@
 import type { AuthenticationRepository } from "../../ports/authentication-repository";
 import type { DocumentStorage } from "../../ports/document-storage";
+import type { ProductBrandRepository } from "../../ports/product-brand-repository";
 import type { ProductCategoryRepository } from "../../ports/product-category-repository";
 import type { ProductSkuGenerator } from "../../ports/product-sku-generator";
 import type {
@@ -17,6 +18,7 @@ export interface UploadProductImageInput {
 export interface UploadProductInput {
   sellerId: string;
   categoryId: string;
+  brandId?: string;
   name: string;
   description: string;
   sku?: string;
@@ -24,7 +26,6 @@ export interface UploadProductInput {
   quantity: number;
   currency: string;
   condition: string;
-  brand?: string;
   weightKg: number;
   images: UploadProductImageInput[];
 }
@@ -50,6 +51,7 @@ export class UploadProduct implements UploadProductUseCase {
   constructor(
     private readonly authenticationRepository: AuthenticationRepository,
     private readonly sellerKycRepository: SellerKycRepository,
+    private readonly productBrandRepository: ProductBrandRepository,
     private readonly productCategoryRepository: ProductCategoryRepository,
     private readonly productRepository: ProductRepository,
     private readonly documentStorage: DocumentStorage,
@@ -93,6 +95,14 @@ export class UploadProduct implements UploadProductUseCase {
 
     if (!category) {
       throw new UploadProductError("Product category not found.", 404, "category_id");
+    }
+
+    if (input.brandId) {
+      const brand = await this.productBrandRepository.findById(input.brandId);
+
+      if (!brand) {
+        throw new UploadProductError("Product brand not found.", 404, "brand_id");
+      }
     }
 
     if (input.price <= 0) {
@@ -160,6 +170,7 @@ export class UploadProduct implements UploadProductUseCase {
     return this.productRepository.create({
       sellerId: input.sellerId,
       categoryId: input.categoryId,
+      brandId: input.brandId,
       name: input.name,
       description: input.description,
       sku,
@@ -167,7 +178,6 @@ export class UploadProduct implements UploadProductUseCase {
       quantity: input.quantity,
       currency: input.currency,
       condition: input.condition,
-      brand: input.brand,
       weightKg: input.weightKg,
       images: uploadedImages
     });

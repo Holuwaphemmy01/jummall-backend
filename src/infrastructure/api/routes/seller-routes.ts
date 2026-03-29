@@ -1,5 +1,7 @@
 import { Router } from "express";
 
+import type { ListAvailableProductBrandsUseCase } from "../../../application/seller/list-available-product-brands";
+import type { ListAvailableProductCategoriesUseCase } from "../../../application/seller/list-available-product-categories";
 import type { RegisterSellerUseCase } from "../../../application/seller/register-seller";
 import { RegisterSellerError } from "../../../application/seller/register-seller";
 import type { UploadProductUseCase } from "../../../application/seller/upload-product";
@@ -15,6 +17,14 @@ interface SellerRouterDependencies {
 
 interface SellerProductRouterDependencies {
   uploadProduct: UploadProductUseCase;
+}
+
+interface SellerBrandRouterDependencies {
+  listAvailableProductBrands: ListAvailableProductBrandsUseCase;
+}
+
+interface SellerCategoryRouterDependencies {
+  listAvailableProductCategories: ListAvailableProductCategoriesUseCase;
 }
 
 export default function createSellerRouter({
@@ -111,6 +121,7 @@ export function createProtectedSellerProductRouter({
       const product = await uploadProduct.execute({
         sellerId: authUser.sub,
         categoryId: value.category_id,
+        brandId: value.brand_id,
         name: value.name,
         description: value.description,
         sku: value.sku,
@@ -118,7 +129,6 @@ export function createProtectedSellerProductRouter({
         quantity: value.quantity,
         currency: value.currency,
         condition: value.condition,
-        brand: value.brand,
         weightKg: value.weight_kg,
         images: value.images.map(
           (image: {
@@ -139,6 +149,8 @@ export function createProtectedSellerProductRouter({
           id: product.id,
           seller_id: product.sellerId,
           category_id: product.categoryId,
+          brand_id: product.brandId,
+          brand_name: product.brandName,
           name: product.name,
           description: product.description,
           sku: product.sku,
@@ -146,7 +158,6 @@ export function createProtectedSellerProductRouter({
           quantity: product.quantity,
           currency: product.currency,
           condition: product.condition,
-          brand: product.brand,
           weight_kg: product.weightKg,
           status: product.status,
           review_note: product.reviewNote,
@@ -185,4 +196,63 @@ export function createProtectedSellerProductRouter({
   });
 
   return sellerProductRouter;
+}
+
+export function createProtectedSellerBrandRouter({
+  listAvailableProductBrands
+}: SellerBrandRouterDependencies) {
+  const sellerBrandRouter = Router();
+
+  sellerBrandRouter.get("/", async (_req, res) => {
+    try {
+      const brands = await listAvailableProductBrands.execute();
+
+      return res.status(200).json({
+        message: "Product brands fetched successfully.",
+        data: brands.map((brand) => ({
+          id: brand.id,
+          name: brand.name,
+          description: brand.description,
+          created_at: brand.createdAt.toISOString(),
+          updated_at: brand.updatedAt.toISOString()
+        }))
+      });
+    } catch {
+      return res.status(500).json({
+        message: "Unable to fetch product brands."
+      });
+    }
+  });
+
+  return sellerBrandRouter;
+}
+
+export function createProtectedSellerCategoryRouter({
+  listAvailableProductCategories
+}: SellerCategoryRouterDependencies) {
+  const sellerCategoryRouter = Router();
+
+  sellerCategoryRouter.get("/", async (_req, res) => {
+    try {
+      const categories = await listAvailableProductCategories.execute();
+
+      return res.status(200).json({
+        message: "Product categories fetched successfully.",
+        data: categories.map((category) => ({
+          id: category.id,
+          name: category.name,
+          description: category.description,
+          deduction_percentage: category.deductionPercentage,
+          created_at: category.createdAt.toISOString(),
+          updated_at: category.updatedAt.toISOString()
+        }))
+      });
+    } catch {
+      return res.status(500).json({
+        message: "Unable to fetch product categories."
+      });
+    }
+  });
+
+  return sellerCategoryRouter;
 }

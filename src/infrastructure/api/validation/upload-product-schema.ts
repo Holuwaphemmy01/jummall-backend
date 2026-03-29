@@ -10,6 +10,7 @@ const productImageSchema = Joi.object({
 
 export const uploadProductSchema = Joi.object({
   category_id: Joi.string().trim().required(),
+  brand_id: Joi.string().trim().optional(),
   name: Joi.string().trim().min(2).max(150).required(),
   description: Joi.string().trim().min(10).max(5000).required(),
   sku: Joi.string().trim().max(100).optional(),
@@ -17,7 +18,6 @@ export const uploadProductSchema = Joi.object({
   quantity: Joi.number().integer().min(0).required(),
   currency: Joi.string().trim().uppercase().length(3).required(),
   condition: Joi.string().trim().min(2).max(50).required(),
-  brand: Joi.string().trim().max(100).optional(),
   weight_kg: Joi.number().positive().required(),
   images: Joi.array().items(productImageSchema).min(1).required()
 });

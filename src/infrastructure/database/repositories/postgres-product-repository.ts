@@ -14,6 +14,8 @@ interface ProductRow {
   id: string;
   sellerId: string;
   categoryId: string;
+  brandId: string | null;
+  brandName: string | null;
   name: string;
   description: string;
   sku: string | null;
@@ -21,7 +23,6 @@ interface ProductRow {
   quantity: number;
   currency: string;
   condition: string;
-  brand: string | null;
   weightKg: string;
   status: "pending_review" | "approved" | "rejected";
   reviewNote: string | null;
@@ -54,8 +55,16 @@ export class PostgresProductRepository implements ProductRepository {
       const images = await this.insertProductImages(client, product.id, input.images);
 
       await client.query("COMMIT");
+      const createdProduct = await this.findById(product.id);
 
-      return this.mapProduct(product, images);
+      if (!createdProduct) {
+        throw new Error("Created product could not be loaded.");
+      }
+
+      return {
+        ...createdProduct,
+        images
+      };
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
@@ -68,25 +77,27 @@ export class PostgresProductRepository implements ProductRepository {
     const productResult = await this.pool.query<ProductRow>(
       `
         SELECT
-          "id",
-          "sellerId",
-          "categoryId",
-          "name",
-          "description",
-          "sku",
-          "price",
-          "quantity",
-          "currency",
-          "condition",
-          "brand",
-          "weightKg",
-          "status",
-          "reviewNote",
-          "reviewedAt",
-          "createdAt",
-          "updatedAt"
-        FROM "Product"
-        WHERE "id" = $1
+          p."id",
+          p."sellerId",
+          p."categoryId",
+          p."brandId",
+          pb."name" AS "brandName",
+          p."name",
+          p."description",
+          p."sku",
+          p."price",
+          p."quantity",
+          p."currency",
+          p."condition",
+          p."weightKg",
+          p."status",
+          p."reviewNote",
+          p."reviewedAt",
+          p."createdAt",
+          p."updatedAt"
+        FROM "Product" p
+        LEFT JOIN "ProductBrand" pb ON pb."id" = p."brandId"
+        WHERE p."id" = $1
         LIMIT 1
       `,
       [productId]
@@ -107,26 +118,28 @@ export class PostgresProductRepository implements ProductRepository {
     const productResult = await this.pool.query<ProductRow>(
       `
         SELECT
-          "id",
-          "sellerId",
-          "categoryId",
-          "name",
-          "description",
-          "sku",
-          "price",
-          "quantity",
-          "currency",
-          "condition",
-          "brand",
-          "weightKg",
-          "status",
-          "reviewNote",
-          "reviewedAt",
-          "createdAt",
-          "updatedAt"
-        FROM "Product"
-        WHERE "sellerId" = $1
-        ORDER BY "createdAt" DESC
+          p."id",
+          p."sellerId",
+          p."categoryId",
+          p."brandId",
+          pb."name" AS "brandName",
+          p."name",
+          p."description",
+          p."sku",
+          p."price",
+          p."quantity",
+          p."currency",
+          p."condition",
+          p."weightKg",
+          p."status",
+          p."reviewNote",
+          p."reviewedAt",
+          p."createdAt",
+          p."updatedAt"
+        FROM "Product" p
+        LEFT JOIN "ProductBrand" pb ON pb."id" = p."brandId"
+        WHERE p."sellerId" = $1
+        ORDER BY p."createdAt" DESC
       `,
       [sellerId]
     );
@@ -142,26 +155,28 @@ export class PostgresProductRepository implements ProductRepository {
     const productResult = await this.pool.query<ProductRow>(
       `
         SELECT
-          "id",
-          "sellerId",
-          "categoryId",
-          "name",
-          "description",
-          "sku",
-          "price",
-          "quantity",
-          "currency",
-          "condition",
-          "brand",
-          "weightKg",
-          "status",
-          "reviewNote",
-          "reviewedAt",
-          "createdAt",
-          "updatedAt"
-        FROM "Product"
-        WHERE "status" = 'pending_review'
-        ORDER BY "createdAt" ASC
+          p."id",
+          p."sellerId",
+          p."categoryId",
+          p."brandId",
+          pb."name" AS "brandName",
+          p."name",
+          p."description",
+          p."sku",
+          p."price",
+          p."quantity",
+          p."currency",
+          p."condition",
+          p."weightKg",
+          p."status",
+          p."reviewNote",
+          p."reviewedAt",
+          p."createdAt",
+          p."updatedAt"
+        FROM "Product" p
+        LEFT JOIN "ProductBrand" pb ON pb."id" = p."brandId"
+        WHERE p."status" = 'pending_review'
+        ORDER BY p."createdAt" ASC
       `
     );
 
@@ -188,6 +203,8 @@ export class PostgresProductRepository implements ProductRepository {
           "id",
           "sellerId",
           "categoryId",
+          "brandId",
+          NULL::TEXT AS "brandName",
           "name",
           "description",
           "sku",
@@ -195,7 +212,6 @@ export class PostgresProductRepository implements ProductRepository {
           "quantity",
           "currency",
           "condition",
-          "brand",
           "weightKg",
           "status",
           "reviewNote",
@@ -217,9 +233,7 @@ export class PostgresProductRepository implements ProductRepository {
       return null;
     }
 
-    const images = await this.findImagesByProductId(product.id);
-
-    return this.mapProduct(product, images);
+    return this.findById(product.id);
   }
 
   private async insertProduct(
@@ -231,6 +245,7 @@ export class PostgresProductRepository implements ProductRepository {
         INSERT INTO "Product" (
           "sellerId",
           "categoryId",
+          "brandId",
           "name",
           "description",
           "sku",
@@ -238,7 +253,6 @@ export class PostgresProductRepository implements ProductRepository {
           "quantity",
           "currency",
           "condition",
-          "brand",
           "weightKg",
           "status"
         )
@@ -247,6 +261,8 @@ export class PostgresProductRepository implements ProductRepository {
           "id",
           "sellerId",
           "categoryId",
+          "brandId",
+          NULL::TEXT AS "brandName",
           "name",
           "description",
           "sku",
@@ -254,7 +270,6 @@ export class PostgresProductRepository implements ProductRepository {
           "quantity",
           "currency",
           "condition",
-          "brand",
           "weightKg",
           "status",
           "reviewNote",
@@ -265,6 +280,7 @@ export class PostgresProductRepository implements ProductRepository {
       [
         input.sellerId,
         input.categoryId,
+        input.brandId ?? null,
         input.name,
         input.description,
         input.sku ?? null,
@@ -272,7 +288,6 @@ export class PostgresProductRepository implements ProductRepository {
         input.quantity,
         input.currency,
         input.condition,
-        input.brand ?? null,
         input.weightKg
       ]
     );
@@ -353,6 +368,8 @@ export class PostgresProductRepository implements ProductRepository {
       id: product.id,
       sellerId: product.sellerId,
       categoryId: product.categoryId,
+      brandId: product.brandId,
+      brandName: product.brandName,
       name: product.name,
       description: product.description,
       sku: product.sku,
@@ -360,7 +377,6 @@ export class PostgresProductRepository implements ProductRepository {
       quantity: product.quantity,
       currency: product.currency,
       condition: product.condition,
-      brand: product.brand,
       weightKg: Number(product.weightKg),
       status: product.status,
       reviewNote: product.reviewNote,
