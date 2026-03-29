@@ -144,6 +144,67 @@ export class PostgresProductCatalogRepository
     };
   }
 
+  async searchApprovedSuggestions(input: {
+    query: string;
+    limit: number;
+  }): Promise<ProductRecord[]> {
+    const values: Array<string | number> = [
+      `%${input.query}%`,
+      input.query.toLowerCase(),
+      input.limit
+    ];
+
+    const productResult = await this.pool.query<ProductRow>(
+      `
+        SELECT
+          p."id",
+          p."sellerId",
+          p."categoryId",
+          p."brandId",
+          pb."name" AS "brandName",
+          p."name",
+          p."description",
+          p."sku",
+          p."price",
+          p."quantity",
+          p."currency",
+          p."condition",
+          p."weightKg",
+          p."status",
+          p."reviewNote",
+          p."reviewedAt",
+          p."createdAt",
+          p."updatedAt"
+        FROM "Product" p
+        LEFT JOIN "ProductBrand" pb ON pb."id" = p."brandId"
+        WHERE
+          p."status" = 'approved'
+          AND p."quantity" > 0
+          AND (
+            p."name" ILIKE $1
+            OR COALESCE(pb."name", '') ILIKE $1
+          )
+        ORDER BY
+          CASE
+            WHEN LOWER(p."name") = $2 THEN 0
+            WHEN LOWER(p."name") LIKE $2 || '%' THEN 1
+            WHEN LOWER(COALESCE(pb."name", '')) LIKE $2 || '%' THEN 2
+            ELSE 3
+          END,
+          COALESCE(p."reviewedAt", p."updatedAt", p."createdAt") DESC,
+          p."createdAt" DESC
+        LIMIT $3
+      `,
+      values
+    );
+
+    return Promise.all(
+      productResult.rows.map(async (product) =>
+        this.mapProduct(product, await this.findImagesByProductId(product.id))
+      )
+    );
+  }
+
   private async findImagesByProductId(productId: string): Promise<ProductImageRow[]> {
     const result = await this.pool.query<ProductImageRow>(
       `

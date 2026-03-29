@@ -15,6 +15,7 @@ import type {
   ProductCategoryRepository,
   UpdateProductCategoryInput
 } from "../../../src/ports/product-category-repository";
+import type { ProductRecord } from "../../../src/ports/product-repository";
 
 class ProductCatalogRepositoryDouble implements ProductCatalogRepository {
   listApproved = jest
@@ -25,6 +26,10 @@ class ProductCatalogRepositoryDouble implements ProductCatalogRepository {
       page: 1,
       limit: 20
     });
+
+  searchApprovedSuggestions = jest
+    .fn<(input: { query: string; limit: number }) => Promise<ProductRecord[]>>()
+    .mockResolvedValue([]);
 }
 
 class ProductCategoryRepositoryDouble implements ProductCategoryRepository {
