@@ -68,6 +68,49 @@ export class PostgresAuthenticationRepository
     };
   }
 
+  async findById(userId: string): Promise<AuthUser | null> {
+    const result = await this.pool.query<AuthUserRow>(
+      `
+        SELECT
+          "id",
+          "firstName",
+          "lastName",
+          "username",
+          "email",
+          "phone",
+          "password",
+          "role",
+          "accountStatus",
+          "createdAt",
+          "updatedAt"
+        FROM "User"
+        WHERE "id" = $1
+        LIMIT 1
+      `,
+      [userId]
+    );
+
+    const user = result.rows[0];
+
+    if (!user) {
+      return null;
+    }
+
+    return {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      email: user.email,
+      phone: user.phone,
+      passwordHash: user.password,
+      role: user.role,
+      accountStatus: user.accountStatus,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    };
+  }
+
   async updatePassword(input: {
     userId: string;
     passwordHash: string;

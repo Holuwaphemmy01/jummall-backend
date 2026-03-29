@@ -4,6 +4,7 @@ import { SellerKycError } from "../../../src/application/seller-kyc/seller-kyc-e
 import { UploadSellerKycDocument } from "../../../src/application/seller-kyc/upload-seller-kyc-document";
 import type {
   DocumentStorage,
+  UploadProductImageInput,
   UploadSellerKycDocumentInput as StorageUploadInput,
   UploadedDocument
 } from "../../../src/ports/document-storage";
@@ -82,6 +83,12 @@ class DocumentStorageDouble implements DocumentStorage {
     .fn<(input: StorageUploadInput) => Promise<UploadedDocument>>()
     .mockResolvedValue({
       storagePath: "seller-kyc/seller-id/id_document/id-card.jpg"
+    });
+
+  uploadProductImage = jest
+    .fn<(input: UploadProductImageInput) => Promise<UploadedDocument>>()
+    .mockResolvedValue({
+      storagePath: "products/seller-id/product-image.jpg"
     });
 }
 

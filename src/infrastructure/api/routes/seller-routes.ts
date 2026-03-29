@@ -2,10 +2,19 @@ import { Router } from "express";
 
 import type { RegisterSellerUseCase } from "../../../application/seller/register-seller";
 import { RegisterSellerError } from "../../../application/seller/register-seller";
+import type { UploadProductUseCase } from "../../../application/seller/upload-product";
+import { UploadProductError } from "../../../application/seller/upload-product";
+import { parseBase64File } from "../files/parse-base64-file";
+import type { AuthenticatedUser } from "../middleware/create-auth-middleware";
 import { registerSellerSchema } from "../validation/register-seller-schema";
+import { uploadProductSchema } from "../validation/upload-product-schema";
 
 interface SellerRouterDependencies {
   registerSeller: RegisterSellerUseCase;
+}
+
+interface SellerProductRouterDependencies {
+  uploadProduct: UploadProductUseCase;
 }
 
 export default function createSellerRouter({
@@ -73,4 +82,107 @@ export default function createSellerRouter({
   });
 
   return sellerRouter;
+}
+
+export function createProtectedSellerProductRouter({
+  uploadProduct
+}: SellerProductRouterDependencies) {
+  const sellerProductRouter = Router();
+
+  sellerProductRouter.post("/", async (req, res) => {
+    const { error, value } = uploadProductSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      const product = await uploadProduct.execute({
+        sellerId: authUser.sub,
+        categoryId: value.category_id,
+        name: value.name,
+        description: value.description,
+        sku: value.sku,
+        price: value.price,
+        quantity: value.quantity,
+        currency: value.currency,
+        condition: value.condition,
+        brand: value.brand,
+        weightKg: value.weight_kg,
+        images: value.images.map(
+          (image: {
+            file_name: string;
+            mime_type: string;
+            file_base64: string;
+          }) => ({
+            fileName: image.file_name,
+            mimeType: image.mime_type,
+            fileContents: parseBase64File(image.file_base64)
+          })
+        )
+      });
+
+      return res.status(201).json({
+        message: "Product uploaded successfully and is pending review.",
+        data: {
+          id: product.id,
+          seller_id: product.sellerId,
+          category_id: product.categoryId,
+          name: product.name,
+          description: product.description,
+          sku: product.sku,
+          price: product.price,
+          quantity: product.quantity,
+          currency: product.currency,
+          condition: product.condition,
+          brand: product.brand,
+          weight_kg: product.weightKg,
+          status: product.status,
+          review_note: product.reviewNote,
+          reviewed_at: product.reviewedAt?.toISOString() ?? null,
+          images: product.images.map((image) => ({
+            id: image.id,
+            storage_path: image.storagePath,
+            mime_type: image.mimeType,
+            original_file_name: image.originalFileName,
+            position: image.position,
+            created_at: image.createdAt.toISOString(),
+            updated_at: image.updatedAt.toISOString()
+          })),
+          created_at: product.createdAt.toISOString(),
+          updated_at: product.updatedAt.toISOString()
+        }
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof UploadProductError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      if (caughtError instanceof Error) {
+        return res.status(400).json({
+          message: caughtError.message
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to upload product."
+      });
+    }
+  });
+
+  return sellerProductRouter;
 }

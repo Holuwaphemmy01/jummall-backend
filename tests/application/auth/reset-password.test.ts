@@ -20,6 +20,10 @@ class AuthenticationRepositoryDouble implements AuthenticationRepository {
     .fn<(email: string) => Promise<AuthUser | null>>()
     .mockResolvedValue(null);
 
+  findById = jest
+    .fn<(userId: string) => Promise<AuthUser | null>>()
+    .mockResolvedValue(null);
+
   updatePassword = jest
     .fn<(input: { userId: string; passwordHash: string }) => Promise<void>>()
     .mockResolvedValue();

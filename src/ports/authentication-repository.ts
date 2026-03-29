@@ -14,5 +14,6 @@ export interface AuthUser {
 
 export interface AuthenticationRepository {
   findByEmail(email: string): Promise<AuthUser | null>;
+  findById(userId: string): Promise<AuthUser | null>;
   updatePassword(input: { userId: string; passwordHash: string }): Promise<void>;
 }
