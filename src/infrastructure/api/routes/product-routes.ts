@@ -4,17 +4,22 @@ import type { ListApprovedProductsUseCase } from "../../../application/product/l
 import { ListApprovedProductsError } from "../../../application/product/list-approved-products";
 import type { ListApprovedProductsByCategoryUseCase } from "../../../application/product/list-approved-products-by-category";
 import { ListApprovedProductsByCategoryError } from "../../../application/product/list-approved-products-by-category";
+import type { SearchApprovedProductSuggestionsUseCase } from "../../../application/product/search-approved-product-suggestions";
+import { SearchApprovedProductSuggestionsError } from "../../../application/product/search-approved-product-suggestions";
 import { listCategoryProductsSchema } from "../validation/list-category-products-schema";
 import { listProductsSchema } from "../validation/list-products-schema";
+import { searchProductsSchema } from "../validation/search-products-schema";
 
 interface ProductRouterDependencies {
   listApprovedProducts: ListApprovedProductsUseCase;
   listApprovedProductsByCategory: ListApprovedProductsByCategoryUseCase;
+  searchApprovedProductSuggestions: SearchApprovedProductSuggestionsUseCase;
 }
 
 export default function createProductRouter({
   listApprovedProducts,
-  listApprovedProductsByCategory
+  listApprovedProductsByCategory,
+  searchApprovedProductSuggestions
 }: ProductRouterDependencies) {
   const productRouter = Router();
 
@@ -154,6 +159,60 @@ export default function createProductRouter({
 
       return res.status(500).json({
         message: "Unable to fetch products by category."
+      });
+    }
+  });
+
+  productRouter.get("/search", async (req, res) => {
+    const { error, value } = searchProductsSchema.validate(req.query, {
+      abortEarly: false,
+      stripUnknown: true,
+      convert: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    try {
+      const products = await searchApprovedProductSuggestions.execute({
+        query: value.query,
+        limit: value.limit
+      });
+
+      return res.status(200).json({
+        message: "Product suggestions fetched successfully.",
+        data: products.map((product) => ({
+          id: product.id,
+          category_id: product.categoryId,
+          brand_id: product.brandId,
+          brand_name: product.brandName,
+          name: product.name,
+          price: product.price,
+          currency: product.currency,
+          condition: product.condition,
+          primary_image:
+            product.images.find((image) => image.position === 0)?.storagePath ??
+            product.images[0]?.storagePath ??
+            null
+        }))
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof SearchApprovedProductSuggestionsError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch product suggestions."
       });
     }
   });

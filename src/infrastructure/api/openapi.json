@@ -1512,6 +1512,75 @@
         }
       }
     },
+    "/products/search": {
+      "get": {
+        "tags": ["product-catalog"],
+        "summary": "Search approved products with live suggestions",
+        "description": "Returns lightweight approved product suggestions while the frontend user is typing. Only approved and in-stock products are considered.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "minimum": 1,
+              "maximum": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product suggestions fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product suggestions fetched successfully.",
+                  "data": [
+                    {
+                      "id": "product-id",
+                      "category_id": "category-id",
+                      "brand_id": "brand-id",
+                      "brand_name": "Apple",
+                      "name": "iPhone 13",
+                      "price": 850000,
+                      "currency": "NGN",
+                      "condition": "new",
+                      "primary_image": "products/seller-id/front.jpg"
+                    },
+                    {
+                      "id": "product-id-2",
+                      "category_id": "category-id",
+                      "brand_id": "brand-id",
+                      "brand_name": "Apple",
+                      "name": "iPhone Charger",
+                      "price": 15000,
+                      "currency": "NGN",
+                      "condition": "new",
+                      "primary_image": "products/seller-id/charger.jpg"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          }
+        }
+      }
+    },
     "/users/profile": {
       "get": {
         "tags": ["user-account"],
