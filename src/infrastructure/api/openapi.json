@@ -747,6 +747,44 @@
         }
       }
     },
+    "/buyers/wishlist": {
+      "post": {
+        "tags": ["buyer-wishlist"],
+        "summary": "Add an approved product to buyer wishlist",
+        "description": "Adds a product to the authenticated buyer's wishlist. The product must already be in `approved` status and duplicate wishlist entries are not allowed.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductToWishlistRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product added to wishlist successfully"
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer or product not found"
+          },
+          "409": {
+            "description": "Product is not approved or already exists in wishlist"
+          }
+        }
+      }
+    },
     "/sellers/register": {
       "post": {
         "tags": ["seller-account"],
@@ -967,6 +1005,10 @@
     {
       "name": "buyer-account",
       "description": "Buyer onboarding endpoints."
+    },
+    {
+      "name": "buyer-wishlist",
+      "description": "Buyer wishlist endpoints for saving approved products."
     },
     {
       "name": "seller-account",
@@ -1340,6 +1382,16 @@
                 "format": "date-time"
               }
             }
+          }
+        }
+      },
+      "AddProductToWishlistRequest": {
+        "type": "object",
+        "required": ["product_id"],
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
