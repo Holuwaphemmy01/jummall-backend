@@ -5,6 +5,7 @@ import { createAdminModule } from "./admin";
 import { createAuthModule } from "./auth";
 import { createBuyerModule } from "./buyer";
 import { createSellerModule } from "./seller";
+import { createUserModule } from "./user";
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use("/admin", createAdminModule());
 app.use("/auth", createAuthModule());
 app.use("/buyers", createBuyerModule());
 app.use("/sellers", createSellerModule());
+app.use("/users", createUserModule());
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapi));
 
