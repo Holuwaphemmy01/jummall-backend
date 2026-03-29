@@ -1,11 +1,22 @@
 import { Router } from "express";
 
+import type { AddProductToWishlistUseCase } from "../../../application/buyer/add-product-to-wishlist";
+import { AddProductToWishlistError } from "../../../application/buyer/add-product-to-wishlist";
+import type { RemoveProductFromWishlistUseCase } from "../../../application/buyer/remove-product-from-wishlist";
+import { RemoveProductFromWishlistError } from "../../../application/buyer/remove-product-from-wishlist";
 import type { RegisterBuyerUseCase } from "../../../application/buyer/register-buyer";
 import { RegisterBuyerError } from "../../../application/buyer/register-buyer";
+import type { AuthenticatedUser } from "../middleware/create-auth-middleware";
+import { addProductToWishlistSchema } from "../validation/add-product-to-wishlist-schema";
 import { registerBuyerSchema } from "../validation/register-buyer-schema";
 
 interface BuyerRouterDependencies {
   registerBuyer: RegisterBuyerUseCase;
+}
+
+interface BuyerWishlistRouterDependencies {
+  addProductToWishlist: AddProductToWishlistUseCase;
+  removeProductFromWishlist: RemoveProductFromWishlistUseCase;
 }
 
 export default function createBuyerRouter({
@@ -70,4 +81,87 @@ export default function createBuyerRouter({
   });
 
   return buyerRouter;
+}
+
+export function createProtectedBuyerWishlistRouter({
+  addProductToWishlist,
+  removeProductFromWishlist
+}: BuyerWishlistRouterDependencies) {
+  const buyerWishlistRouter = Router();
+
+  buyerWishlistRouter.post("/", async (req, res) => {
+    const { error, value } = addProductToWishlistSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      const wishlistItem = await addProductToWishlist.execute({
+        buyerId: authUser.sub,
+        productId: value.product_id
+      });
+
+      return res.status(201).json({
+        message: "Product added to wishlist successfully.",
+        data: {
+          id: wishlistItem.id,
+          buyer_id: wishlistItem.buyerId,
+          product_id: wishlistItem.productId,
+          created_at: wishlistItem.createdAt.toISOString(),
+          updated_at: wishlistItem.updatedAt.toISOString()
+        }
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof AddProductToWishlistError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to add product to wishlist."
+      });
+    }
+  });
+
+  buyerWishlistRouter.delete("/:productId", async (req, res) => {
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      await removeProductFromWishlist.execute({
+        buyerId: authUser.sub,
+        productId: req.params.productId
+      });
+
+      return res.status(200).json({
+        message: "Product removed from wishlist successfully."
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof RemoveProductFromWishlistError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to remove product from wishlist."
+      });
+    }
+  });
+
+  return buyerWishlistRouter;
 }

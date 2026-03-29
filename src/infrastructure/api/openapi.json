@@ -3,7 +3,7 @@
   "info": {
     "title": "Jummall API",
     "version": "1.0.0",
-    "description": "API documentation for admin, seller, and buyer domains"
+    "description": "API documentation for authentication, buyer onboarding, seller operations, and admin management."
   },
   "servers": [
     {
@@ -14,6 +14,7 @@
   "paths": {
     "/health": {
       "get": {
+        "tags": ["system"],
         "summary": "Health check",
         "responses": {
           "200": {
@@ -38,6 +39,7 @@
       "post": {
         "tags": ["auth"],
         "summary": "Login any user role",
+        "description": "Authenticates a buyer, seller, or admin and returns a JWT access token. If the credentials are valid but the account is still not verified, the request is rejected and a verification code is re-sent to the user's email.",
         "requestBody": {
           "required": true,
           "content": {
@@ -78,6 +80,7 @@
       "post": {
         "tags": ["auth"],
         "summary": "Initiate password reset",
+        "description": "Starts the forgot-password flow. This endpoint intentionally returns a generic success response even when the email does not exist, so frontend should not expect account-existence feedback here.",
         "requestBody": {
           "required": true,
           "content": {
@@ -105,6 +108,7 @@
       "post": {
         "tags": ["auth"],
         "summary": "Verify a user's email with a code",
+        "description": "Confirms the verification code sent to the user's email and updates the user account status to `verified`.",
         "requestBody": {
           "required": true,
           "content": {
@@ -142,6 +146,7 @@
       "post": {
         "tags": ["auth"],
         "summary": "Resend a verification email",
+        "description": "Re-issues an email verification code when the resend cooldown has passed. Any previously active verification code is invalidated.",
         "requestBody": {
           "required": true,
           "content": {
@@ -182,6 +187,7 @@
       "post": {
         "tags": ["auth"],
         "summary": "Reset password with a code",
+        "description": "Completes the password reset flow using the reset code sent by email.",
         "requestBody": {
           "required": true,
           "content": {
@@ -207,8 +213,9 @@
     },
     "/admin/product-categories": {
       "post": {
-        "tags": ["admin"],
+        "tags": ["admin-product-categories"],
         "summary": "Create product category",
+        "description": "Creates a reusable product category for the marketplace. Sellers later fetch and reference these categories when creating products.",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -239,8 +246,9 @@
         }
       },
       "get": {
-        "tags": ["admin"],
+        "tags": ["admin-product-categories"],
         "summary": "List product categories",
+        "description": "Returns all product categories currently available in the admin-managed catalog.",
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
@@ -257,8 +265,9 @@
     },
     "/admin/product-brands": {
       "post": {
-        "tags": ["admin"],
+        "tags": ["admin-product-brands"],
         "summary": "Create product brand",
+        "description": "Creates a reusable product brand. Sellers can only reference brands created by admins.",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -289,8 +298,9 @@
         }
       },
       "get": {
-        "tags": ["admin"],
+        "tags": ["admin-product-brands"],
         "summary": "List product brands",
+        "description": "Returns all admin-managed product brands available for seller product creation.",
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
@@ -307,7 +317,7 @@
     },
     "/admin/product-brands/{brandId}": {
       "get": {
-        "tags": ["admin"],
+        "tags": ["admin-product-brands"],
         "summary": "Get product brand",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
@@ -336,8 +346,9 @@
         }
       },
       "patch": {
-        "tags": ["admin"],
+        "tags": ["admin-product-brands"],
         "summary": "Update product brand",
+        "description": "Updates the name or description of an admin-managed product brand.",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
@@ -383,7 +394,7 @@
     },
     "/admin/product-categories/{categoryId}": {
       "get": {
-        "tags": ["admin"],
+        "tags": ["admin-product-categories"],
         "summary": "Get product category",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
@@ -412,8 +423,9 @@
         }
       },
       "patch": {
-        "tags": ["admin"],
+        "tags": ["admin-product-categories"],
         "summary": "Update product category",
+        "description": "Updates category metadata or deduction percentage used across the marketplace.",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
@@ -459,8 +471,9 @@
     },
     "/admin/products/pending-review": {
       "get": {
-        "tags": ["admin"],
+        "tags": ["admin-product-review"],
         "summary": "List products pending review",
+        "description": "Returns all seller-submitted products that are still waiting for admin moderation.",
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
@@ -477,8 +490,9 @@
     },
     "/admin/products/pending-review/{productId}": {
       "get": {
-        "tags": ["admin"],
+        "tags": ["admin-product-review"],
         "summary": "Get a product pending review",
+        "description": "Returns the full product details for one pending-review product, including category, brand reference, and uploaded images.",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
@@ -508,8 +522,9 @@
     },
     "/admin/products/{productId}/approve": {
       "post": {
-        "tags": ["admin"],
+        "tags": ["admin-product-review"],
         "summary": "Approve a product pending review",
+        "description": "Marks a product as `approved`. Approved products are the ones intended to become visible to buyers in later buyer-facing catalog endpoints.",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
@@ -555,8 +570,9 @@
     },
     "/admin/products/{productId}/reject": {
       "post": {
-        "tags": ["admin"],
+        "tags": ["admin-product-review"],
         "summary": "Reject a product pending review",
+        "description": "Marks a product as `rejected`. Frontend should expect the rejection reason to come back through `review_note`.",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
@@ -602,7 +618,7 @@
     },
     "/admin/kyc": {
       "get": {
-        "tags": ["admin"],
+        "tags": ["admin-kyc"],
         "summary": "List completed seller KYC submissions",
         "security": [{ "bearerAuth": [] }],
         "responses": {
@@ -620,7 +636,7 @@
     },
     "/admin/kyc/{kycId}": {
       "get": {
-        "tags": ["admin"],
+        "tags": ["admin-kyc"],
         "summary": "Get a completed seller KYC submission",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
@@ -651,7 +667,7 @@
     },
     "/admin/kyc/{kycId}/approve": {
       "post": {
-        "tags": ["admin"],
+        "tags": ["admin-kyc"],
         "summary": "Approve a seller KYC submission",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
@@ -698,8 +714,9 @@
     },
     "/buyers/register": {
       "post": {
-        "tags": ["buyer"],
+        "tags": ["buyer-account"],
         "summary": "Register a buyer account",
+        "description": "Creates a buyer account in `not_verified` state and triggers email verification.",
         "requestBody": {
           "required": true,
           "content": {
@@ -730,10 +747,81 @@
         }
       }
     },
+    "/buyers/wishlist": {
+      "post": {
+        "tags": ["buyer-wishlist"],
+        "summary": "Add an approved product to buyer wishlist",
+        "description": "Adds a product to the authenticated buyer's wishlist. The product must already be in `approved` status and duplicate wishlist entries are not allowed.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductToWishlistRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product added to wishlist successfully"
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer or product not found"
+          },
+          "409": {
+            "description": "Product is not approved or already exists in wishlist"
+          }
+        }
+      }
+    },
+    "/buyers/wishlist/{productId}": {
+      "delete": {
+        "tags": ["buyer-wishlist"],
+        "summary": "Remove a product from buyer wishlist",
+        "description": "Removes the specified product from the authenticated buyer's wishlist. The removal is scoped to the current buyer only.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product removed from wishlist successfully"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Wishlist item or buyer not found"
+          }
+        }
+      }
+    },
     "/sellers/register": {
       "post": {
-        "tags": ["seller"],
+        "tags": ["seller-account"],
         "summary": "Register a seller account",
+        "description": "Creates a seller account in `not_verified` state, initializes seller KYC as `not_started`, and triggers email verification.",
         "requestBody": {
           "required": true,
           "content": {
@@ -766,8 +854,9 @@
     },
     "/sellers/create-product": {
       "post": {
-        "tags": ["seller"],
+        "tags": ["seller-catalog"],
         "summary": "Upload a product as a verified seller",
+        "description": "Creates a seller product in `pending_review` state. This endpoint requires a seller token, a verified seller account, and approved seller KYC. `brand_id` is optional, `category_id` is required, and `sku` can be omitted because the backend can generate it.",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -803,8 +892,9 @@
     },
     "/sellers/product-brands": {
       "get": {
-        "tags": ["seller"],
+        "tags": ["seller-catalog"],
         "summary": "List available product brands for sellers",
+        "description": "Returns the admin-managed brand list that sellers should use when populating optional `brand_id` in product creation.",
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
@@ -821,8 +911,9 @@
     },
     "/sellers/product-categories": {
       "get": {
-        "tags": ["seller"],
+        "tags": ["seller-catalog"],
         "summary": "List available product categories for sellers",
+        "description": "Returns the admin-managed category list that sellers should use when populating required `category_id` in product creation.",
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
@@ -839,8 +930,9 @@
     },
     "/sellers/kyc": {
       "put": {
-        "tags": ["seller"],
+        "tags": ["seller-kyc"],
         "summary": "Save seller KYC draft",
+        "description": "Saves or updates a seller KYC draft. Required fields differ depending on `account_type`.",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -870,8 +962,9 @@
     },
     "/sellers/kyc/documents": {
       "post": {
-        "tags": ["seller"],
+        "tags": ["seller-kyc"],
         "summary": "Upload a seller KYC document",
+        "description": "Uploads one seller KYC document at a time. This endpoint is designed to be simpler for web and mobile clients than sending all documents in one large request.",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
@@ -901,8 +994,9 @@
     },
     "/sellers/kyc/submit": {
       "post": {
-        "tags": ["seller"],
+        "tags": ["seller-kyc"],
         "summary": "Submit seller KYC for review",
+        "description": "Performs final validation on the seller KYC draft and uploaded documents, then moves the KYC record to `submitted`.",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": false,
@@ -932,10 +1026,50 @@
     }
   },
   "tags": [
-    { "name": "auth" },
-    { "name": "admin" },
-    { "name": "seller" },
-    { "name": "buyer" }
+    {
+      "name": "system",
+      "description": "Operational endpoints used for uptime and health monitoring."
+    },
+    {
+      "name": "auth",
+      "description": "Authentication, email verification, and password reset endpoints shared across all roles."
+    },
+    {
+      "name": "buyer-account",
+      "description": "Buyer onboarding endpoints."
+    },
+    {
+      "name": "buyer-wishlist",
+      "description": "Buyer wishlist endpoints for saving approved products."
+    },
+    {
+      "name": "seller-account",
+      "description": "Seller account registration and account bootstrap endpoints."
+    },
+    {
+      "name": "seller-catalog",
+      "description": "Seller-facing catalog endpoints for reading admin-managed metadata and creating products."
+    },
+    {
+      "name": "seller-kyc",
+      "description": "Seller KYC draft, document upload, and submission endpoints."
+    },
+    {
+      "name": "admin-product-brands",
+      "description": "Admin-managed product brand catalog endpoints."
+    },
+    {
+      "name": "admin-product-categories",
+      "description": "Admin-managed product category catalog endpoints, including deduction percentage configuration."
+    },
+    {
+      "name": "admin-product-review",
+      "description": "Admin moderation endpoints for seller-submitted products."
+    },
+    {
+      "name": "admin-kyc",
+      "description": "Admin review and approval endpoints for seller KYC submissions."
+    }
   ],
   "components": {
     "securitySchemes": {
@@ -1280,6 +1414,16 @@
                 "format": "date-time"
               }
             }
+          }
+        }
+      },
+      "AddProductToWishlistRequest": {
+        "type": "object",
+        "required": ["product_id"],
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
