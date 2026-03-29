@@ -28,6 +28,9 @@
                       "type": "string"
                     }
                   }
+                },
+                "example": {
+                  "status": "ok"
                 }
               }
             }
@@ -57,6 +60,24 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LoginResponse"
+                },
+                "example": {
+                  "message": "Login successful.",
+                  "data": {
+                    "access_token": "jwt-access-token",
+                    "user": {
+                      "id": "7f2a9c4e-1234-4a8b-91aa-abcdef123456",
+                      "first_name": "John",
+                      "last_name": "Doe",
+                      "username": "john.doe",
+                      "email": "john@example.com",
+                      "phone": "+2348012345678",
+                      "role": "buyer",
+                      "account_status": "verified",
+                      "created_at": "2026-03-29T00:00:00.000Z",
+                      "updated_at": "2026-03-29T00:00:00.000Z"
+                    }
+                  }
                 }
               }
             }
@@ -93,7 +114,22 @@
         },
         "responses": {
           "200": {
-            "description": "Password reset initiation completed"
+            "description": "Password reset initiation completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "If an account with that email exists, a password reset code has been sent."
+                }
+              }
+            }
           },
           "400": {
             "description": "Validation failed"
@@ -126,6 +162,13 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/VerifyEmailResponse"
+                },
+                "example": {
+                  "message": "Email verified successfully.",
+                  "data": {
+                    "email": "john@example.com",
+                    "account_status": "verified"
+                  }
                 }
               }
             }
@@ -164,6 +207,12 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ResendVerificationEmailResponse"
+                },
+                "example": {
+                  "message": "Verification email resent successfully.",
+                  "data": {
+                    "email": "john@example.com"
+                  }
                 }
               }
             }
@@ -200,7 +249,22 @@
         },
         "responses": {
           "200": {
-            "description": "Password reset successful"
+            "description": "Password reset successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Password reset successful."
+                }
+              }
+            }
           },
           "400": {
             "description": "Invalid code or validation failed"
@@ -229,7 +293,25 @@
         },
         "responses": {
           "201": {
-            "description": "Product category created successfully"
+            "description": "Product category created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product category created successfully.",
+                  "data": {
+                    "id": "category-id",
+                    "name": "Electronics",
+                    "description": "Phones, gadgets, and accessories",
+                    "deduction_percentage": 12.5,
+                    "created_at": "2026-03-29T00:00:00.000Z",
+                    "updated_at": "2026-03-29T00:00:00.000Z"
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Validation failed"
@@ -252,7 +334,27 @@
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "Product categories fetched successfully"
+            "description": "Product categories fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product categories fetched successfully.",
+                  "data": [
+                    {
+                      "id": "category-id",
+                      "name": "Electronics",
+                      "description": "Phones, gadgets, and accessories",
+                      "deduction_percentage": 12.5,
+                      "created_at": "2026-03-29T00:00:00.000Z",
+                      "updated_at": "2026-03-29T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication required"
@@ -281,7 +383,24 @@
         },
         "responses": {
           "201": {
-            "description": "Product brand created successfully"
+            "description": "Product brand created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product brand created successfully.",
+                  "data": {
+                    "id": "brand-id",
+                    "name": "Apple",
+                    "description": "Consumer electronics brand",
+                    "created_at": "2026-03-29T00:00:00.000Z",
+                    "updated_at": "2026-03-29T00:00:00.000Z"
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Validation failed"
@@ -304,7 +423,26 @@
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "Product brands fetched successfully"
+            "description": "Product brands fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product brands fetched successfully.",
+                  "data": [
+                    {
+                      "id": "brand-id",
+                      "name": "Apple",
+                      "description": "Consumer electronics brand",
+                      "created_at": "2026-03-29T00:00:00.000Z",
+                      "updated_at": "2026-03-29T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication required"
@@ -332,7 +470,24 @@
         ],
         "responses": {
           "200": {
-            "description": "Product brand fetched successfully"
+            "description": "Product brand fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product brand fetched successfully.",
+                  "data": {
+                    "id": "brand-id",
+                    "name": "Apple",
+                    "description": "Consumer electronics brand",
+                    "created_at": "2026-03-29T00:00:00.000Z",
+                    "updated_at": "2026-03-29T00:00:00.000Z"
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication required"
@@ -372,7 +527,24 @@
         },
         "responses": {
           "200": {
-            "description": "Product brand updated successfully"
+            "description": "Product brand updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product brand updated successfully.",
+                  "data": {
+                    "id": "brand-id",
+                    "name": "Apple",
+                    "description": "Updated brand description",
+                    "created_at": "2026-03-29T00:00:00.000Z",
+                    "updated_at": "2026-03-29T01:00:00.000Z"
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Validation failed"
@@ -409,7 +581,25 @@
         ],
         "responses": {
           "200": {
-            "description": "Product category fetched successfully"
+            "description": "Product category fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product category fetched successfully.",
+                  "data": {
+                    "id": "category-id",
+                    "name": "Electronics",
+                    "description": "Phones, gadgets, and accessories",
+                    "deduction_percentage": 12.5,
+                    "created_at": "2026-03-29T00:00:00.000Z",
+                    "updated_at": "2026-03-29T00:00:00.000Z"
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication required"
@@ -449,7 +639,25 @@
         },
         "responses": {
           "200": {
-            "description": "Product category updated successfully"
+            "description": "Product category updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product category updated successfully.",
+                  "data": {
+                    "id": "category-id",
+                    "name": "Electronics",
+                    "description": "Updated category description",
+                    "deduction_percentage": 15,
+                    "created_at": "2026-03-29T00:00:00.000Z",
+                    "updated_at": "2026-03-29T01:00:00.000Z"
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Validation failed"
@@ -477,7 +685,40 @@
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "Products pending review fetched successfully"
+            "description": "Products pending review fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Products pending review fetched successfully.",
+                  "data": [
+                    {
+                      "id": "product-id",
+                      "seller_id": "seller-id",
+                      "category_id": "category-id",
+                      "brand_id": "brand-id",
+                      "brand_name": "Apple",
+                      "name": "iPhone 13",
+                      "description": "Clean iPhone 13 with 128GB storage",
+                      "sku": "IPH13-128",
+                      "price": 850000,
+                      "quantity": 4,
+                      "currency": "NGN",
+                      "condition": "new",
+                      "weight_kg": 0.24,
+                      "status": "pending_review",
+                      "review_note": null,
+                      "reviewed_at": null,
+                      "images": [],
+                      "created_at": "2026-03-29T00:00:00.000Z",
+                      "updated_at": "2026-03-29T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication required"
@@ -506,7 +747,48 @@
         ],
         "responses": {
           "200": {
-            "description": "Product pending review fetched successfully"
+            "description": "Product pending review fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product pending review fetched successfully.",
+                  "data": {
+                    "id": "product-id",
+                    "seller_id": "seller-id",
+                    "category_id": "category-id",
+                    "brand_id": "brand-id",
+                    "brand_name": "Apple",
+                    "name": "iPhone 13",
+                    "description": "Clean iPhone 13 with 128GB storage",
+                    "sku": "IPH13-128",
+                    "price": 850000,
+                    "quantity": 4,
+                    "currency": "NGN",
+                    "condition": "new",
+                    "weight_kg": 0.24,
+                    "status": "pending_review",
+                    "review_note": null,
+                    "reviewed_at": null,
+                    "images": [
+                      {
+                        "id": "image-id",
+                        "storage_path": "products/seller-id/front.jpg",
+                        "mime_type": "image/jpeg",
+                        "original_file_name": "front.jpg",
+                        "position": 0,
+                        "created_at": "2026-03-29T00:00:00.000Z",
+                        "updated_at": "2026-03-29T00:00:00.000Z"
+                      }
+                    ],
+                    "created_at": "2026-03-29T00:00:00.000Z",
+                    "updated_at": "2026-03-29T00:00:00.000Z"
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication required"
@@ -548,7 +830,38 @@
         },
         "responses": {
           "200": {
-            "description": "Product approved successfully"
+            "description": "Product approved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product approved successfully.",
+                  "data": {
+                    "id": "product-id",
+                    "seller_id": "seller-id",
+                    "category_id": "category-id",
+                    "brand_id": "brand-id",
+                    "brand_name": "Apple",
+                    "name": "iPhone 13",
+                    "description": "Clean iPhone 13 with 128GB storage",
+                    "sku": "IPH13-128",
+                    "price": 850000,
+                    "quantity": 4,
+                    "currency": "NGN",
+                    "condition": "new",
+                    "weight_kg": 0.24,
+                    "status": "approved",
+                    "review_note": "Approved for listing.",
+                    "reviewed_at": "2026-03-29T02:00:00.000Z",
+                    "images": [],
+                    "created_at": "2026-03-29T00:00:00.000Z",
+                    "updated_at": "2026-03-29T02:00:00.000Z"
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Validation failed"
@@ -596,7 +909,38 @@
         },
         "responses": {
           "200": {
-            "description": "Product rejected successfully"
+            "description": "Product rejected successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product rejected successfully.",
+                  "data": {
+                    "id": "product-id",
+                    "seller_id": "seller-id",
+                    "category_id": "category-id",
+                    "brand_id": "brand-id",
+                    "brand_name": "Apple",
+                    "name": "iPhone 13",
+                    "description": "Clean iPhone 13 with 128GB storage",
+                    "sku": "IPH13-128",
+                    "price": 850000,
+                    "quantity": 4,
+                    "currency": "NGN",
+                    "condition": "new",
+                    "weight_kg": 0.24,
+                    "status": "rejected",
+                    "review_note": "Product images are too blurry.",
+                    "reviewed_at": "2026-03-29T02:00:00.000Z",
+                    "images": [],
+                    "created_at": "2026-03-29T00:00:00.000Z",
+                    "updated_at": "2026-03-29T02:00:00.000Z"
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Validation failed"
@@ -623,7 +967,36 @@
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "Completed seller KYC submissions fetched successfully"
+            "description": "Completed seller KYC submissions fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Completed seller KYC submissions fetched successfully.",
+                  "data": [
+                    {
+                      "id": "kyc-id",
+                      "user_id": "seller-id",
+                      "seller": {
+                        "first_name": "Jane",
+                        "last_name": "Doe",
+                        "username": "jane.doe",
+                        "email": "jane@example.com",
+                        "phone": "+2348012345678"
+                      },
+                      "account_type": "individual",
+                      "status": "submitted",
+                      "submitted_at": "2026-03-29T00:00:00.000Z",
+                      "reviewed_at": null,
+                      "created_at": "2026-03-28T00:00:00.000Z",
+                      "updated_at": "2026-03-29T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication required"
@@ -651,7 +1024,66 @@
         ],
         "responses": {
           "200": {
-            "description": "Seller KYC submission fetched successfully"
+            "description": "Seller KYC submission fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Seller KYC submission fetched successfully.",
+                  "data": {
+                    "id": "kyc-id",
+                    "user_id": "seller-id",
+                    "seller": {
+                      "first_name": "Jane",
+                      "last_name": "Doe",
+                      "username": "jane.doe",
+                      "email": "jane@example.com",
+                      "phone": "+2348012345678"
+                    },
+                    "account_type": "individual",
+                    "status": "submitted",
+                    "email": "jane@example.com",
+                    "phone": "+2348012345678",
+                    "address": "12 Allen Avenue",
+                    "city": "Ikeja",
+                    "state": "Lagos",
+                    "country": "Nigeria",
+                    "bank_name": "Access Bank",
+                    "bank_account_number": "0123456789",
+                    "bank_account_name": "Jane Doe",
+                    "full_name": "Jane Doe",
+                    "date_of_birth": "1994-08-01T00:00:00.000Z",
+                    "gender": null,
+                    "id_type": "national_id",
+                    "id_number": "1234567890",
+                    "business_name": null,
+                    "registration_number": null,
+                    "registered_business_address": null,
+                    "representative_first_name": null,
+                    "representative_last_name": null,
+                    "representative_role": null,
+                    "review_note": null,
+                    "submitted_at": "2026-03-29T00:00:00.000Z",
+                    "reviewed_at": null,
+                    "created_at": "2026-03-28T00:00:00.000Z",
+                    "updated_at": "2026-03-29T00:00:00.000Z",
+                    "documents": [
+                      {
+                        "id": "document-id",
+                        "document_type": "id_document",
+                        "storage_path": "seller-kyc/seller-id/id.jpg",
+                        "mime_type": "image/jpeg",
+                        "original_file_name": "id.jpg",
+                        "created_at": "2026-03-29T00:00:00.000Z",
+                        "updated_at": "2026-03-29T00:00:00.000Z"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication required"
@@ -692,7 +1124,23 @@
         },
         "responses": {
           "200": {
-            "description": "Seller KYC approved successfully"
+            "description": "Seller KYC approved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Seller KYC approved successfully.",
+                  "data": {
+                    "id": "kyc-id",
+                    "status": "approved",
+                    "reviewed_at": "2026-03-29T02:00:00.000Z",
+                    "review_note": "All required seller KYC documents were valid."
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Validation failed"
@@ -734,6 +1182,21 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/BuyerRegisterResponse"
+                },
+                "example": {
+                  "message": "Buyer registered successfully.",
+                  "data": {
+                    "id": "buyer-id",
+                    "first_name": "John",
+                    "last_name": "Doe",
+                    "username": "john.doe",
+                    "email": "john@example.com",
+                    "phone": "+2348012345678",
+                    "role": "buyer",
+                    "account_status": "not_verified",
+                    "created_at": "2026-03-29T00:00:00.000Z",
+                    "updated_at": "2026-03-29T00:00:00.000Z"
+                  }
                 }
               }
             }
@@ -765,7 +1228,24 @@
         },
         "responses": {
           "201": {
-            "description": "Product added to wishlist successfully"
+            "description": "Product added to wishlist successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product added to wishlist successfully.",
+                  "data": {
+                    "id": "wishlist-item-id",
+                    "buyer_id": "buyer-id",
+                    "product_id": "product-id",
+                    "created_at": "2026-03-29T00:00:00.000Z",
+                    "updated_at": "2026-03-29T00:00:00.000Z"
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Validation failed"
@@ -803,7 +1283,17 @@
         ],
         "responses": {
           "200": {
-            "description": "Product removed from wishlist successfully"
+            "description": "Product removed from wishlist successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product removed from wishlist successfully."
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication required"
@@ -839,6 +1329,23 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SellerRegisterResponse"
+                },
+                "example": {
+                  "message": "Seller registered successfully.",
+                  "data": {
+                    "id": "seller-id",
+                    "first_name": "Jane",
+                    "last_name": "Doe",
+                    "username": "jane.doe",
+                    "email": "jane@example.com",
+                    "phone_number": "+2348012345678",
+                    "role": "seller",
+                    "account_status": "not_verified",
+                    "account_type": "individual",
+                    "kyc_status": "not_started",
+                    "created_at": "2026-03-29T00:00:00.000Z",
+                    "updated_at": "2026-03-29T00:00:00.000Z"
+                  }
                 }
               }
             }
@@ -870,7 +1377,48 @@
         },
         "responses": {
           "201": {
-            "description": "Product uploaded successfully and is pending review"
+            "description": "Product uploaded successfully and is pending review",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product uploaded successfully and is pending review.",
+                  "data": {
+                    "id": "product-id",
+                    "seller_id": "seller-id",
+                    "category_id": "category-id",
+                    "brand_id": "brand-id",
+                    "brand_name": "Apple",
+                    "name": "Wireless Headset",
+                    "description": "Noise-cancelling wireless headset with long battery life.",
+                    "sku": "HEADSET-001",
+                    "price": 85000,
+                    "quantity": 10,
+                    "currency": "NGN",
+                    "condition": "new",
+                    "weight_kg": 0.4,
+                    "status": "pending_review",
+                    "review_note": null,
+                    "reviewed_at": null,
+                    "images": [
+                      {
+                        "id": "image-id",
+                        "storage_path": "products/seller-id/front.jpg",
+                        "mime_type": "image/jpeg",
+                        "original_file_name": "front.jpg",
+                        "position": 0,
+                        "created_at": "2026-03-29T00:00:00.000Z",
+                        "updated_at": "2026-03-29T00:00:00.000Z"
+                      }
+                    ],
+                    "created_at": "2026-03-29T00:00:00.000Z",
+                    "updated_at": "2026-03-29T00:00:00.000Z"
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Validation failed or product data is invalid"
@@ -898,7 +1446,40 @@
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "Seller products retrieved successfully"
+            "description": "Seller products retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Seller products retrieved successfully.",
+                  "data": [
+                    {
+                      "id": "product-id",
+                      "seller_id": "seller-id",
+                      "category_id": "category-id",
+                      "brand_id": "brand-id",
+                      "brand_name": "Apple",
+                      "name": "Wireless Headset",
+                      "description": "Noise-cancelling wireless headset with long battery life.",
+                      "sku": "HEADSET-001",
+                      "price": 85000,
+                      "quantity": 10,
+                      "currency": "NGN",
+                      "condition": "new",
+                      "weight_kg": 0.4,
+                      "status": "pending_review",
+                      "review_note": null,
+                      "reviewed_at": null,
+                      "images": [],
+                      "created_at": "2026-03-29T00:00:00.000Z",
+                      "updated_at": "2026-03-29T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication required"
@@ -920,7 +1501,26 @@
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "Product brands fetched successfully"
+            "description": "Product brands fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product brands fetched successfully.",
+                  "data": [
+                    {
+                      "id": "brand-id",
+                      "name": "Apple",
+                      "description": "Consumer electronics brand",
+                      "created_at": "2026-03-29T00:00:00.000Z",
+                      "updated_at": "2026-03-29T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication required"
@@ -939,7 +1539,27 @@
         "security": [{ "bearerAuth": [] }],
         "responses": {
           "200": {
-            "description": "Product categories fetched successfully"
+            "description": "Product categories fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product categories fetched successfully.",
+                  "data": [
+                    {
+                      "id": "category-id",
+                      "name": "Electronics",
+                      "description": "Phones, gadgets, and accessories",
+                      "deduction_percentage": 12.5,
+                      "created_at": "2026-03-29T00:00:00.000Z",
+                      "updated_at": "2026-03-29T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication required"
@@ -968,7 +1588,43 @@
         },
         "responses": {
           "200": {
-            "description": "Seller KYC draft saved successfully"
+            "description": "Seller KYC draft saved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Seller KYC draft saved successfully.",
+                  "data": {
+                    "id": "kyc-id",
+                    "account_type": "individual",
+                    "status": "in_progress",
+                    "email": "jane@example.com",
+                    "phone_number": "+2348012345678",
+                    "address": "12 Allen Avenue",
+                    "city": "Ikeja",
+                    "state": "Lagos",
+                    "country": "Nigeria",
+                    "bank_name": "Access Bank",
+                    "bank_account_number": "0123456789",
+                    "bank_account_name": "Jane Doe",
+                    "full_name": "Jane Doe",
+                    "date_of_birth": "1994-08-01T00:00:00.000Z",
+                    "gender": null,
+                    "id_type": "national_id",
+                    "id_number": "1234567890",
+                    "business_name": null,
+                    "registration_number": null,
+                    "registered_business_address": null,
+                    "representative_first_name": null,
+                    "representative_last_name": null,
+                    "representative_role": null,
+                    "documents": []
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Validation failed"
@@ -1000,7 +1656,26 @@
         },
         "responses": {
           "201": {
-            "description": "Seller KYC document uploaded successfully"
+            "description": "Seller KYC document uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Seller KYC document uploaded successfully.",
+                  "data": {
+                    "id": "document-id",
+                    "document_type": "proof_of_address",
+                    "mime_type": "image/jpeg",
+                    "original_file_name": "utility-bill.jpg",
+                    "storage_path": "seller-kyc/seller-id/utility-bill.jpg",
+                    "created_at": "2026-03-29T00:00:00.000Z",
+                    "updated_at": "2026-03-29T00:00:00.000Z"
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Validation failed"
@@ -1032,7 +1707,22 @@
         },
         "responses": {
           "200": {
-            "description": "Seller KYC submitted successfully"
+            "description": "Seller KYC submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Seller KYC submitted successfully.",
+                  "data": {
+                    "id": "kyc-id",
+                    "status": "submitted",
+                    "submitted_at": "2026-03-29T00:00:00.000Z"
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "KYC submission is incomplete"
