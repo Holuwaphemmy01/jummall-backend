@@ -1,5 +1,6 @@
 import { Router } from "express";
 
+import type { ListAvailableProductBrandsUseCase } from "../../../application/seller/list-available-product-brands";
 import type { RegisterSellerUseCase } from "../../../application/seller/register-seller";
 import { RegisterSellerError } from "../../../application/seller/register-seller";
 import type { UploadProductUseCase } from "../../../application/seller/upload-product";
@@ -15,6 +16,10 @@ interface SellerRouterDependencies {
 
 interface SellerProductRouterDependencies {
   uploadProduct: UploadProductUseCase;
+}
+
+interface SellerBrandRouterDependencies {
+  listAvailableProductBrands: ListAvailableProductBrandsUseCase;
 }
 
 export default function createSellerRouter({
@@ -186,4 +191,33 @@ export function createProtectedSellerProductRouter({
   });
 
   return sellerProductRouter;
+}
+
+export function createProtectedSellerBrandRouter({
+  listAvailableProductBrands
+}: SellerBrandRouterDependencies) {
+  const sellerBrandRouter = Router();
+
+  sellerBrandRouter.get("/", async (_req, res) => {
+    try {
+      const brands = await listAvailableProductBrands.execute();
+
+      return res.status(200).json({
+        message: "Product brands fetched successfully.",
+        data: brands.map((brand) => ({
+          id: brand.id,
+          name: brand.name,
+          description: brand.description,
+          created_at: brand.createdAt.toISOString(),
+          updated_at: brand.updatedAt.toISOString()
+        }))
+      });
+    } catch {
+      return res.status(500).json({
+        message: "Unable to fetch product brands."
+      });
+    }
+  });
+
+  return sellerBrandRouter;
 }

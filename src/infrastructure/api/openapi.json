@@ -801,6 +801,24 @@
         }
       }
     },
+    "/sellers/product-brands": {
+      "get": {
+        "tags": ["seller"],
+        "summary": "List available product brands for sellers",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Product brands fetched successfully"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required"
+          }
+        }
+      }
+    },
     "/sellers/kyc": {
       "put": {
         "tags": ["seller"],
