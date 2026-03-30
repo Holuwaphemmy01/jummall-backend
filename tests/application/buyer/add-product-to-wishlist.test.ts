@@ -98,6 +98,10 @@ class WishlistRepositoryDouble implements WishlistRepository {
       updatedAt: new Date("2026-03-29T00:00:00.000Z")
     }));
 
+  findByBuyerId = jest
+    .fn<(buyerId: string) => Promise<WishlistItemRecord[]>>()
+    .mockResolvedValue([]);
+
   findByBuyerIdAndProductId = jest
     .fn<(buyerId: string, productId: string) => Promise<WishlistItemRecord | null>>()
     .mockResolvedValue(null);

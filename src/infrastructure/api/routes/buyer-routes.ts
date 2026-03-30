@@ -12,6 +12,8 @@ import type { UpdateProductQuantityInCartUseCase } from "../../../application/bu
 import { UpdateProductQuantityInCartError } from "../../../application/buyer/update-product-quantity-in-cart";
 import type { AddProductToWishlistUseCase } from "../../../application/buyer/add-product-to-wishlist";
 import { AddProductToWishlistError } from "../../../application/buyer/add-product-to-wishlist";
+import type { GetBuyerWishlistUseCase } from "../../../application/buyer/get-buyer-wishlist";
+import { GetBuyerWishlistError } from "../../../application/buyer/get-buyer-wishlist";
 import type { RemoveProductFromWishlistUseCase } from "../../../application/buyer/remove-product-from-wishlist";
 import { RemoveProductFromWishlistError } from "../../../application/buyer/remove-product-from-wishlist";
 import type { RegisterBuyerUseCase } from "../../../application/buyer/register-buyer";
@@ -27,6 +29,7 @@ interface BuyerRouterDependencies {
 }
 
 interface BuyerWishlistRouterDependencies {
+  getBuyerWishlist: GetBuyerWishlistUseCase;
   addProductToWishlist: AddProductToWishlistUseCase;
   removeProductFromWishlist: RemoveProductFromWishlistUseCase;
 }
@@ -104,10 +107,67 @@ export default function createBuyerRouter({
 }
 
 export function createProtectedBuyerWishlistRouter({
+  getBuyerWishlist,
   addProductToWishlist,
   removeProductFromWishlist
 }: BuyerWishlistRouterDependencies) {
   const buyerWishlistRouter = Router();
+
+  buyerWishlistRouter.get("/", async (_req, res) => {
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      const result = await getBuyerWishlist.execute({
+        buyerId: authUser.sub
+      });
+
+      return res.status(200).json({
+        message: "Buyer wishlist fetched successfully.",
+        data: {
+          items: result.items.map((item) => ({
+            id: item.id,
+            buyer_id: item.buyerId,
+            product_id: item.productId,
+            product: {
+              id: item.product.id,
+              name: item.product.name,
+              description: item.product.description,
+              brand_id: item.product.brandId,
+              brand_name: item.product.brandName,
+              category_id: item.product.categoryId,
+              sku: item.product.sku,
+              price: item.product.price,
+              currency: item.product.currency,
+              condition: item.product.condition,
+              weight_kg: item.product.weightKg,
+              status: item.product.status,
+              available_quantity: item.product.availableQuantity,
+              images: item.product.images.map((image) => ({
+                id: image.id,
+                storage_path: image.storagePath,
+                mime_type: image.mimeType,
+                original_file_name: image.originalFileName,
+                position: image.position
+              }))
+            },
+            created_at: item.createdAt.toISOString(),
+            updated_at: item.updatedAt.toISOString()
+          }))
+        }
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof GetBuyerWishlistError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch buyer wishlist."
+      });
+    }
+  });
 
   buyerWishlistRouter.post("/", async (req, res) => {
     const { error, value } = addProductToWishlistSchema.validate(req.body, {

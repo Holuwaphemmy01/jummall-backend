@@ -13,6 +13,7 @@ export interface CreateWishlistItemInput {
 
 export interface WishlistRepository {
   create(input: CreateWishlistItemInput): Promise<WishlistItemRecord>;
+  findByBuyerId(buyerId: string): Promise<WishlistItemRecord[]>;
   findByBuyerIdAndProductId(
     buyerId: string,
     productId: string
