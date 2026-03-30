@@ -2,6 +2,8 @@ import { Router } from "express";
 
 import type { AddProductToCartUseCase } from "../../../application/buyer/add-product-to-cart";
 import { AddProductToCartError } from "../../../application/buyer/add-product-to-cart";
+import type { ClearBuyerCartUseCase } from "../../../application/buyer/clear-buyer-cart";
+import { ClearBuyerCartError } from "../../../application/buyer/clear-buyer-cart";
 import type { GetActiveCartUseCase } from "../../../application/buyer/get-active-cart";
 import { GetActiveCartError } from "../../../application/buyer/get-active-cart";
 import type { RemoveProductFromCartUseCase } from "../../../application/buyer/remove-product-from-cart";
@@ -30,6 +32,7 @@ interface BuyerWishlistRouterDependencies {
 }
 
 interface BuyerCartRouterDependencies {
+  clearBuyerCart: ClearBuyerCartUseCase;
   getActiveCart: GetActiveCartUseCase;
   addProductToCart: AddProductToCartUseCase;
   removeProductFromCart: RemoveProductFromCartUseCase;
@@ -184,6 +187,7 @@ export function createProtectedBuyerWishlistRouter({
 }
 
 export function createProtectedBuyerCartRouter({
+  clearBuyerCart,
   getActiveCart,
   addProductToCart,
   removeProductFromCart,
@@ -309,6 +313,36 @@ export function createProtectedBuyerCartRouter({
 
       return res.status(500).json({
         message: "Unable to add product to cart."
+      });
+    }
+  });
+
+  buyerCartRouter.delete("/clear-cart", async (_req, res) => {
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      const result = await clearBuyerCart.execute({
+        buyerId: authUser.sub
+      });
+
+      return res.status(200).json({
+        message: "Cart cleared successfully.",
+        data: {
+          cart_id: result.cartId,
+          cart_status: result.cartStatus,
+          cleared_items_count: result.clearedItemsCount
+        }
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ClearBuyerCartError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to clear cart."
       });
     }
   });

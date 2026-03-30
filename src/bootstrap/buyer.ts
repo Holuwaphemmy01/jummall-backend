@@ -1,5 +1,6 @@
 import { AddProductToCart } from "../application/buyer/add-product-to-cart";
 import { AddProductToWishlist } from "../application/buyer/add-product-to-wishlist";
+import { ClearBuyerCart } from "../application/buyer/clear-buyer-cart";
 import { GetActiveCart } from "../application/buyer/get-active-cart";
 import { InitiateEmailVerification } from "../application/auth/initiate-email-verification";
 import { RemoveProductFromCart } from "../application/buyer/remove-product-from-cart";
@@ -59,6 +60,10 @@ export function createBuyerModule() {
     productRepository,
     cartRepository
   );
+  const clearBuyerCart = new ClearBuyerCart(
+    authenticationRepository,
+    cartRepository
+  );
   const getActiveCart = new GetActiveCart(
     authenticationRepository,
     cartRepository,
@@ -84,6 +89,7 @@ export function createBuyerModule() {
     "/cart",
     authenticateBuyer,
     createProtectedBuyerCartRouter({
+      clearBuyerCart,
       getActiveCart,
       addProductToCart,
       removeProductFromCart,

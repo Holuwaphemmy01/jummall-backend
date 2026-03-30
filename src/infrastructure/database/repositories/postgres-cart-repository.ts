@@ -90,6 +90,18 @@ export class PostgresCartRepository implements CartRepository {
     return result.rows;
   }
 
+  async clearItemsByCartId(cartId: string): Promise<number> {
+    const result = await this.pool.query(
+      `
+        DELETE FROM "CartItem"
+        WHERE "cartId" = $1
+      `,
+      [cartId]
+    );
+
+    return result.rowCount ?? 0;
+  }
+
   async findItemByCartIdAndProductId(
     cartId: string,
     productId: string

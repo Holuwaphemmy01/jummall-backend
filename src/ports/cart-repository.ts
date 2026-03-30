@@ -36,6 +36,7 @@ export interface CartRepository {
   findActiveByBuyerId(buyerId: string): Promise<CartRecord | null>;
   createCart(input: CreateCartInput): Promise<CartRecord>;
   findItemsByCartId(cartId: string): Promise<CartItemRecord[]>;
+  clearItemsByCartId(cartId: string): Promise<number>;
   findItemByCartIdAndProductId(
     cartId: string,
     productId: string
