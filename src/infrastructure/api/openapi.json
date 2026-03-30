@@ -1210,6 +1210,294 @@
         }
       }
     },
+    "/buyers/cart": {
+      "get": {
+        "tags": ["buyer-cart"],
+        "summary": "Get buyer active cart",
+        "description": "Returns the authenticated buyer's current active cart with item details and computed totals. If the buyer does not yet have an active cart, the endpoint still succeeds and returns an empty cart state.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Buyer cart fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Buyer cart fetched successfully.",
+                  "data": {
+                    "cart_id": "cart-id",
+                    "cart_status": "active",
+                    "items": [
+                      {
+                        "id": "cart-item-id",
+                        "product_id": "product-id",
+                        "quantity": 2,
+                        "unit_price": 85000,
+                        "subtotal": 170000,
+                        "currency": "NGN",
+                        "product": {
+                          "id": "product-id",
+                          "name": "Wireless Headset",
+                          "description": "Noise-cancelling wireless headset",
+                          "brand_id": "brand-id",
+                          "brand_name": "Apple",
+                          "category_id": "category-id",
+                          "sku": "HEADSET-001",
+                          "condition": "new",
+                          "weight_kg": 0.4,
+                          "status": "approved",
+                          "available_quantity": 10,
+                          "images": [
+                            {
+                              "id": "image-id",
+                              "storage_path": "products/seller-id/product-id/front.jpg",
+                              "mime_type": "image/jpeg",
+                              "original_file_name": "front.jpg",
+                              "position": 0
+                            }
+                          ]
+                        },
+                        "created_at": "2026-03-30T00:00:00.000Z",
+                        "updated_at": "2026-03-30T00:00:00.000Z"
+                      }
+                    ],
+                    "summary": {
+                      "total_items": 2,
+                      "subtotal": 170000,
+                      "currency": "NGN"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer account not found or cart contains a product that no longer exists"
+          }
+        }
+      },
+      "post": {
+        "tags": ["buyer-cart"],
+        "summary": "Add a product to buyer cart",
+        "description": "Adds an approved product to the authenticated buyer's active cart. If the product is already in the active cart, the quantity is increased instead of creating a duplicate cart item.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductToCartRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product added to cart successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product added to cart successfully.",
+                  "data": {
+                    "cart_id": "cart-id",
+                    "cart_status": "active",
+                    "item": {
+                      "id": "cart-item-id",
+                      "product_id": "product-id",
+                      "quantity": 2,
+                      "created_at": "2026-03-29T00:00:00.000Z",
+                      "updated_at": "2026-03-29T00:00:00.000Z"
+                    },
+                    "pricing": {
+                      "unit_price": 85000,
+                      "subtotal": 170000,
+                      "currency": "NGN"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer or product not found"
+          },
+          "409": {
+            "description": "Product is not approved, out of stock, or requested quantity exceeds stock"
+          }
+        }
+      }
+    },
+    "/buyers/cart/clear-cart": {
+      "delete": {
+        "tags": ["buyer-cart"],
+        "summary": "Clear buyer cart",
+        "description": "Removes all items from the authenticated buyer's active cart. This endpoint is idempotent, so it still succeeds when the buyer has no active cart or the cart is already empty.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Cart cleared successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Cart cleared successfully.",
+                  "data": {
+                    "cart_id": "cart-id",
+                    "cart_status": "active",
+                    "cleared_items_count": 2
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer account not found"
+          }
+        }
+      }
+    },
+    "/buyers/cart/{productId}": {
+      "patch": {
+        "tags": ["buyer-cart"],
+        "summary": "Update product quantity in buyer cart",
+        "description": "Updates the quantity of a product already present in the authenticated buyer's active cart. The requested quantity must be greater than zero and cannot exceed the current approved product stock.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductQuantityInCartRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cart quantity updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Cart quantity updated successfully.",
+                  "data": {
+                    "cart_id": "cart-id",
+                    "cart_status": "active",
+                    "item": {
+                      "id": "cart-item-id",
+                      "product_id": "product-id",
+                      "quantity": 3,
+                      "created_at": "2026-03-30T00:00:00.000Z",
+                      "updated_at": "2026-03-30T00:05:00.000Z"
+                    },
+                    "pricing": {
+                      "unit_price": 85000,
+                      "subtotal": 255000,
+                      "currency": "NGN"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer, active cart, cart item, or product not found"
+          },
+          "409": {
+            "description": "Product is not approved, out of stock, or requested quantity exceeds stock"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["buyer-cart"],
+        "summary": "Remove a product from buyer cart",
+        "description": "Removes the specified product from the authenticated buyer's active cart. The removal is scoped to the current buyer and only affects the active cart.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product removed from cart successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product removed from cart successfully."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer, active cart, or cart item not found"
+          }
+        }
+      }
+    },
     "/buyers/wishlist": {
       "post": {
         "tags": ["buyer-wishlist"],
@@ -1508,6 +1796,94 @@
           },
           "404": {
             "description": "Product category not found"
+          }
+        }
+      }
+    },
+    "/products/brands/{brandName}": {
+      "get": {
+        "tags": ["product-catalog"],
+        "summary": "List approved products for a specific brand name",
+        "description": "Returns approved and in-stock products for one brand only using the brand name. Results are sorted newest first and support pagination.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "brandName",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Products fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Products fetched successfully.",
+                  "data": [
+                    {
+                      "id": "product-id",
+                      "category_id": "category-id",
+                      "brand_id": "brand-id",
+                      "brand_name": "Apple",
+                      "name": "Wireless Headset",
+                      "description": "Noise-cancelling wireless headset with long battery life.",
+                      "price": 85000,
+                      "quantity": 10,
+                      "currency": "NGN",
+                      "condition": "new",
+                      "weight_kg": 0.4,
+                      "status": "approved",
+                      "images": [
+                        {
+                          "id": "image-id",
+                          "storage_path": "products/seller-id/front.jpg",
+                          "mime_type": "image/jpeg",
+                          "original_file_name": "front.jpg",
+                          "position": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "meta": {
+                    "page": 1,
+                    "limit": 20,
+                    "total": 1,
+                    "total_pages": 1
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "404": {
+            "description": "Product brand not found"
           }
         }
       }
@@ -2069,6 +2445,10 @@
       "description": "Buyer onboarding endpoints."
     },
     {
+      "name": "buyer-cart",
+      "description": "Buyer cart endpoints for managing the active shopping cart."
+    },
+    {
       "name": "buyer-wishlist",
       "description": "Buyer wishlist endpoints for saving approved products."
     },
@@ -2462,6 +2842,32 @@
           "product_id": {
             "type": "string",
             "format": "uuid"
+          }
+        }
+      },
+      "AddProductToCartRequest": {
+        "type": "object",
+        "required": ["product_id", "quantity"],
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 2
+          }
+        }
+      },
+      "UpdateProductQuantityInCartRequest": {
+        "type": "object",
+        "required": ["quantity"],
+        "properties": {
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 3
           }
         }
       },

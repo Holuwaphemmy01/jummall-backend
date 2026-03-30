@@ -1,14 +1,21 @@
+import { AddProductToCart } from "../application/buyer/add-product-to-cart";
 import { AddProductToWishlist } from "../application/buyer/add-product-to-wishlist";
+import { ClearBuyerCart } from "../application/buyer/clear-buyer-cart";
+import { GetActiveCart } from "../application/buyer/get-active-cart";
 import { InitiateEmailVerification } from "../application/auth/initiate-email-verification";
+import { RemoveProductFromCart } from "../application/buyer/remove-product-from-cart";
 import { RemoveProductFromWishlist } from "../application/buyer/remove-product-from-wishlist";
 import { RegisterBuyer } from "../application/buyer/register-buyer";
+import { UpdateProductQuantityInCart } from "../application/buyer/update-product-quantity-in-cart";
 import { SendWelcomeEmail } from "../application/notification/send-welcome-email";
 import { createAuthMiddleware } from "../infrastructure/api/middleware/create-auth-middleware";
 import createBuyerRouter, {
+  createProtectedBuyerCartRouter,
   createProtectedBuyerWishlistRouter
 } from "../infrastructure/api/routes/buyer-routes";
 import { PostgresAuthenticationRepository } from "../infrastructure/database/repositories/postgres-authentication-repository";
 import { PostgresBuyerRepository } from "../infrastructure/database/repositories/postgres-buyer-repository";
+import { PostgresCartRepository } from "../infrastructure/database/repositories/postgres-cart-repository";
 import { PostgresEmailVerificationRepository } from "../infrastructure/database/repositories/postgres-email-verification-repository";
 import { PostgresProductRepository } from "../infrastructure/database/repositories/postgres-product-repository";
 import { PostgresWishlistRepository } from "../infrastructure/database/repositories/postgres-wishlist-repository";
@@ -22,6 +29,7 @@ export function createBuyerModule() {
   const buyerRouter = Router();
   const authenticationRepository = new PostgresAuthenticationRepository();
   const buyerRepository = new PostgresBuyerRepository();
+  const cartRepository = new PostgresCartRepository();
   const emailVerificationRepository = new PostgresEmailVerificationRepository();
   const productRepository = new PostgresProductRepository();
   const wishlistRepository = new PostgresWishlistRepository();
@@ -47,6 +55,29 @@ export function createBuyerModule() {
     productRepository,
     wishlistRepository
   );
+  const addProductToCart = new AddProductToCart(
+    authenticationRepository,
+    productRepository,
+    cartRepository
+  );
+  const clearBuyerCart = new ClearBuyerCart(
+    authenticationRepository,
+    cartRepository
+  );
+  const getActiveCart = new GetActiveCart(
+    authenticationRepository,
+    cartRepository,
+    productRepository
+  );
+  const removeProductFromCart = new RemoveProductFromCart(
+    authenticationRepository,
+    cartRepository
+  );
+  const updateProductQuantityInCart = new UpdateProductQuantityInCart(
+    authenticationRepository,
+    productRepository,
+    cartRepository
+  );
   const removeProductFromWishlist = new RemoveProductFromWishlist(
     authenticationRepository,
     wishlistRepository
@@ -54,6 +85,17 @@ export function createBuyerModule() {
   const authenticateBuyer = createAuthMiddleware(tokenVerifier, "buyer");
 
   buyerRouter.use(createBuyerRouter({ registerBuyer }));
+  buyerRouter.use(
+    "/cart",
+    authenticateBuyer,
+    createProtectedBuyerCartRouter({
+      clearBuyerCart,
+      getActiveCart,
+      addProductToCart,
+      removeProductFromCart,
+      updateProductQuantityInCart
+    })
+  );
   buyerRouter.use(
     "/wishlist",
     authenticateBuyer,
