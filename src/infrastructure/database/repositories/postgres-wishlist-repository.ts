@@ -39,6 +39,25 @@ export class PostgresWishlistRepository implements WishlistRepository {
     return result.rows[0];
   }
 
+  async findByBuyerId(buyerId: string): Promise<WishlistItemRecord[]> {
+    const result = await this.pool.query<WishlistItemRow>(
+      `
+        SELECT
+          "id",
+          "buyerId",
+          "productId",
+          "createdAt",
+          "updatedAt"
+        FROM "WishlistItem"
+        WHERE "buyerId" = $1
+        ORDER BY "createdAt" DESC
+      `,
+      [buyerId]
+    );
+
+    return result.rows;
+  }
+
   async findByBuyerIdAndProductId(
     buyerId: string,
     productId: string

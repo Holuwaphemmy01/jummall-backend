@@ -2,6 +2,7 @@ import { AddProductToCart } from "../application/buyer/add-product-to-cart";
 import { AddProductToWishlist } from "../application/buyer/add-product-to-wishlist";
 import { ClearBuyerCart } from "../application/buyer/clear-buyer-cart";
 import { GetActiveCart } from "../application/buyer/get-active-cart";
+import { GetBuyerWishlist } from "../application/buyer/get-buyer-wishlist";
 import { InitiateEmailVerification } from "../application/auth/initiate-email-verification";
 import { RemoveProductFromCart } from "../application/buyer/remove-product-from-cart";
 import { RemoveProductFromWishlist } from "../application/buyer/remove-product-from-wishlist";
@@ -55,6 +56,11 @@ export function createBuyerModule() {
     productRepository,
     wishlistRepository
   );
+  const getBuyerWishlist = new GetBuyerWishlist(
+    authenticationRepository,
+    wishlistRepository,
+    productRepository
+  );
   const addProductToCart = new AddProductToCart(
     authenticationRepository,
     productRepository,
@@ -100,6 +106,7 @@ export function createBuyerModule() {
     "/wishlist",
     authenticateBuyer,
     createProtectedBuyerWishlistRouter({
+      getBuyerWishlist,
       addProductToWishlist,
       removeProductFromWishlist
     })

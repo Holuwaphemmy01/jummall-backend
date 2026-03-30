@@ -1499,6 +1499,71 @@
       }
     },
     "/buyers/wishlist": {
+      "get": {
+        "tags": ["buyer-wishlist"],
+        "summary": "Get buyer wishlist",
+        "description": "Returns the authenticated buyer's wishlist with product details for rendering the saved-products screen. Entries whose products no longer exist are skipped automatically.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Buyer wishlist fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Buyer wishlist fetched successfully.",
+                  "data": {
+                    "items": [
+                      {
+                        "id": "wishlist-item-id",
+                        "buyer_id": "buyer-id",
+                        "product_id": "product-id",
+                        "product": {
+                          "id": "product-id",
+                          "name": "Wireless Headset",
+                          "description": "Noise-cancelling wireless headset",
+                          "brand_id": "brand-id",
+                          "brand_name": "Apple",
+                          "category_id": "category-id",
+                          "sku": "HEADSET-001",
+                          "price": 85000,
+                          "currency": "NGN",
+                          "condition": "new",
+                          "weight_kg": 0.4,
+                          "status": "approved",
+                          "available_quantity": 10,
+                          "images": [
+                            {
+                              "id": "image-id",
+                              "storage_path": "products/seller-id/product-id/front.jpg",
+                              "mime_type": "image/jpeg",
+                              "original_file_name": "front.jpg",
+                              "position": 0
+                            }
+                          ]
+                        },
+                        "created_at": "2026-03-30T00:00:00.000Z",
+                        "updated_at": "2026-03-30T00:00:00.000Z"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer account not found"
+          }
+        }
+      },
       "post": {
         "tags": ["buyer-wishlist"],
         "summary": "Add an approved product to buyer wishlist",
