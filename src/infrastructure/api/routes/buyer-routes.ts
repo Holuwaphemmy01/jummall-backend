@@ -2,6 +2,8 @@ import { Router } from "express";
 
 import type { AddProductToCartUseCase } from "../../../application/buyer/add-product-to-cart";
 import { AddProductToCartError } from "../../../application/buyer/add-product-to-cart";
+import type { GetActiveCartUseCase } from "../../../application/buyer/get-active-cart";
+import { GetActiveCartError } from "../../../application/buyer/get-active-cart";
 import type { RemoveProductFromCartUseCase } from "../../../application/buyer/remove-product-from-cart";
 import { RemoveProductFromCartError } from "../../../application/buyer/remove-product-from-cart";
 import type { UpdateProductQuantityInCartUseCase } from "../../../application/buyer/update-product-quantity-in-cart";
@@ -28,6 +30,7 @@ interface BuyerWishlistRouterDependencies {
 }
 
 interface BuyerCartRouterDependencies {
+  getActiveCart: GetActiveCartUseCase;
   addProductToCart: AddProductToCartUseCase;
   removeProductFromCart: RemoveProductFromCartUseCase;
   updateProductQuantityInCart: UpdateProductQuantityInCartUseCase;
@@ -181,11 +184,76 @@ export function createProtectedBuyerWishlistRouter({
 }
 
 export function createProtectedBuyerCartRouter({
+  getActiveCart,
   addProductToCart,
   removeProductFromCart,
   updateProductQuantityInCart
 }: BuyerCartRouterDependencies) {
   const buyerCartRouter = Router();
+
+  buyerCartRouter.get("/", async (_req, res) => {
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      const result = await getActiveCart.execute({
+        buyerId: authUser.sub
+      });
+
+      return res.status(200).json({
+        message: "Buyer cart fetched successfully.",
+        data: {
+          cart_id: result.cart?.id ?? null,
+          cart_status: result.cart?.status ?? null,
+          items: result.items.map((item) => ({
+            id: item.id,
+            product_id: item.productId,
+            quantity: item.quantity,
+            unit_price: item.unitPrice,
+            subtotal: item.subtotal,
+            currency: item.currency,
+            product: {
+              id: item.product.id,
+              name: item.product.name,
+              description: item.product.description,
+              brand_id: item.product.brandId,
+              brand_name: item.product.brandName,
+              category_id: item.product.categoryId,
+              sku: item.product.sku,
+              condition: item.product.condition,
+              weight_kg: item.product.weightKg,
+              status: item.product.status,
+              available_quantity: item.product.availableQuantity,
+              images: item.product.images.map((image) => ({
+                id: image.id,
+                storage_path: image.storagePath,
+                mime_type: image.mimeType,
+                original_file_name: image.originalFileName,
+                position: image.position
+              }))
+            },
+            created_at: item.createdAt.toISOString(),
+            updated_at: item.updatedAt.toISOString()
+          })),
+          summary: {
+            total_items: result.totalItems,
+            subtotal: result.subtotal,
+            currency: result.currency
+          }
+        }
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof GetActiveCartError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch buyer cart."
+      });
+    }
+  });
 
   buyerCartRouter.post("/", async (req, res) => {
     const { error, value } = addProductToCartSchema.validate(req.body, {

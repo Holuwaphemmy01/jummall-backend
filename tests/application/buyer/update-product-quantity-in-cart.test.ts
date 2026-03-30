@@ -114,6 +114,10 @@ class CartRepositoryDouble implements CartRepository {
     .fn<(input: CreateCartInput) => Promise<CartRecord>>()
     .mockResolvedValue(makeActiveCart());
 
+  findItemsByCartId = jest
+    .fn<(cartId: string) => Promise<CartItemRecord[]>>()
+    .mockResolvedValue([]);
+
   findItemByCartIdAndProductId = jest
     .fn<(cartId: string, productId: string) => Promise<CartItemRecord | null>>()
     .mockResolvedValue(makeCartItem());

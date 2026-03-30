@@ -35,6 +35,7 @@ export interface UpdateCartItemQuantityInput {
 export interface CartRepository {
   findActiveByBuyerId(buyerId: string): Promise<CartRecord | null>;
   createCart(input: CreateCartInput): Promise<CartRecord>;
+  findItemsByCartId(cartId: string): Promise<CartItemRecord[]>;
   findItemByCartIdAndProductId(
     cartId: string,
     productId: string

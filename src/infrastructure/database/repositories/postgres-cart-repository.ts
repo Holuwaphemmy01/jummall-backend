@@ -70,6 +70,26 @@ export class PostgresCartRepository implements CartRepository {
     return result.rows[0];
   }
 
+  async findItemsByCartId(cartId: string): Promise<CartItemRecord[]> {
+    const result = await this.pool.query<CartItemRow>(
+      `
+        SELECT
+          "id",
+          "cartId",
+          "productId",
+          "quantity",
+          "createdAt",
+          "updatedAt"
+        FROM "CartItem"
+        WHERE "cartId" = $1
+        ORDER BY "createdAt" ASC
+      `,
+      [cartId]
+    );
+
+    return result.rows;
+  }
+
   async findItemByCartIdAndProductId(
     cartId: string,
     productId: string

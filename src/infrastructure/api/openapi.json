@@ -1211,6 +1211,79 @@
       }
     },
     "/buyers/cart": {
+      "get": {
+        "tags": ["buyer-cart"],
+        "summary": "Get buyer active cart",
+        "description": "Returns the authenticated buyer's current active cart with item details and computed totals. If the buyer does not yet have an active cart, the endpoint still succeeds and returns an empty cart state.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Buyer cart fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Buyer cart fetched successfully.",
+                  "data": {
+                    "cart_id": "cart-id",
+                    "cart_status": "active",
+                    "items": [
+                      {
+                        "id": "cart-item-id",
+                        "product_id": "product-id",
+                        "quantity": 2,
+                        "unit_price": 85000,
+                        "subtotal": 170000,
+                        "currency": "NGN",
+                        "product": {
+                          "id": "product-id",
+                          "name": "Wireless Headset",
+                          "description": "Noise-cancelling wireless headset",
+                          "brand_id": "brand-id",
+                          "brand_name": "Apple",
+                          "category_id": "category-id",
+                          "sku": "HEADSET-001",
+                          "condition": "new",
+                          "weight_kg": 0.4,
+                          "status": "approved",
+                          "available_quantity": 10,
+                          "images": [
+                            {
+                              "id": "image-id",
+                              "storage_path": "products/seller-id/product-id/front.jpg",
+                              "mime_type": "image/jpeg",
+                              "original_file_name": "front.jpg",
+                              "position": 0
+                            }
+                          ]
+                        },
+                        "created_at": "2026-03-30T00:00:00.000Z",
+                        "updated_at": "2026-03-30T00:00:00.000Z"
+                      }
+                    ],
+                    "summary": {
+                      "total_items": 2,
+                      "subtotal": 170000,
+                      "currency": "NGN"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer account not found or cart contains a product that no longer exists"
+          }
+        }
+      },
       "post": {
         "tags": ["buyer-cart"],
         "summary": "Add a product to buyer cart",
