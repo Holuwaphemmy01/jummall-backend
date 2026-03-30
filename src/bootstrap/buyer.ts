@@ -4,6 +4,7 @@ import { InitiateEmailVerification } from "../application/auth/initiate-email-ve
 import { RemoveProductFromCart } from "../application/buyer/remove-product-from-cart";
 import { RemoveProductFromWishlist } from "../application/buyer/remove-product-from-wishlist";
 import { RegisterBuyer } from "../application/buyer/register-buyer";
+import { UpdateProductQuantityInCart } from "../application/buyer/update-product-quantity-in-cart";
 import { SendWelcomeEmail } from "../application/notification/send-welcome-email";
 import { createAuthMiddleware } from "../infrastructure/api/middleware/create-auth-middleware";
 import createBuyerRouter, {
@@ -61,6 +62,11 @@ export function createBuyerModule() {
     authenticationRepository,
     cartRepository
   );
+  const updateProductQuantityInCart = new UpdateProductQuantityInCart(
+    authenticationRepository,
+    productRepository,
+    cartRepository
+  );
   const removeProductFromWishlist = new RemoveProductFromWishlist(
     authenticationRepository,
     wishlistRepository
@@ -73,7 +79,8 @@ export function createBuyerModule() {
     authenticateBuyer,
     createProtectedBuyerCartRouter({
       addProductToCart,
-      removeProductFromCart
+      removeProductFromCart,
+      updateProductQuantityInCart
     })
   );
   buyerRouter.use(

@@ -1275,6 +1275,78 @@
       }
     },
     "/buyers/cart/{productId}": {
+      "patch": {
+        "tags": ["buyer-cart"],
+        "summary": "Update product quantity in buyer cart",
+        "description": "Updates the quantity of a product already present in the authenticated buyer's active cart. The requested quantity must be greater than zero and cannot exceed the current approved product stock.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductQuantityInCartRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cart quantity updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Cart quantity updated successfully.",
+                  "data": {
+                    "cart_id": "cart-id",
+                    "cart_status": "active",
+                    "item": {
+                      "id": "cart-item-id",
+                      "product_id": "product-id",
+                      "quantity": 3,
+                      "created_at": "2026-03-30T00:00:00.000Z",
+                      "updated_at": "2026-03-30T00:05:00.000Z"
+                    },
+                    "pricing": {
+                      "unit_price": 85000,
+                      "subtotal": 255000,
+                      "currency": "NGN"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer, active cart, cart item, or product not found"
+          },
+          "409": {
+            "description": "Product is not approved, out of stock, or requested quantity exceeds stock"
+          }
+        }
+      },
       "delete": {
         "tags": ["buyer-cart"],
         "summary": "Remove a product from buyer cart",
@@ -2675,6 +2747,17 @@
             "type": "integer",
             "minimum": 1,
             "example": 2
+          }
+        }
+      },
+      "UpdateProductQuantityInCartRequest": {
+        "type": "object",
+        "required": ["quantity"],
+        "properties": {
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 3
           }
         }
       },
