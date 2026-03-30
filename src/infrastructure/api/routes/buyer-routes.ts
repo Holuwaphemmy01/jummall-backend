@@ -2,6 +2,8 @@ import { Router } from "express";
 
 import type { AddProductToCartUseCase } from "../../../application/buyer/add-product-to-cart";
 import { AddProductToCartError } from "../../../application/buyer/add-product-to-cart";
+import type { RemoveProductFromCartUseCase } from "../../../application/buyer/remove-product-from-cart";
+import { RemoveProductFromCartError } from "../../../application/buyer/remove-product-from-cart";
 import type { AddProductToWishlistUseCase } from "../../../application/buyer/add-product-to-wishlist";
 import { AddProductToWishlistError } from "../../../application/buyer/add-product-to-wishlist";
 import type { RemoveProductFromWishlistUseCase } from "../../../application/buyer/remove-product-from-wishlist";
@@ -24,6 +26,7 @@ interface BuyerWishlistRouterDependencies {
 
 interface BuyerCartRouterDependencies {
   addProductToCart: AddProductToCartUseCase;
+  removeProductFromCart: RemoveProductFromCartUseCase;
 }
 
 export default function createBuyerRouter({
@@ -174,7 +177,8 @@ export function createProtectedBuyerWishlistRouter({
 }
 
 export function createProtectedBuyerCartRouter({
-  addProductToCart
+  addProductToCart,
+  removeProductFromCart
 }: BuyerCartRouterDependencies) {
   const buyerCartRouter = Router();
 
@@ -232,6 +236,32 @@ export function createProtectedBuyerCartRouter({
 
       return res.status(500).json({
         message: "Unable to add product to cart."
+      });
+    }
+  });
+
+  buyerCartRouter.delete("/:productId", async (req, res) => {
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      await removeProductFromCart.execute({
+        buyerId: authUser.sub,
+        productId: req.params.productId
+      });
+
+      return res.status(200).json({
+        message: "Product removed from cart successfully."
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof RemoveProductFromCartError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to remove product from cart."
       });
     }
   });

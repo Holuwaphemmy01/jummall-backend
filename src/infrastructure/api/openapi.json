@@ -1274,6 +1274,48 @@
         }
       }
     },
+    "/buyers/cart/{productId}": {
+      "delete": {
+        "tags": ["buyer-cart"],
+        "summary": "Remove a product from buyer cart",
+        "description": "Removes the specified product from the authenticated buyer's active cart. The removal is scoped to the current buyer and only affects the active cart.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product removed from cart successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product removed from cart successfully."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer, active cart, or cart item not found"
+          }
+        }
+      }
+    },
     "/buyers/wishlist": {
       "post": {
         "tags": ["buyer-wishlist"],

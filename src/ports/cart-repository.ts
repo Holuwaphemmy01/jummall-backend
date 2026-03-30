@@ -40,6 +40,7 @@ export interface CartRepository {
     productId: string
   ): Promise<CartItemRecord | null>;
   createCartItem(input: CreateCartItemInput): Promise<CartItemRecord>;
+  deleteCartItem(cartItemId: string): Promise<CartItemRecord | null>;
   updateCartItemQuantity(
     input: UpdateCartItemQuantityInput
   ): Promise<CartItemRecord | null>;

@@ -116,6 +116,25 @@ export class PostgresCartRepository implements CartRepository {
     return result.rows[0];
   }
 
+  async deleteCartItem(cartItemId: string): Promise<CartItemRecord | null> {
+    const result = await this.pool.query<CartItemRow>(
+      `
+        DELETE FROM "CartItem"
+        WHERE "id" = $1
+        RETURNING
+          "id",
+          "cartId",
+          "productId",
+          "quantity",
+          "createdAt",
+          "updatedAt"
+      `,
+      [cartItemId]
+    );
+
+    return result.rows[0] ?? null;
+  }
+
   async updateCartItemQuantity(
     input: UpdateCartItemQuantityInput
   ): Promise<CartItemRecord | null> {

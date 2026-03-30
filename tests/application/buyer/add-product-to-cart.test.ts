@@ -140,6 +140,10 @@ class CartRepositoryDouble implements CartRepository {
       })
     );
 
+  deleteCartItem = jest
+    .fn<(cartItemId: string) => Promise<CartItemRecord | null>>()
+    .mockResolvedValue(makeCartItem());
+
   updateCartItemQuantity = jest
     .fn<
       (input: UpdateCartItemQuantityInput) => Promise<CartItemRecord | null>
