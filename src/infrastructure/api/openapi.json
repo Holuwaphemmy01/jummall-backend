@@ -1765,6 +1765,48 @@
         }
       }
     },
+    "/buyers/billing-addresses/{billingAddressId}": {
+      "delete": {
+        "tags": ["buyer-billing-addresses"],
+        "summary": "Delete buyer billing address",
+        "description": "Deletes a saved billing address belonging to the authenticated buyer. The address is identified by its billing address id and removal is scoped to the current buyer only.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "billingAddressId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Billing address deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Billing address deleted successfully."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer account or billing address not found"
+          }
+        }
+      }
+    },
     "/products": {
       "get": {
         "tags": ["product-catalog"],

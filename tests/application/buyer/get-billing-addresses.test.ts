@@ -72,6 +72,18 @@ class BillingAddressRepositoryDouble implements BillingAddressRepository {
   findByBuyerId = jest
     .fn<(buyerId: string) => Promise<BillingAddressRecord[]>>()
     .mockResolvedValue([makeBillingAddress()]);
+
+  findByIdAndBuyerId = jest
+    .fn<
+      (billingAddressId: string, buyerId: string) => Promise<BillingAddressRecord | null>
+    >()
+    .mockResolvedValue(makeBillingAddress());
+
+  deleteByIdAndBuyerId = jest
+    .fn<
+      (billingAddressId: string, buyerId: string) => Promise<BillingAddressRecord | null>
+    >()
+    .mockResolvedValue(makeBillingAddress());
 }
 
 describe("GetBillingAddresses", () => {
