@@ -14,6 +14,8 @@ import type { UpdateProductQuantityInCartUseCase } from "../../../application/bu
 import { UpdateProductQuantityInCartError } from "../../../application/buyer/update-product-quantity-in-cart";
 import type { AddProductToWishlistUseCase } from "../../../application/buyer/add-product-to-wishlist";
 import { AddProductToWishlistError } from "../../../application/buyer/add-product-to-wishlist";
+import type { GetBillingAddressesUseCase } from "../../../application/buyer/get-billing-addresses";
+import { GetBillingAddressesError } from "../../../application/buyer/get-billing-addresses";
 import type { GetBuyerWishlistUseCase } from "../../../application/buyer/get-buyer-wishlist";
 import { GetBuyerWishlistError } from "../../../application/buyer/get-buyer-wishlist";
 import type { RemoveProductFromWishlistUseCase } from "../../../application/buyer/remove-product-from-wishlist";
@@ -39,6 +41,7 @@ interface BuyerWishlistRouterDependencies {
 
 interface BuyerBillingAddressRouterDependencies {
   addBillingAddress: AddBillingAddressUseCase;
+  getBillingAddresses: GetBillingAddressesUseCase;
 }
 
 interface BuyerCartRouterDependencies {
@@ -254,9 +257,49 @@ export function createProtectedBuyerWishlistRouter({
 }
 
 export function createProtectedBuyerBillingAddressRouter({
-  addBillingAddress
+  addBillingAddress,
+  getBillingAddresses
 }: BuyerBillingAddressRouterDependencies) {
   const buyerBillingAddressRouter = Router();
+
+  buyerBillingAddressRouter.get("/", async (_req, res) => {
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      const result = await getBillingAddresses.execute({
+        buyerId: authUser.sub
+      });
+
+      return res.status(200).json({
+        message: "Billing addresses fetched successfully.",
+        data: result.addresses.map((billingAddress) => ({
+          id: billingAddress.id,
+          buyer_id: billingAddress.buyerId,
+          full_name: billingAddress.fullName,
+          phone_number: billingAddress.phoneNumber,
+          address_line_1: billingAddress.addressLine1,
+          address_line_2: billingAddress.addressLine2,
+          city: billingAddress.city,
+          state: billingAddress.state,
+          country: billingAddress.country,
+          postal_code: billingAddress.postalCode,
+          created_at: billingAddress.createdAt.toISOString(),
+          updated_at: billingAddress.updatedAt.toISOString()
+        }))
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof GetBillingAddressesError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch billing addresses."
+      });
+    }
+  });
 
   buyerBillingAddressRouter.post("/", async (req, res) => {
     const { error, value } = addBillingAddressSchema.validate(req.body, {

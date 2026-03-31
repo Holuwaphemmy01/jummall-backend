@@ -27,4 +27,5 @@ export interface CreateBillingAddressInput {
 
 export interface BillingAddressRepository {
   create(input: CreateBillingAddressInput): Promise<BillingAddressRecord>;
+  findByBuyerId(buyerId: string): Promise<BillingAddressRecord[]>;
 }

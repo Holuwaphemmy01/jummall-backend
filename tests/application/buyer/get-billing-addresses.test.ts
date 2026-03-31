@@ -1,9 +1,9 @@
 import { describe, expect, it, jest } from "@jest/globals";
 
 import {
-  AddBillingAddress,
-  AddBillingAddressError
-} from "../../../src/application/buyer/add-billing-address";
+  GetBillingAddresses,
+  GetBillingAddressesError
+} from "../../../src/application/buyer/get-billing-addresses";
 import type {
   AuthUser,
   AuthenticationRepository
@@ -25,8 +25,8 @@ function makeBuyer(): AuthUser {
     passwordHash: "hashed-password",
     role: "buyer",
     accountStatus: "verified",
-    createdAt: new Date("2026-03-30T00:00:00.000Z"),
-    updatedAt: new Date("2026-03-30T00:00:00.000Z")
+    createdAt: new Date("2026-03-31T00:00:00.000Z"),
+    updatedAt: new Date("2026-03-31T00:00:00.000Z")
   };
 }
 
@@ -44,8 +44,8 @@ function makeBillingAddress(
     state: "Lagos",
     country: "Nigeria",
     postalCode: "100271",
-    createdAt: new Date("2026-03-30T00:00:00.000Z"),
-    updatedAt: new Date("2026-03-30T00:00:00.000Z"),
+    createdAt: new Date("2026-03-31T00:00:00.000Z"),
+    updatedAt: new Date("2026-03-31T00:00:00.000Z"),
     ...overrides
   };
 }
@@ -67,112 +67,69 @@ class AuthenticationRepositoryDouble implements AuthenticationRepository {
 class BillingAddressRepositoryDouble implements BillingAddressRepository {
   create = jest
     .fn<(input: CreateBillingAddressInput) => Promise<BillingAddressRecord>>()
-    .mockImplementation(async (input) =>
-      makeBillingAddress({
-        buyerId: input.buyerId,
-        fullName: input.fullName,
-        phoneNumber: input.phoneNumber,
-        addressLine1: input.addressLine1,
-        addressLine2: input.addressLine2 ?? null,
-        city: input.city,
-        state: input.state,
-        country: input.country,
-        postalCode: input.postalCode ?? null
-      })
-    );
+    .mockResolvedValue(makeBillingAddress());
 
   findByBuyerId = jest
     .fn<(buyerId: string) => Promise<BillingAddressRecord[]>>()
     .mockResolvedValue([makeBillingAddress()]);
 }
 
-describe("AddBillingAddress", () => {
-  it("adds a billing address for a buyer", async () => {
+describe("GetBillingAddresses", () => {
+  it("returns billing addresses for a buyer", async () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
     const billingAddressRepository = new BillingAddressRepositoryDouble();
-    const addBillingAddress = new AddBillingAddress(
+    const getBillingAddresses = new GetBillingAddresses(
       authenticationRepository,
       billingAddressRepository
     );
 
-    const result = await addBillingAddress.execute({
-      buyerId: "buyer-id",
-      fullName: "John Doe",
-      phoneNumber: "+2348012345678",
-      addressLine1: "12 Allen Avenue",
-      addressLine2: "2nd Floor",
-      city: "Ikeja",
-      state: "Lagos",
-      country: "Nigeria",
-      postalCode: "100271"
+    const result = await getBillingAddresses.execute({
+      buyerId: "buyer-id"
     });
 
     expect(authenticationRepository.findById).toHaveBeenCalledWith("buyer-id");
-    expect(billingAddressRepository.create).toHaveBeenCalledWith({
-      buyerId: "buyer-id",
+    expect(billingAddressRepository.findByBuyerId).toHaveBeenCalledWith(
+      "buyer-id"
+    );
+    expect(result.addresses).toHaveLength(1);
+    expect(result.addresses[0]).toMatchObject({
+      id: "billing-address-id",
       fullName: "John Doe",
-      phoneNumber: "+2348012345678",
-      addressLine1: "12 Allen Avenue",
-      addressLine2: "2nd Floor",
       city: "Ikeja",
-      state: "Lagos",
-      country: "Nigeria",
-      postalCode: "100271"
+      state: "Lagos"
     });
-    expect(result.id).toBe("billing-address-id");
   });
 
-  it("trims address fields before saving", async () => {
+  it("returns an empty list when the buyer has no billing addresses", async () => {
     const billingAddressRepository = new BillingAddressRepositoryDouble();
-    const addBillingAddress = new AddBillingAddress(
+    billingAddressRepository.findByBuyerId.mockResolvedValue([]);
+    const getBillingAddresses = new GetBillingAddresses(
       new AuthenticationRepositoryDouble(),
       billingAddressRepository
     );
 
-    await addBillingAddress.execute({
-      buyerId: "buyer-id",
-      fullName: " John Doe ",
-      phoneNumber: " +2348012345678 ",
-      addressLine1: " 12 Allen Avenue ",
-      addressLine2: " 2nd Floor ",
-      city: " Ikeja ",
-      state: " Lagos ",
-      country: " Nigeria ",
-      postalCode: " 100271 "
+    const result = await getBillingAddresses.execute({
+      buyerId: "buyer-id"
     });
 
-    expect(billingAddressRepository.create).toHaveBeenCalledWith({
-      buyerId: "buyer-id",
-      fullName: "John Doe",
-      phoneNumber: "+2348012345678",
-      addressLine1: "12 Allen Avenue",
-      addressLine2: "2nd Floor",
-      city: "Ikeja",
-      state: "Lagos",
-      country: "Nigeria",
-      postalCode: "100271"
+    expect(result).toEqual({
+      addresses: []
     });
   });
 
   it("throws when the buyer account does not exist", async () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
     authenticationRepository.findById.mockResolvedValue(null);
-    const addBillingAddress = new AddBillingAddress(
+    const getBillingAddresses = new GetBillingAddresses(
       authenticationRepository,
       new BillingAddressRepositoryDouble()
     );
 
     await expect(
-      addBillingAddress.execute({
-        buyerId: "missing-buyer-id",
-        fullName: "John Doe",
-        phoneNumber: "+2348012345678",
-        addressLine1: "12 Allen Avenue",
-        city: "Ikeja",
-        state: "Lagos",
-        country: "Nigeria"
+      getBillingAddresses.execute({
+        buyerId: "missing-buyer-id"
       })
-    ).rejects.toBeInstanceOf(AddBillingAddressError);
+    ).rejects.toBeInstanceOf(GetBillingAddressesError);
   });
 
   it("throws when the authenticated user is not a buyer", async () => {
@@ -181,21 +138,15 @@ describe("AddBillingAddress", () => {
       ...makeBuyer(),
       role: "seller"
     });
-    const addBillingAddress = new AddBillingAddress(
+    const getBillingAddresses = new GetBillingAddresses(
       authenticationRepository,
       new BillingAddressRepositoryDouble()
     );
 
     await expect(
-      addBillingAddress.execute({
-        buyerId: "seller-id",
-        fullName: "John Doe",
-        phoneNumber: "+2348012345678",
-        addressLine1: "12 Allen Avenue",
-        city: "Ikeja",
-        state: "Lagos",
-        country: "Nigeria"
+      getBillingAddresses.execute({
+        buyerId: "seller-id"
       })
-    ).rejects.toBeInstanceOf(AddBillingAddressError);
+    ).rejects.toBeInstanceOf(GetBillingAddressesError);
   });
 });
