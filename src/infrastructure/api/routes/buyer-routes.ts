@@ -1,6 +1,8 @@
 import { Router } from "express";
 
 import type { AddProductToCartUseCase } from "../../../application/buyer/add-product-to-cart";
+import type { AddBillingAddressUseCase } from "../../../application/buyer/add-billing-address";
+import { AddBillingAddressError } from "../../../application/buyer/add-billing-address";
 import { AddProductToCartError } from "../../../application/buyer/add-product-to-cart";
 import type { ClearBuyerCartUseCase } from "../../../application/buyer/clear-buyer-cart";
 import { ClearBuyerCartError } from "../../../application/buyer/clear-buyer-cart";
@@ -20,6 +22,7 @@ import type { RegisterBuyerUseCase } from "../../../application/buyer/register-b
 import { RegisterBuyerError } from "../../../application/buyer/register-buyer";
 import { addProductToCartSchema } from "../validation/add-product-to-cart-schema";
 import type { AuthenticatedUser } from "../middleware/create-auth-middleware";
+import { addBillingAddressSchema } from "../validation/add-billing-address-schema";
 import { addProductToWishlistSchema } from "../validation/add-product-to-wishlist-schema";
 import { registerBuyerSchema } from "../validation/register-buyer-schema";
 import { updateProductQuantityInCartSchema } from "../validation/update-product-quantity-in-cart-schema";
@@ -32,6 +35,10 @@ interface BuyerWishlistRouterDependencies {
   getBuyerWishlist: GetBuyerWishlistUseCase;
   addProductToWishlist: AddProductToWishlistUseCase;
   removeProductFromWishlist: RemoveProductFromWishlistUseCase;
+}
+
+interface BuyerBillingAddressRouterDependencies {
+  addBillingAddress: AddBillingAddressUseCase;
 }
 
 interface BuyerCartRouterDependencies {
@@ -244,6 +251,76 @@ export function createProtectedBuyerWishlistRouter({
   });
 
   return buyerWishlistRouter;
+}
+
+export function createProtectedBuyerBillingAddressRouter({
+  addBillingAddress
+}: BuyerBillingAddressRouterDependencies) {
+  const buyerBillingAddressRouter = Router();
+
+  buyerBillingAddressRouter.post("/", async (req, res) => {
+    const { error, value } = addBillingAddressSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      const billingAddress = await addBillingAddress.execute({
+        buyerId: authUser.sub,
+        fullName: value.full_name,
+        phoneNumber: value.phone_number,
+        addressLine1: value.address_line_1,
+        addressLine2: value.address_line_2 ?? undefined,
+        city: value.city,
+        state: value.state,
+        country: value.country,
+        postalCode: value.postal_code ?? undefined
+      });
+
+      return res.status(201).json({
+        message: "Billing address added successfully.",
+        data: {
+          id: billingAddress.id,
+          buyer_id: billingAddress.buyerId,
+          full_name: billingAddress.fullName,
+          phone_number: billingAddress.phoneNumber,
+          address_line_1: billingAddress.addressLine1,
+          address_line_2: billingAddress.addressLine2,
+          city: billingAddress.city,
+          state: billingAddress.state,
+          country: billingAddress.country,
+          postal_code: billingAddress.postalCode,
+          created_at: billingAddress.createdAt.toISOString(),
+          updated_at: billingAddress.updatedAt.toISOString()
+        }
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof AddBillingAddressError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to add billing address."
+      });
+    }
+  });
+
+  return buyerBillingAddressRouter;
 }
 
 export function createProtectedBuyerCartRouter({

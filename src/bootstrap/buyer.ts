@@ -1,4 +1,5 @@
 import { AddProductToCart } from "../application/buyer/add-product-to-cart";
+import { AddBillingAddress } from "../application/buyer/add-billing-address";
 import { AddProductToWishlist } from "../application/buyer/add-product-to-wishlist";
 import { ClearBuyerCart } from "../application/buyer/clear-buyer-cart";
 import { GetActiveCart } from "../application/buyer/get-active-cart";
@@ -11,10 +12,12 @@ import { UpdateProductQuantityInCart } from "../application/buyer/update-product
 import { SendWelcomeEmail } from "../application/notification/send-welcome-email";
 import { createAuthMiddleware } from "../infrastructure/api/middleware/create-auth-middleware";
 import createBuyerRouter, {
+  createProtectedBuyerBillingAddressRouter,
   createProtectedBuyerCartRouter,
   createProtectedBuyerWishlistRouter
 } from "../infrastructure/api/routes/buyer-routes";
 import { PostgresAuthenticationRepository } from "../infrastructure/database/repositories/postgres-authentication-repository";
+import { PostgresBillingAddressRepository } from "../infrastructure/database/repositories/postgres-billing-address-repository";
 import { PostgresBuyerRepository } from "../infrastructure/database/repositories/postgres-buyer-repository";
 import { PostgresCartRepository } from "../infrastructure/database/repositories/postgres-cart-repository";
 import { PostgresEmailVerificationRepository } from "../infrastructure/database/repositories/postgres-email-verification-repository";
@@ -29,6 +32,7 @@ import { Router } from "express";
 export function createBuyerModule() {
   const buyerRouter = Router();
   const authenticationRepository = new PostgresAuthenticationRepository();
+  const billingAddressRepository = new PostgresBillingAddressRepository();
   const buyerRepository = new PostgresBuyerRepository();
   const cartRepository = new PostgresCartRepository();
   const emailVerificationRepository = new PostgresEmailVerificationRepository();
@@ -55,6 +59,10 @@ export function createBuyerModule() {
     authenticationRepository,
     productRepository,
     wishlistRepository
+  );
+  const addBillingAddress = new AddBillingAddress(
+    authenticationRepository,
+    billingAddressRepository
   );
   const getBuyerWishlist = new GetBuyerWishlist(
     authenticationRepository,
@@ -91,6 +99,13 @@ export function createBuyerModule() {
   const authenticateBuyer = createAuthMiddleware(tokenVerifier, "buyer");
 
   buyerRouter.use(createBuyerRouter({ registerBuyer }));
+  buyerRouter.use(
+    "/billing-addresses",
+    authenticateBuyer,
+    createProtectedBuyerBillingAddressRouter({
+      addBillingAddress
+    })
+  );
   buyerRouter.use(
     "/cart",
     authenticateBuyer,
