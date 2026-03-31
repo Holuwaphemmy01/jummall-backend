@@ -27,6 +27,32 @@ export class PostgresBillingAddressRepository
 {
   constructor(private readonly pool: Pool = databasePool) {}
 
+  async findByBuyerId(buyerId: string): Promise<BillingAddressRecord[]> {
+    const result = await this.pool.query<BillingAddressRow>(
+      `
+        SELECT
+          "id",
+          "buyerId",
+          "fullName",
+          "phoneNumber",
+          "addressLine1",
+          "addressLine2",
+          "city",
+          "state",
+          "country",
+          "postalCode",
+          "createdAt",
+          "updatedAt"
+        FROM "BillingAddress"
+        WHERE "buyerId" = $1
+        ORDER BY "createdAt" DESC
+      `,
+      [buyerId]
+    );
+
+    return result.rows;
+  }
+
   async create(input: CreateBillingAddressInput): Promise<BillingAddressRecord> {
     const result = await this.pool.query<BillingAddressRow>(
       `
