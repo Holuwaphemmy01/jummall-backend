@@ -28,4 +28,12 @@ export interface CreateBillingAddressInput {
 export interface BillingAddressRepository {
   create(input: CreateBillingAddressInput): Promise<BillingAddressRecord>;
   findByBuyerId(buyerId: string): Promise<BillingAddressRecord[]>;
+  findByIdAndBuyerId(
+    billingAddressId: string,
+    buyerId: string
+  ): Promise<BillingAddressRecord | null>;
+  deleteByIdAndBuyerId(
+    billingAddressId: string,
+    buyerId: string
+  ): Promise<BillingAddressRecord | null>;
 }

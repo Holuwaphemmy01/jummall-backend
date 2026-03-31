@@ -27,6 +27,35 @@ export class PostgresBillingAddressRepository
 {
   constructor(private readonly pool: Pool = databasePool) {}
 
+  async findByIdAndBuyerId(
+    billingAddressId: string,
+    buyerId: string
+  ): Promise<BillingAddressRecord | null> {
+    const result = await this.pool.query<BillingAddressRow>(
+      `
+        SELECT
+          "id",
+          "buyerId",
+          "fullName",
+          "phoneNumber",
+          "addressLine1",
+          "addressLine2",
+          "city",
+          "state",
+          "country",
+          "postalCode",
+          "createdAt",
+          "updatedAt"
+        FROM "BillingAddress"
+        WHERE "id" = $1 AND "buyerId" = $2
+        LIMIT 1
+      `,
+      [billingAddressId, buyerId]
+    );
+
+    return result.rows[0] ?? null;
+  }
+
   async findByBuyerId(buyerId: string): Promise<BillingAddressRecord[]> {
     const result = await this.pool.query<BillingAddressRow>(
       `
@@ -51,6 +80,34 @@ export class PostgresBillingAddressRepository
     );
 
     return result.rows;
+  }
+
+  async deleteByIdAndBuyerId(
+    billingAddressId: string,
+    buyerId: string
+  ): Promise<BillingAddressRecord | null> {
+    const result = await this.pool.query<BillingAddressRow>(
+      `
+        DELETE FROM "BillingAddress"
+        WHERE "id" = $1 AND "buyerId" = $2
+        RETURNING
+          "id",
+          "buyerId",
+          "fullName",
+          "phoneNumber",
+          "addressLine1",
+          "addressLine2",
+          "city",
+          "state",
+          "country",
+          "postalCode",
+          "createdAt",
+          "updatedAt"
+      `,
+      [billingAddressId, buyerId]
+    );
+
+    return result.rows[0] ?? null;
   }
 
   async create(input: CreateBillingAddressInput): Promise<BillingAddressRecord> {

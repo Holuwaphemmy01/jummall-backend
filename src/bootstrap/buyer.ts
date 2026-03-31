@@ -2,6 +2,7 @@ import { AddProductToCart } from "../application/buyer/add-product-to-cart";
 import { AddBillingAddress } from "../application/buyer/add-billing-address";
 import { AddProductToWishlist } from "../application/buyer/add-product-to-wishlist";
 import { ClearBuyerCart } from "../application/buyer/clear-buyer-cart";
+import { DeleteBillingAddress } from "../application/buyer/delete-billing-address";
 import { GetActiveCart } from "../application/buyer/get-active-cart";
 import { GetBillingAddresses } from "../application/buyer/get-billing-addresses";
 import { GetBuyerWishlist } from "../application/buyer/get-buyer-wishlist";
@@ -65,6 +66,10 @@ export function createBuyerModule() {
     authenticationRepository,
     billingAddressRepository
   );
+  const deleteBillingAddress = new DeleteBillingAddress(
+    authenticationRepository,
+    billingAddressRepository
+  );
   const getBillingAddresses = new GetBillingAddresses(
     authenticationRepository,
     billingAddressRepository
@@ -109,6 +114,7 @@ export function createBuyerModule() {
     authenticateBuyer,
     createProtectedBuyerBillingAddressRouter({
       addBillingAddress,
+      deleteBillingAddress,
       getBillingAddresses
     })
   );

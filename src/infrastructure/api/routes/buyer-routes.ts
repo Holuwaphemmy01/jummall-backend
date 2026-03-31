@@ -14,6 +14,8 @@ import type { UpdateProductQuantityInCartUseCase } from "../../../application/bu
 import { UpdateProductQuantityInCartError } from "../../../application/buyer/update-product-quantity-in-cart";
 import type { AddProductToWishlistUseCase } from "../../../application/buyer/add-product-to-wishlist";
 import { AddProductToWishlistError } from "../../../application/buyer/add-product-to-wishlist";
+import type { DeleteBillingAddressUseCase } from "../../../application/buyer/delete-billing-address";
+import { DeleteBillingAddressError } from "../../../application/buyer/delete-billing-address";
 import type { GetBillingAddressesUseCase } from "../../../application/buyer/get-billing-addresses";
 import { GetBillingAddressesError } from "../../../application/buyer/get-billing-addresses";
 import type { GetBuyerWishlistUseCase } from "../../../application/buyer/get-buyer-wishlist";
@@ -41,6 +43,7 @@ interface BuyerWishlistRouterDependencies {
 
 interface BuyerBillingAddressRouterDependencies {
   addBillingAddress: AddBillingAddressUseCase;
+  deleteBillingAddress: DeleteBillingAddressUseCase;
   getBillingAddresses: GetBillingAddressesUseCase;
 }
 
@@ -258,6 +261,7 @@ export function createProtectedBuyerWishlistRouter({
 
 export function createProtectedBuyerBillingAddressRouter({
   addBillingAddress,
+  deleteBillingAddress,
   getBillingAddresses
 }: BuyerBillingAddressRouterDependencies) {
   const buyerBillingAddressRouter = Router();
@@ -359,6 +363,32 @@ export function createProtectedBuyerBillingAddressRouter({
 
       return res.status(500).json({
         message: "Unable to add billing address."
+      });
+    }
+  });
+
+  buyerBillingAddressRouter.delete("/:billingAddressId", async (req, res) => {
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      await deleteBillingAddress.execute({
+        buyerId: authUser.sub,
+        billingAddressId: req.params.billingAddressId
+      });
+
+      return res.status(200).json({
+        message: "Billing address deleted successfully."
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof DeleteBillingAddressError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to delete billing address."
       });
     }
   });
