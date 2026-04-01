@@ -59,7 +59,7 @@ export class Login implements LoginUseCase {
       input.password,
       user.passwordHash
     );
-
+    
     if (!passwordMatches) {
       throw new LoginError("Invalid email or password.", 401);
     }
