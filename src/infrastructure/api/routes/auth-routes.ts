@@ -1,8 +1,12 @@
-import { Router } from "express";
+import { Router, type RequestHandler } from "express";
 
 import type { ForgotPasswordUseCase } from "../../../application/auth/forgot-password";
 import type { LoginUseCase } from "../../../application/auth/login";
 import { LoginError } from "../../../application/auth/login";
+import type { LogoutUseCase } from "../../../application/auth/logout";
+import { LogoutError } from "../../../application/auth/logout";
+import type { RefreshAccessTokenUseCase } from "../../../application/auth/refresh-access-token";
+import { RefreshAccessTokenError } from "../../../application/auth/refresh-access-token";
 import type { ResendEmailVerificationUseCase } from "../../../application/auth/resend-email-verification";
 import { ResendEmailVerificationError } from "../../../application/auth/resend-email-verification";
 import type { ResetPasswordUseCase } from "../../../application/auth/reset-password";
@@ -12,21 +16,28 @@ import { VerifyEmailError } from "../../../application/auth/verify-email";
 import { createRateLimiter } from "../middleware/create-rate-limiter";
 import { forgotPasswordSchema } from "../validation/forgot-password-schema";
 import { loginSchema } from "../validation/login-schema";
+import { refreshTokenSchema } from "../validation/refresh-token-schema";
 import { resendEmailVerificationSchema } from "../validation/resend-email-verification-schema";
 import { resetPasswordSchema } from "../validation/reset-password-schema";
 import { verifyEmailSchema } from "../validation/verify-email-schema";
 
 interface AuthRouterDependencies {
+  authenticateUser: RequestHandler;
   forgotPassword: ForgotPasswordUseCase;
   login: LoginUseCase;
+  logout: LogoutUseCase;
+  refreshAccessToken: RefreshAccessTokenUseCase;
   resendEmailVerification: ResendEmailVerificationUseCase;
   resetPassword: ResetPasswordUseCase;
   verifyEmail: VerifyEmailUseCase;
 }
 
 export default function createAuthRouter({
+  authenticateUser,
   forgotPassword,
   login,
+  logout,
+  refreshAccessToken,
   resendEmailVerification,
   resetPassword,
   verifyEmail
@@ -190,6 +201,7 @@ export default function createAuthRouter({
         message: "Login successful.",
         data: {
           access_token: result.accessToken,
+          refresh_token: result.refreshToken,
           user: {
             id: result.user.id,
             first_name: result.user.firstName,
@@ -213,6 +225,81 @@ export default function createAuthRouter({
 
       return res.status(500).json({
         message: "Unable to login."
+      });
+    }
+  });
+
+  authRouter.post("/refresh-token", async (req, res) => {
+    const { error, value } = refreshTokenSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    try {
+      const result = await refreshAccessToken.execute({
+        refreshToken: value.refresh_token
+      });
+
+      return res.status(200).json({
+        message: "Token refreshed successfully.",
+        data: {
+          access_token: result.accessToken,
+          refresh_token: result.refreshToken,
+          user: {
+            id: result.user.id,
+            first_name: result.user.firstName,
+            last_name: result.user.lastName,
+            username: result.user.username,
+            email: result.user.email,
+            phone: result.user.phone,
+            role: result.user.role,
+            account_status: result.user.accountStatus,
+            created_at: result.user.createdAt.toISOString(),
+            updated_at: result.user.updatedAt.toISOString()
+          }
+        }
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof RefreshAccessTokenError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to refresh token."
+      });
+    }
+  });
+
+  authRouter.post("/logout", authenticateUser, async (_req, res) => {
+    try {
+      await logout.execute({
+        authUser: res.locals.authUser
+      });
+
+      return res.status(200).json({
+        message: "Logout successful."
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof LogoutError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to logout."
       });
     }
   });

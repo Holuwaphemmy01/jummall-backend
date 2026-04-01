@@ -17,6 +17,17 @@ import type {
   AuthUser
 } from "../../../src/ports/authentication-repository";
 import type { PasswordHasher } from "../../../src/ports/password-hasher";
+import type {
+  IssuedRefreshToken,
+  RefreshTokenProvider
+} from "../../../src/ports/refresh-token-provider";
+import type {
+  CreateRefreshTokenSessionInput,
+  RefreshTokenSession,
+  RefreshTokenSessionRepository,
+  RevokeRefreshTokenSessionInput,
+  RotateRefreshTokenSessionInput
+} from "../../../src/ports/refresh-token-session-repository";
 import type { TokenPayload, TokenSigner } from "../../../src/ports/token-signer";
 import type { VerificationCodeGenerator } from "../../../src/ports/verification-code-generator";
 
@@ -60,6 +71,46 @@ class TokenSignerDouble implements TokenSigner {
   sign = jest
     .fn<(payload: TokenPayload) => Promise<string>>()
     .mockResolvedValue("jwt-token");
+}
+
+class RefreshTokenProviderDouble implements RefreshTokenProvider {
+  issue = jest.fn<() => Promise<IssuedRefreshToken>>().mockResolvedValue({
+    token: "refresh-token",
+    tokenHash: "refresh-token-hash",
+    expiresAt: new Date("2026-04-24T00:00:00.000Z")
+  });
+
+  hash = jest
+    .fn<(token: string) => Promise<string>>()
+    .mockResolvedValue("hashed-token");
+}
+
+class RefreshTokenSessionRepositoryDouble
+  implements RefreshTokenSessionRepository
+{
+  create = jest
+    .fn<(input: CreateRefreshTokenSessionInput) => Promise<RefreshTokenSession>>()
+    .mockResolvedValue({
+      id: "session-id",
+      userId: "user-id",
+      tokenHash: "refresh-token-hash",
+      expiresAt: new Date("2026-04-24T00:00:00.000Z"),
+      revokedAt: null,
+      createdAt: new Date("2026-03-24T00:00:00.000Z"),
+      updatedAt: new Date("2026-03-24T00:00:00.000Z")
+    });
+
+  findActiveByTokenHash = jest
+    .fn<(tokenHash: string) => Promise<RefreshTokenSession | null>>()
+    .mockResolvedValue(null);
+
+  rotate = jest
+    .fn<(input: RotateRefreshTokenSessionInput) => Promise<void>>()
+    .mockResolvedValue();
+
+  revoke = jest
+    .fn<(input: RevokeRefreshTokenSessionInput) => Promise<void>>()
+    .mockResolvedValue();
 }
 
 class EmailVerificationRepositoryDouble implements EmailVerificationRepository {
@@ -111,10 +162,12 @@ function makeInput(): LoginInput {
 }
 
 describe("Login", () => {
-  it("logs in successfully and returns the user profile with a token", async () => {
+  it("logs in successfully and returns the user profile with both tokens", async () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
     const tokenSigner = new TokenSignerDouble();
+    const refreshTokenProvider = new RefreshTokenProviderDouble();
+    const refreshTokenSessionRepository = new RefreshTokenSessionRepositoryDouble();
     const initiateEmailVerification = new InitiateEmailVerification(
       new EmailVerificationRepositoryDouble(),
       new VerificationCodeGeneratorDouble(),
@@ -124,7 +177,9 @@ describe("Login", () => {
       authenticationRepository,
       passwordHasher,
       tokenSigner,
-      initiateEmailVerification
+      initiateEmailVerification,
+      refreshTokenProvider,
+      refreshTokenSessionRepository
     );
 
     const result = await login.execute(makeInput());
@@ -136,13 +191,20 @@ describe("Login", () => {
       "Password123",
       "stored-password-hash"
     );
+    expect(refreshTokenSessionRepository.create).toHaveBeenCalledWith({
+      userId: "user-id",
+      tokenHash: "refresh-token-hash",
+      expiresAt: new Date("2026-04-24T00:00:00.000Z")
+    });
     expect(tokenSigner.sign).toHaveBeenCalledWith({
       sub: "user-id",
       email: "john@example.com",
-      role: "buyer"
+      role: "buyer",
+      sessionId: "session-id"
     });
     expect(result).toMatchObject({
       accessToken: "jwt-token",
+      refreshToken: "refresh-token",
       user: {
         id: "user-id",
         email: "john@example.com",
@@ -156,6 +218,7 @@ describe("Login", () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
     const tokenSigner = new TokenSignerDouble();
+    const refreshTokenSessionRepository = new RefreshTokenSessionRepositoryDouble();
     const initiateEmailVerification = new InitiateEmailVerification(
       new EmailVerificationRepositoryDouble(),
       new VerificationCodeGeneratorDouble(),
@@ -165,7 +228,9 @@ describe("Login", () => {
       authenticationRepository,
       passwordHasher,
       tokenSigner,
-      initiateEmailVerification
+      initiateEmailVerification,
+      new RefreshTokenProviderDouble(),
+      refreshTokenSessionRepository
     );
 
     authenticationRepository.findByEmail.mockResolvedValue(null);
@@ -177,12 +242,14 @@ describe("Login", () => {
     });
     expect(passwordHasher.compare).not.toHaveBeenCalled();
     expect(tokenSigner.sign).not.toHaveBeenCalled();
+    expect(refreshTokenSessionRepository.create).not.toHaveBeenCalled();
   });
 
   it("throws when the account is not verified", async () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
     const tokenSigner = new TokenSignerDouble();
+    const refreshTokenSessionRepository = new RefreshTokenSessionRepositoryDouble();
     const emailVerificationRepository = new EmailVerificationRepositoryDouble();
     const verificationCodeGenerator = new VerificationCodeGeneratorDouble();
     const mailProvider = new MailProviderDouble();
@@ -195,7 +262,9 @@ describe("Login", () => {
       authenticationRepository,
       passwordHasher,
       tokenSigner,
-      initiateEmailVerification
+      initiateEmailVerification,
+      new RefreshTokenProviderDouble(),
+      refreshTokenSessionRepository
     );
 
     authenticationRepository.findByEmail.mockResolvedValue({
@@ -228,12 +297,14 @@ describe("Login", () => {
       code: "123456"
     });
     expect(tokenSigner.sign).not.toHaveBeenCalled();
+    expect(refreshTokenSessionRepository.create).not.toHaveBeenCalled();
   });
 
   it("throws when the password is invalid", async () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
     const tokenSigner = new TokenSignerDouble();
+    const refreshTokenSessionRepository = new RefreshTokenSessionRepositoryDouble();
     const initiateEmailVerification = new InitiateEmailVerification(
       new EmailVerificationRepositoryDouble(),
       new VerificationCodeGeneratorDouble(),
@@ -243,7 +314,9 @@ describe("Login", () => {
       authenticationRepository,
       passwordHasher,
       tokenSigner,
-      initiateEmailVerification
+      initiateEmailVerification,
+      new RefreshTokenProviderDouble(),
+      refreshTokenSessionRepository
     );
 
     passwordHasher.compare.mockResolvedValue(false);
@@ -254,22 +327,24 @@ describe("Login", () => {
       statusCode: 401
     });
     expect(tokenSigner.sign).not.toHaveBeenCalled();
+    expect(refreshTokenSessionRepository.create).not.toHaveBeenCalled();
   });
 
   it("propagates repository lookup failures", async () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
     const tokenSigner = new TokenSignerDouble();
-    const initiateEmailVerification = new InitiateEmailVerification(
-      new EmailVerificationRepositoryDouble(),
-      new VerificationCodeGeneratorDouble(),
-      new MailProviderDouble()
-    );
     const login = new Login(
       authenticationRepository,
       passwordHasher,
       tokenSigner,
-      initiateEmailVerification
+      new InitiateEmailVerification(
+        new EmailVerificationRepositoryDouble(),
+        new VerificationCodeGeneratorDouble(),
+        new MailProviderDouble()
+      ),
+      new RefreshTokenProviderDouble(),
+      new RefreshTokenSessionRepositoryDouble()
     );
     const lookupError = new Error("lookup failed");
 
@@ -284,16 +359,17 @@ describe("Login", () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
     const tokenSigner = new TokenSignerDouble();
-    const initiateEmailVerification = new InitiateEmailVerification(
-      new EmailVerificationRepositoryDouble(),
-      new VerificationCodeGeneratorDouble(),
-      new MailProviderDouble()
-    );
     const login = new Login(
       authenticationRepository,
       passwordHasher,
       tokenSigner,
-      initiateEmailVerification
+      new InitiateEmailVerification(
+        new EmailVerificationRepositoryDouble(),
+        new VerificationCodeGeneratorDouble(),
+        new MailProviderDouble()
+      ),
+      new RefreshTokenProviderDouble(),
+      new RefreshTokenSessionRepositoryDouble()
     );
     const compareError = new Error("compare failed");
 
@@ -303,20 +379,46 @@ describe("Login", () => {
     expect(tokenSigner.sign).not.toHaveBeenCalled();
   });
 
-  it("propagates token signing failures", async () => {
+  it("propagates refresh token session creation failures", async () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
     const passwordHasher = new PasswordHasherDouble();
     const tokenSigner = new TokenSignerDouble();
-    const initiateEmailVerification = new InitiateEmailVerification(
-      new EmailVerificationRepositoryDouble(),
-      new VerificationCodeGeneratorDouble(),
-      new MailProviderDouble()
-    );
+    const refreshTokenSessionRepository = new RefreshTokenSessionRepositoryDouble();
     const login = new Login(
       authenticationRepository,
       passwordHasher,
       tokenSigner,
-      initiateEmailVerification
+      new InitiateEmailVerification(
+        new EmailVerificationRepositoryDouble(),
+        new VerificationCodeGeneratorDouble(),
+        new MailProviderDouble()
+      ),
+      new RefreshTokenProviderDouble(),
+      refreshTokenSessionRepository
+    );
+    const sessionError = new Error("session failed");
+
+    refreshTokenSessionRepository.create.mockRejectedValue(sessionError);
+
+    await expect(login.execute(makeInput())).rejects.toThrow(sessionError);
+    expect(tokenSigner.sign).not.toHaveBeenCalled();
+  });
+
+  it("propagates token signing failures", async () => {
+    const authenticationRepository = new AuthenticationRepositoryDouble();
+    const passwordHasher = new PasswordHasherDouble();
+    const tokenSigner = new TokenSignerDouble();
+    const login = new Login(
+      authenticationRepository,
+      passwordHasher,
+      tokenSigner,
+      new InitiateEmailVerification(
+        new EmailVerificationRepositoryDouble(),
+        new VerificationCodeGeneratorDouble(),
+        new MailProviderDouble()
+      ),
+      new RefreshTokenProviderDouble(),
+      new RefreshTokenSessionRepositoryDouble()
     );
     const tokenError = new Error("token failed");
 
@@ -327,18 +429,17 @@ describe("Login", () => {
 
   it("returns a LoginError instance for invalid credentials", async () => {
     const authenticationRepository = new AuthenticationRepositoryDouble();
-    const passwordHasher = new PasswordHasherDouble();
-    const tokenSigner = new TokenSignerDouble();
-    const initiateEmailVerification = new InitiateEmailVerification(
-      new EmailVerificationRepositoryDouble(),
-      new VerificationCodeGeneratorDouble(),
-      new MailProviderDouble()
-    );
     const login = new Login(
       authenticationRepository,
-      passwordHasher,
-      tokenSigner,
-      initiateEmailVerification
+      new PasswordHasherDouble(),
+      new TokenSignerDouble(),
+      new InitiateEmailVerification(
+        new EmailVerificationRepositoryDouble(),
+        new VerificationCodeGeneratorDouble(),
+        new MailProviderDouble()
+      ),
+      new RefreshTokenProviderDouble(),
+      new RefreshTokenSessionRepositoryDouble()
     );
 
     authenticationRepository.findByEmail.mockResolvedValue(null);
@@ -376,7 +477,9 @@ describe("Login", () => {
         new EmailVerificationRepositoryDouble(),
         new VerificationCodeGeneratorDouble(),
         mailProvider
-      )
+      ),
+      new RefreshTokenProviderDouble(),
+      new RefreshTokenSessionRepositoryDouble()
     );
 
     await expect(login.execute(makeInput())).rejects.toThrow(emailError);
