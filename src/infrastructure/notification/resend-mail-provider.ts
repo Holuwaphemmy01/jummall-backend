@@ -11,7 +11,9 @@ export class ResendMailProvider implements MailProvider {
   constructor(
     private readonly fromAddress: string = process.env.MAIL_FROM_ADDRESS ?? "",
     private readonly fromName: string = process.env.MAIL_FROM_NAME ?? "Jummall",
-    private readonly apiKey: string = process.env.RESEND_API_KEY ?? ""
+    private readonly apiKey: string = process.env.RESEND_API_KEY ?? "",
+    private readonly testRecipientAddress: string =
+      process.env.MAIL_TO_ADDRESS ?? process.env.MAIL_TO ?? ""
   ) {}
 
   async sendEmailVerification(
@@ -26,14 +28,13 @@ export class ResendMailProvider implements MailProvider {
     }
 
     const recipientName = input.firstName ?? "there";
-    const from = this.fromName
-      ? `${this.fromName} <${this.fromAddress}>`
-      : this.fromAddress;
+    const from = this.getFrom();
+    const to = this.getRecipient(input.to);
     const resend = new Resend(this.apiKey);
 
     const { error } = await resend.emails.send({
       from,
-      to: [input.to],
+      to: [to],
       subject: "Verify your Jummall account",
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.5;">
@@ -62,9 +63,8 @@ export class ResendMailProvider implements MailProvider {
 
     const resend = new Resend(this.apiKey);
     const recipientName = input.firstName ?? "there";
-    const from = this.fromName
-      ? `${this.fromName} <${this.fromAddress}>`
-      : this.fromAddress;
+    const from = this.getFrom();
+    const to = this.getRecipient(input.to);
     const subject =
       input.role === "buyer"
         ? "Welcome to Jummall Buyer"
@@ -76,7 +76,7 @@ export class ResendMailProvider implements MailProvider {
 
     const { error } = await resend.emails.send({
       from,
-      to: [input.to],
+      to: [to],
       subject,
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.5;">
@@ -106,13 +106,12 @@ export class ResendMailProvider implements MailProvider {
 
     const resend = new Resend(this.apiKey);
     const recipientName = input.firstName ?? "there";
-    const from = this.fromName
-      ? `${this.fromName} <${this.fromAddress}>`
-      : this.fromAddress;
+    const from = this.getFrom();
+    const to = this.getRecipient(input.to);
 
     const { error } = await resend.emails.send({
       from,
-      to: [input.to],
+      to: [to],
       subject: "Reset your Jummall password",
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.5;">
@@ -128,5 +127,15 @@ export class ResendMailProvider implements MailProvider {
     if (error) {
       throw new Error(error.message);
     }
+  }
+
+  private getFrom(): string {
+    return this.fromName
+      ? `${this.fromName} <${this.fromAddress}>`
+      : this.fromAddress;
+  }
+
+  private getRecipient(actualRecipient: string): string {
+    return this.testRecipientAddress || actualRecipient;
   }
 }

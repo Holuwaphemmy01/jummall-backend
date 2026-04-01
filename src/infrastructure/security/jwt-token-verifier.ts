@@ -16,7 +16,10 @@ export class JwtTokenVerifier implements TokenVerifier {
       decodedToken === null ||
       typeof decodedToken.sub !== "string" ||
       typeof decodedToken.email !== "string" ||
-      typeof decodedToken.role !== "string"
+      typeof decodedToken.role !== "string" ||
+      ("sid" in decodedToken &&
+        decodedToken.sid !== undefined &&
+        typeof decodedToken.sid !== "string")
     ) {
       throw new Error("Invalid token payload.");
     }
@@ -24,7 +27,8 @@ export class JwtTokenVerifier implements TokenVerifier {
     return {
       sub: decodedToken.sub,
       email: decodedToken.email,
-      role: decodedToken.role
+      role: decodedToken.role,
+      sessionId: typeof decodedToken.sid === "string" ? decodedToken.sid : undefined
     };
   }
 }

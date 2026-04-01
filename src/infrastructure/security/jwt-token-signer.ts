@@ -8,7 +8,16 @@ export class JwtTokenSigner implements TokenSigner {
       throw new Error("JWT_SECRET is not set.");
     }
 
-    return jwt.sign(payload, process.env.JWT_SECRET, {
+    const tokenPayload = payload.sessionId
+      ? {
+          sub: payload.sub,
+          email: payload.email,
+          role: payload.role,
+          sid: payload.sessionId
+        }
+      : payload;
+
+    return jwt.sign(tokenPayload, process.env.JWT_SECRET, {
       expiresIn: (process.env.JWT_EXPIRES_IN ?? "7d") as SignOptions["expiresIn"]
     });
   }

@@ -1,4 +1,6 @@
 import type { AuthenticationRepository } from "../../ports/authentication-repository";
+import type { RefreshTokenProvider } from "../../ports/refresh-token-provider";
+import type { RefreshTokenSessionRepository } from "../../ports/refresh-token-session-repository";
 import type { PasswordHasher } from "../../ports/password-hasher";
 import type { TokenSigner } from "../../ports/token-signer";
 import { InitiateEmailVerification } from "./initiate-email-verification";
@@ -23,6 +25,7 @@ export interface LoginUserProfile {
 
 export interface LoginResult {
   accessToken: string;
+  refreshToken: string;
   user: LoginUserProfile;
 }
 
@@ -45,7 +48,9 @@ export class Login implements LoginUseCase {
     private readonly authenticationRepository: AuthenticationRepository,
     private readonly passwordHasher: PasswordHasher,
     private readonly tokenSigner: TokenSigner,
-    private readonly initiateEmailVerification: InitiateEmailVerification
+    private readonly initiateEmailVerification: InitiateEmailVerification,
+    private readonly refreshTokenProvider: RefreshTokenProvider,
+    private readonly refreshTokenSessionRepository: RefreshTokenSessionRepository
   ) {}
 
   async execute(input: LoginInput): Promise<LoginResult> {
@@ -59,7 +64,7 @@ export class Login implements LoginUseCase {
       input.password,
       user.passwordHash
     );
-
+    
     if (!passwordMatches) {
       throw new LoginError("Invalid email or password.", 401);
     }
@@ -74,14 +79,23 @@ export class Login implements LoginUseCase {
       throw new LoginError("Account is not verified.", 403);
     }
 
+    const issuedRefreshToken = await this.refreshTokenProvider.issue();
+    const session = await this.refreshTokenSessionRepository.create({
+      userId: user.id,
+      tokenHash: issuedRefreshToken.tokenHash,
+      expiresAt: issuedRefreshToken.expiresAt
+    });
+
     const accessToken = await this.tokenSigner.sign({
       sub: user.id,
       email: user.email,
-      role: user.role
+      role: user.role,
+      sessionId: session.id
     });
 
     return {
       accessToken,
+      refreshToken: issuedRefreshToken.token,
       user: {
         id: user.id,
         firstName: user.firstName,

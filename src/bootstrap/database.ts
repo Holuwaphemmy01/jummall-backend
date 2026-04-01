@@ -1,4 +1,8 @@
+import { EnsureSuperAdmin } from "../application/admin/ensure-super-admin";
+import { PostgresAuthenticationRepository } from "../infrastructure/database/repositories/postgres-authentication-repository";
 import pool from "../infrastructure/database/client";
+import { PostgresSuperAdminRepository } from "../infrastructure/database/repositories/postgres-super-admin-repository";
+import { ScryptPasswordHasher } from "../infrastructure/security/scrypt-password-hasher";
 
 type DbMigrateInstance = {
   up: () => Promise<unknown>;
@@ -46,6 +50,26 @@ export async function initializeDatabase(): Promise<void> {
     console.log("[database] Pending migrations completed successfully.");
   } catch (error) {
     console.error("[database] Migration failed.", error);
+    throw error;
+  }
+
+  try {
+    const ensureSuperAdmin = new EnsureSuperAdmin(
+      new PostgresAuthenticationRepository(),
+      new PostgresSuperAdminRepository(),
+      new ScryptPasswordHasher()
+    );
+
+    const result = await ensureSuperAdmin.execute({
+      email: process.env.SUPER_ADMIN_EMAIL,
+      password: process.env.SUPER_ADMIN_PASSWORD
+    });
+
+    if (result.status !== "skipped") {
+      console.log("[database] Super admin bootstrap completed.", result);
+    }
+  } catch (error) {
+    console.error("[database] Super admin bootstrap failed.", error);
     throw error;
   }
 }

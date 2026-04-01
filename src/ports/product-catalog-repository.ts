@@ -21,6 +21,7 @@ export interface ProductCatalogRepository {
   listApproved(
     input: ListApprovedProductsInput
   ): Promise<ApprovedProductCatalogPage>;
+  findApprovedById(productId: string): Promise<ProductRecord | null>;
   searchApprovedSuggestions(input: {
     query: string;
     limit: number;

@@ -52,6 +52,46 @@ export class PostgresProductCatalogRepository
 {
   constructor(private readonly pool: Pool = databasePool) {}
 
+  async findApprovedById(productId: string): Promise<ProductRecord | null> {
+    const productResult = await this.pool.query<ProductRow>(
+      `
+        SELECT
+          p."id",
+          p."sellerId",
+          p."categoryId",
+          p."brandId",
+          pb."name" AS "brandName",
+          p."name",
+          p."description",
+          p."sku",
+          p."price",
+          p."quantity",
+          p."currency",
+          p."condition",
+          p."weightKg",
+          p."status",
+          p."reviewNote",
+          p."reviewedAt",
+          p."createdAt",
+          p."updatedAt"
+        FROM "Product" p
+        LEFT JOIN "ProductBrand" pb ON pb."id" = p."brandId"
+        WHERE p."id" = $1
+          AND p."status" = 'approved'
+        LIMIT 1
+      `,
+      [productId]
+    );
+
+    const product = productResult.rows[0];
+
+    if (!product) {
+      return null;
+    }
+
+    return this.mapProduct(product, await this.findImagesByProductId(product.id));
+  }
+
   async listApproved(
     input: ListApprovedProductsInput
   ): Promise<ApprovedProductCatalogPage> {
