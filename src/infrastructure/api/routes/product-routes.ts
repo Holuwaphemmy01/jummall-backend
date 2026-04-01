@@ -1,5 +1,7 @@
 import { Router } from "express";
 
+import type { GetApprovedProductDetailUseCase } from "../../../application/product/get-approved-product-detail";
+import { GetApprovedProductDetailError } from "../../../application/product/get-approved-product-detail";
 import type { ListApprovedProductsUseCase } from "../../../application/product/list-approved-products";
 import { ListApprovedProductsError } from "../../../application/product/list-approved-products";
 import type { ListApprovedProductsByBrandNameUseCase } from "../../../application/product/list-approved-products-by-brand-name";
@@ -13,6 +15,7 @@ import { listProductsSchema } from "../validation/list-products-schema";
 import { searchProductsSchema } from "../validation/search-products-schema";
 
 interface ProductRouterDependencies {
+  getApprovedProductDetail: GetApprovedProductDetailUseCase;
   listApprovedProducts: ListApprovedProductsUseCase;
   listApprovedProductsByBrandName: ListApprovedProductsByBrandNameUseCase;
   listApprovedProductsByCategory: ListApprovedProductsByCategoryUseCase;
@@ -20,6 +23,7 @@ interface ProductRouterDependencies {
 }
 
 export default function createProductRouter({
+  getApprovedProductDetail,
   listApprovedProducts,
   listApprovedProductsByBrandName,
   listApprovedProductsByCategory,
@@ -285,6 +289,54 @@ export default function createProductRouter({
 
       return res.status(500).json({
         message: "Unable to fetch product suggestions."
+      });
+    }
+  });
+
+  productRouter.get("/:productId", async (req, res) => {
+    try {
+      const product = await getApprovedProductDetail.execute({
+        productId: req.params.productId
+      });
+
+      return res.status(200).json({
+        message: "Product fetched successfully.",
+        data: {
+          id: product.id,
+          seller_id: product.sellerId,
+          category_id: product.categoryId,
+          brand_id: product.brandId,
+          brand_name: product.brandName,
+          name: product.name,
+          description: product.description,
+          sku: product.sku,
+          price: product.price,
+          quantity: product.quantity,
+          currency: product.currency,
+          condition: product.condition,
+          weight_kg: product.weightKg,
+          status: product.status,
+          images: product.images.map((image) => ({
+            id: image.id,
+            storage_path: image.storagePath,
+            mime_type: image.mimeType,
+            original_file_name: image.originalFileName,
+            position: image.position
+          })),
+          created_at: product.createdAt.toISOString(),
+          updated_at: product.updatedAt.toISOString()
+        }
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof GetApprovedProductDetailError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch product."
       });
     }
   });

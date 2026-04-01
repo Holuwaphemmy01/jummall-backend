@@ -21,6 +21,10 @@ class ProductCatalogRepositoryDouble implements ProductCatalogRepository {
       limit: 20
     });
 
+  findApprovedById = jest
+    .fn<(productId: string) => Promise<ProductRecord | null>>()
+    .mockResolvedValue(null);
+
   searchApprovedSuggestions = jest
     .fn<(input: { query: string; limit: number }) => Promise<ProductRecord[]>>()
     .mockResolvedValue([]);

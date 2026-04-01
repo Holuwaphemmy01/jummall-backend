@@ -2186,6 +2186,72 @@
         }
       }
     },
+    "/products/{productId}": {
+      "get": {
+        "tags": ["product-catalog"],
+        "summary": "Get one approved product detail",
+        "description": "Returns the full public detail for one approved product. Unlike the general listing endpoint, this can still return an approved product whose quantity is currently zero so the frontend can render an out-of-stock detail page.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Product fetched successfully.",
+                  "data": {
+                    "id": "product-id",
+                    "seller_id": "seller-id",
+                    "category_id": "category-id",
+                    "brand_id": "brand-id",
+                    "brand_name": "Apple",
+                    "name": "Wireless Headset",
+                    "description": "Noise-cancelling wireless headset with long battery life.",
+                    "sku": "HEADSET-001",
+                    "price": 85000,
+                    "quantity": 0,
+                    "currency": "NGN",
+                    "condition": "new",
+                    "weight_kg": 0.4,
+                    "status": "approved",
+                    "images": [
+                      {
+                        "id": "image-id",
+                        "storage_path": "products/seller-id/front.jpg",
+                        "mime_type": "image/jpeg",
+                        "original_file_name": "front.jpg",
+                        "position": 0
+                      }
+                    ],
+                    "created_at": "2026-03-29T00:00:00.000Z",
+                    "updated_at": "2026-03-29T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        }
+      }
+    },
     "/products/search": {
       "get": {
         "tags": ["product-catalog"],

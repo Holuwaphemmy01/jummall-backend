@@ -1,3 +1,4 @@
+import { GetApprovedProductDetail } from "../application/product/get-approved-product-detail";
 import { ListApprovedProducts } from "../application/product/list-approved-products";
 import { ListApprovedProductsByBrandName } from "../application/product/list-approved-products-by-brand-name";
 import { ListApprovedProductsByCategory } from "../application/product/list-approved-products-by-category";
@@ -11,6 +12,9 @@ export function createProductModule() {
   const productBrandRepository = new PostgresProductBrandRepository();
   const productCatalogRepository = new PostgresProductCatalogRepository();
   const productCategoryRepository = new PostgresProductCategoryRepository();
+  const getApprovedProductDetail = new GetApprovedProductDetail(
+    productCatalogRepository
+  );
   const listApprovedProducts = new ListApprovedProducts(productCatalogRepository);
   const listApprovedProductsByBrandName = new ListApprovedProductsByBrandName(
     productBrandRepository,
@@ -25,6 +29,7 @@ export function createProductModule() {
   );
 
   return createProductRouter({
+    getApprovedProductDetail,
     listApprovedProducts,
     listApprovedProductsByBrandName,
     listApprovedProductsByCategory,
