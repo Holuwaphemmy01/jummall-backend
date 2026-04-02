@@ -25,7 +25,7 @@ import createSellerRouter, {
 import { PostgresEmailVerificationRepository } from "../infrastructure/database/repositories/postgres-email-verification-repository";
 import { PostgresSellerKycRepository } from "../infrastructure/database/repositories/postgres-seller-kyc-repository";
 import { PostgresSellerRepository } from "../infrastructure/database/repositories/postgres-seller-repository";
-import { ResendMailProvider } from "../infrastructure/notification/resend-mail-provider";
+import { createMailProvider } from "../infrastructure/notification/create-mail-provider";
 import { SupabaseDocumentStorage } from "../infrastructure/storage/supabase-document-storage";
 import { JwtTokenVerifier } from "../infrastructure/security/jwt-token-verifier";
 import { NumericVerificationCodeGenerator } from "../infrastructure/security/numeric-verification-code-generator";
@@ -44,7 +44,7 @@ export function createSellerModule() {
   const passwordHasher = new ScryptPasswordHasher();
   const verificationCodeGenerator = new NumericVerificationCodeGenerator();
   const productSkuGenerator = new RandomProductSkuGenerator();
-  const mailProvider = new ResendMailProvider();
+  const mailProvider = createMailProvider();
   const tokenVerifier = new JwtTokenVerifier();
   const documentStorage = new SupabaseDocumentStorage();
   const sendWelcomeEmail = new SendWelcomeEmail(mailProvider);
