@@ -12,7 +12,7 @@ import { PostgresAuthenticationRepository } from "../infrastructure/database/rep
 import { PostgresEmailVerificationRepository } from "../infrastructure/database/repositories/postgres-email-verification-repository";
 import { PostgresPasswordResetRepository } from "../infrastructure/database/repositories/postgres-password-reset-repository";
 import { PostgresRefreshTokenSessionRepository } from "../infrastructure/database/repositories/postgres-refresh-token-session-repository";
-import { ResendMailProvider } from "../infrastructure/notification/resend-mail-provider";
+import { createMailProvider } from "../infrastructure/notification/create-mail-provider";
 import { JwtTokenSigner } from "../infrastructure/security/jwt-token-signer";
 import { JwtTokenVerifier } from "../infrastructure/security/jwt-token-verifier";
 import { NumericVerificationCodeGenerator } from "../infrastructure/security/numeric-verification-code-generator";
@@ -29,7 +29,7 @@ export function createAuthModule() {
   const tokenVerifier = new JwtTokenVerifier();
   const refreshTokenProvider = new OpaqueRefreshTokenProvider();
   const verificationCodeGenerator = new NumericVerificationCodeGenerator();
-  const mailProvider = new ResendMailProvider();
+  const mailProvider = createMailProvider();
   const forgotPassword = new ForgotPassword(
     authenticationRepository,
     passwordResetRepository,

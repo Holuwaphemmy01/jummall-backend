@@ -25,7 +25,7 @@ import { PostgresCartRepository } from "../infrastructure/database/repositories/
 import { PostgresEmailVerificationRepository } from "../infrastructure/database/repositories/postgres-email-verification-repository";
 import { PostgresProductRepository } from "../infrastructure/database/repositories/postgres-product-repository";
 import { PostgresWishlistRepository } from "../infrastructure/database/repositories/postgres-wishlist-repository";
-import { ResendMailProvider } from "../infrastructure/notification/resend-mail-provider";
+import { createMailProvider } from "../infrastructure/notification/create-mail-provider";
 import { JwtTokenVerifier } from "../infrastructure/security/jwt-token-verifier";
 import { NumericVerificationCodeGenerator } from "../infrastructure/security/numeric-verification-code-generator";
 import { ScryptPasswordHasher } from "../infrastructure/security/scrypt-password-hasher";
@@ -42,7 +42,7 @@ export function createBuyerModule() {
   const wishlistRepository = new PostgresWishlistRepository();
   const passwordHasher = new ScryptPasswordHasher();
   const verificationCodeGenerator = new NumericVerificationCodeGenerator();
-  const mailProvider = new ResendMailProvider();
+  const mailProvider = createMailProvider();
   const tokenVerifier = new JwtTokenVerifier();
   const sendWelcomeEmail = new SendWelcomeEmail(mailProvider);
   const initiateEmailVerification = new InitiateEmailVerification(
