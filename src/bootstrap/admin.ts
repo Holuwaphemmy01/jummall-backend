@@ -8,10 +8,12 @@ import { GetCompletedSellerKyc } from "../application/admin/get-completed-seller
 import { GetProductBrand } from "../application/admin/get-product-brand";
 import { GetProductPendingReviewDetail } from "../application/admin/get-product-pending-review-detail";
 import { GetProductCategory } from "../application/admin/get-product-category";
+import { GetShippingSettings } from "../application/admin/get-shipping-settings";
 import { ListProductBrands } from "../application/admin/list-product-brands";
 import { ListCompletedSellerKyc } from "../application/admin/list-completed-seller-kyc";
 import { ListProductsPendingReview } from "../application/admin/list-products-pending-review";
 import { RejectProductPendingReview } from "../application/admin/reject-product-pending-review";
+import { UpdateShippingSettings } from "../application/admin/update-shipping-settings";
 import { UpdateProductBrand } from "../application/admin/update-product-brand";
 import { ListProductCategories } from "../application/admin/list-product-categories";
 import { UpdateProductCategory } from "../application/admin/update-product-category";
@@ -21,6 +23,7 @@ import { PostgresAdminKycRepository } from "../infrastructure/database/repositor
 import { PostgresProductBrandRepository } from "../infrastructure/database/repositories/postgres-product-brand-repository";
 import { PostgresProductCategoryRepository } from "../infrastructure/database/repositories/postgres-product-category-repository";
 import { PostgresProductRepository } from "../infrastructure/database/repositories/postgres-product-repository";
+import { PostgresShippingSettingsRepository } from "../infrastructure/database/repositories/postgres-shipping-settings-repository";
 import { JwtTokenVerifier } from "../infrastructure/security/jwt-token-verifier";
 
 export function createAdminModule() {
@@ -29,6 +32,7 @@ export function createAdminModule() {
   const productBrandRepository = new PostgresProductBrandRepository();
   const productCategoryRepository = new PostgresProductCategoryRepository();
   const productRepository = new PostgresProductRepository();
+  const shippingSettingsRepository = new PostgresShippingSettingsRepository();
   const tokenVerifier = new JwtTokenVerifier();
   const authenticateAdmin = createAuthMiddleware(tokenVerifier, "admin");
   const approveProductPendingReview = new ApproveProductPendingReview(
@@ -49,6 +53,7 @@ export function createAdminModule() {
     productRepository
   );
   const getProductCategory = new GetProductCategory(productCategoryRepository);
+  const getShippingSettings = new GetShippingSettings(shippingSettingsRepository);
   const listProductBrands = new ListProductBrands(productBrandRepository);
   const listProductsPendingReview = new ListProductsPendingReview(
     productRepository
@@ -60,6 +65,9 @@ export function createAdminModule() {
   const updateProductCategory = new UpdateProductCategory(
     productCategoryRepository
   );
+  const updateShippingSettings = new UpdateShippingSettings(
+    shippingSettingsRepository
+  );
 
   adminRouter.use(authenticateAdmin);
   adminRouter.use(
@@ -70,6 +78,7 @@ export function createAdminModule() {
       createProductCategory,
       getProductBrand,
       getProductPendingReviewDetail,
+      getShippingSettings,
       listCompletedSellerKyc,
       listProductBrands,
       listProductsPendingReview,
@@ -77,6 +86,7 @@ export function createAdminModule() {
       rejectProductPendingReview,
       getCompletedSellerKyc,
       getProductCategory,
+      updateShippingSettings,
       updateProductBrand,
       updateProductCategory
     })

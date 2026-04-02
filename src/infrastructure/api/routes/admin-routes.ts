@@ -16,6 +16,7 @@ import {
   type GetProductPendingReviewDetailUseCase
 } from "../../../application/admin/get-product-pending-review-detail";
 import type { GetProductCategoryUseCase } from "../../../application/admin/get-product-category";
+import type { GetShippingSettingsUseCase } from "../../../application/admin/get-shipping-settings";
 import {
   GetCompletedSellerKycError,
   type GetCompletedSellerKycUseCase
@@ -28,15 +29,18 @@ import {
   RejectProductPendingReviewError,
   type RejectProductPendingReviewUseCase
 } from "../../../application/admin/reject-product-pending-review";
+import { ShippingSettingsError } from "../../../application/admin/shipping-settings-error";
 import { ProductBrandError } from "../../../application/admin/product-brand-errors";
 import type { UpdateProductBrandUseCase } from "../../../application/admin/update-product-brand";
 import type { UpdateProductCategoryUseCase } from "../../../application/admin/update-product-category";
+import type { UpdateShippingSettingsUseCase } from "../../../application/admin/update-shipping-settings";
 import { approveProductPendingReviewSchema } from "../validation/approve-product-pending-review-schema";
 import { createProductBrandSchema } from "../validation/create-product-brand-schema";
 import { ProductCategoryError } from "../../../application/admin/product-category-errors";
 import { approveSellerKycSchema } from "../validation/approve-seller-kyc-schema";
 import { createProductCategorySchema } from "../validation/create-product-category-schema";
 import { rejectProductPendingReviewSchema } from "../validation/reject-product-pending-review-schema";
+import { updateShippingSettingsSchema } from "../validation/update-shipping-settings-schema";
 import { updateProductBrandSchema } from "../validation/update-product-brand-schema";
 import { updateProductCategorySchema } from "../validation/update-product-category-schema";
 
@@ -54,6 +58,8 @@ interface AdminRouterDependencies {
   rejectProductPendingReview: RejectProductPendingReviewUseCase;
   getCompletedSellerKyc: GetCompletedSellerKycUseCase;
   getProductCategory: GetProductCategoryUseCase;
+  getShippingSettings: GetShippingSettingsUseCase;
+  updateShippingSettings: UpdateShippingSettingsUseCase;
   updateProductBrand: UpdateProductBrandUseCase;
   updateProductCategory: UpdateProductCategoryUseCase;
 }
@@ -72,10 +78,75 @@ export default function createAdminRouter({
   rejectProductPendingReview,
   getCompletedSellerKyc,
   getProductCategory,
+  getShippingSettings,
+  updateShippingSettings,
   updateProductBrand,
   updateProductCategory
 }: AdminRouterDependencies) {
   const adminRouter = Router();
+
+  adminRouter.get("/shipping/settings", async (_req, res) => {
+    try {
+      const settings = await getShippingSettings.execute();
+
+      return res.status(200).json({
+        message: "Shipping settings fetched successfully.",
+        data: thisShippingSettingsResponse(settings)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ShippingSettingsError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch shipping settings."
+      });
+    }
+  });
+
+  adminRouter.patch("/shipping/settings", async (req, res) => {
+    const { error, value } = updateShippingSettingsSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    try {
+      const settings = await updateShippingSettings.execute({
+        shippingMode: value.shipping_mode,
+        categoryShippingMode: value.category_shipping_mode,
+        vendorFallbackPolicy: value.vendor_fallback_policy
+      });
+
+      return res.status(200).json({
+        message: "Shipping settings updated successfully.",
+        data: thisShippingSettingsResponse(settings)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ShippingSettingsError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to update shipping settings."
+      });
+    }
+  });
 
   adminRouter.post("/product-brands", async (req, res) => {
     const { error, value } = createProductBrandSchema.validate(req.body, {
@@ -614,6 +685,24 @@ function thisBrandResponse(brand: {
     description: brand.description,
     created_at: brand.createdAt.toISOString(),
     updated_at: brand.updatedAt.toISOString()
+  };
+}
+
+function thisShippingSettingsResponse(settings: {
+  id: string;
+  shippingMode: string;
+  categoryShippingMode: string;
+  vendorFallbackPolicy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: settings.id,
+    shipping_mode: settings.shippingMode,
+    category_shipping_mode: settings.categoryShippingMode,
+    vendor_fallback_policy: settings.vendorFallbackPolicy,
+    created_at: settings.createdAt.toISOString(),
+    updated_at: settings.updatedAt.toISOString()
   };
 }
 
