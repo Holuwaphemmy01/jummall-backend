@@ -26,6 +26,10 @@ import type { UploadProductUseCase } from "../../../application/seller/upload-pr
 import { UploadProductError } from "../../../application/seller/upload-product";
 import { parseBase64File } from "../files/parse-base64-file";
 import type { AuthenticatedUser } from "../middleware/create-auth-middleware";
+import {
+  buildProductBrandImagePublicUrl,
+  buildProductCategoryImagePublicUrl
+} from "../../storage/build-public-storage-url";
 import { createCategoryShippingRuleSchema } from "../validation/create-category-shipping-rule-schema";
 import { registerSellerSchema } from "../validation/register-seller-schema";
 import { createShippingZoneRuleSchema } from "../validation/create-shipping-zone-rule-schema";
@@ -321,6 +325,16 @@ export function createProtectedSellerBrandRouter({
           id: brand.id,
           name: brand.name,
           description: brand.description,
+          image: brand.image
+            ? {
+                storage_path: brand.image.storagePath,
+                public_url: buildProductBrandImagePublicUrl(
+                  brand.image.storagePath
+                ),
+                mime_type: brand.image.mimeType,
+                original_file_name: brand.image.originalFileName
+              }
+            : null,
           created_at: brand.createdAt.toISOString(),
           updated_at: brand.updatedAt.toISOString()
         }))
@@ -354,6 +368,9 @@ export function createProtectedSellerCategoryRouter({
           image: category.image
             ? {
                 storage_path: category.image.storagePath,
+                public_url: buildProductCategoryImagePublicUrl(
+                  category.image.storagePath
+                ),
                 mime_type: category.image.mimeType,
                 original_file_name: category.image.originalFileName
               }

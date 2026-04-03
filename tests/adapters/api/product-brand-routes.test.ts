@@ -3,23 +3,22 @@ import express from "express";
 import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
 
-import { ProductCategoryError } from "../../../src/application/admin/product-category-errors";
+import { ProductBrandError } from "../../../src/application/admin/product-brand-errors";
 import createAdminRouter from "../../../src/infrastructure/api/routes/admin-routes";
-import { createProtectedSellerCategoryRouter } from "../../../src/infrastructure/api/routes/seller-routes";
-import type { ProductCategoryRecord } from "../../../src/ports/product-category-repository";
+import { createProtectedSellerBrandRouter } from "../../../src/infrastructure/api/routes/seller-routes";
+import type { ProductBrandRecord } from "../../../src/ports/product-brand-repository";
 
-function makeCategory(
-  overrides: Partial<ProductCategoryRecord> = {}
-): ProductCategoryRecord {
+function makeBrand(
+  overrides: Partial<ProductBrandRecord> = {}
+): ProductBrandRecord {
   return {
-    id: "category-id",
-    name: "Electronics",
-    description: "Phones, gadgets, and accessories",
-    deductionPercentage: 12.5,
+    id: "brand-id",
+    name: "Apple",
+    description: "Consumer electronics brand",
     image: {
-      storagePath: "product-categories/electronics/electronics.jpg",
+      storagePath: "product-brands/apple/apple.jpg",
       mimeType: "image/jpeg",
-      originalFileName: "electronics.jpg"
+      originalFileName: "apple.jpg"
     },
     createdAt: new Date("2026-04-03T00:00:00.000Z"),
     updatedAt: new Date("2026-04-03T00:00:00.000Z"),
@@ -109,7 +108,7 @@ async function closeServer(server: Server) {
   });
 }
 
-describe("product category routes", () => {
+describe("product brand routes", () => {
   const openServers: Server[] = [];
   const originalSupabaseUrl = process.env.SUPABASE_URL;
 
@@ -129,53 +128,7 @@ describe("product category routes", () => {
     }
   });
 
-  it("returns public image urls for category responses", async () => {
-    process.env.SUPABASE_URL = "https://example.supabase.co";
-
-    const createProductCategory = {
-      execute: jest.fn(async () => makeCategory())
-    };
-    const { server, baseUrl } = await createServer((app) => {
-      app.use(
-        "/admin",
-        createAdminRouter(
-          createAdminRouterDependencies({
-            createProductCategory
-          })
-        )
-      );
-    });
-    openServers.push(server);
-
-    const response = await fetch(`${baseUrl}/admin/product-categories`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        name: "Electronics",
-        description: "Phones, gadgets, and accessories",
-        deduction_percentage: 12.5,
-        image: {
-          file_name: "electronics.jpg",
-          mime_type: "image/jpeg",
-          file_base64: `data:image/jpeg;base64,${Buffer.from("image").toString("base64")}`
-        }
-      })
-    });
-    const body = await response.json();
-
-    expect(response.status).toBe(201);
-    expect(body.data.image).toEqual({
-      storage_path: "product-categories/electronics/electronics.jpg",
-      public_url:
-        "https://example.supabase.co/storage/v1/object/public/product-category-images/product-categories/electronics/electronics.jpg",
-      mime_type: "image/jpeg",
-      original_file_name: "electronics.jpg"
-    });
-  });
-
-  it("requires image in the admin create product category payload", async () => {
+  it("requires image in the admin create product brand payload", async () => {
     process.env.SUPABASE_URL = "https://example.supabase.co";
 
     const { server, baseUrl } = await createServer((app) => {
@@ -183,7 +136,7 @@ describe("product category routes", () => {
         "/admin",
         createAdminRouter(
           createAdminRouterDependencies({
-            createProductCategory: {
+            createProductBrand: {
               execute: jest.fn()
             }
           })
@@ -192,15 +145,14 @@ describe("product category routes", () => {
     });
     openServers.push(server);
 
-    const response = await fetch(`${baseUrl}/admin/product-categories`, {
+    const response = await fetch(`${baseUrl}/admin/product-brands`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        name: "Electronics",
-        description: "Phones, gadgets, and accessories",
-        deduction_percentage: 12.5
+        name: "Apple",
+        description: "Consumer electronics brand"
       })
     });
     const body = await response.json();
@@ -216,35 +168,34 @@ describe("product category routes", () => {
     });
   });
 
-  it("returns image data when an admin creates a category", async () => {
+  it("returns image data when an admin creates a brand", async () => {
     process.env.SUPABASE_URL = "https://example.supabase.co";
 
-    const createProductCategory = {
-      execute: jest.fn(async () => makeCategory())
+    const createProductBrand = {
+      execute: jest.fn(async () => makeBrand())
     };
     const { server, baseUrl } = await createServer((app) => {
       app.use(
         "/admin",
         createAdminRouter(
           createAdminRouterDependencies({
-            createProductCategory
+            createProductBrand
           })
         )
       );
     });
     openServers.push(server);
 
-    const response = await fetch(`${baseUrl}/admin/product-categories`, {
+    const response = await fetch(`${baseUrl}/admin/product-brands`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        name: "Electronics",
-        description: "Phones, gadgets, and accessories",
-        deduction_percentage: 12.5,
+        name: "Apple",
+        description: "Consumer electronics brand",
         image: {
-          file_name: "electronics.jpg",
+          file_name: "apple.jpg",
           mime_type: "image/jpeg",
           file_base64: `data:image/jpeg;base64,${Buffer.from("image").toString("base64")}`
         }
@@ -253,29 +204,27 @@ describe("product category routes", () => {
     const body = await response.json();
 
     expect(response.status).toBe(201);
-    expect(createProductCategory.execute as jest.Mock).toHaveBeenCalledWith({
-      name: "Electronics",
-      description: "Phones, gadgets, and accessories",
-      deductionPercentage: 12.5,
+    expect(createProductBrand.execute as jest.Mock).toHaveBeenCalledWith({
+      name: "Apple",
+      description: "Consumer electronics brand",
       image: {
-        fileName: "electronics.jpg",
+        fileName: "apple.jpg",
         mimeType: "image/jpeg",
         fileContents: Buffer.from("image")
       }
     });
     expect(body).toEqual({
-      message: "Product category created successfully.",
+      message: "Product brand created successfully.",
       data: {
-        id: "category-id",
-        name: "Electronics",
-        description: "Phones, gadgets, and accessories",
-        deduction_percentage: 12.5,
+        id: "brand-id",
+        name: "Apple",
+        description: "Consumer electronics brand",
         image: {
-          storage_path: "product-categories/electronics/electronics.jpg",
+          storage_path: "product-brands/apple/apple.jpg",
           public_url:
-            "https://example.supabase.co/storage/v1/object/public/product-category-images/product-categories/electronics/electronics.jpg",
+            "https://example.supabase.co/storage/v1/object/public/product-brand-images/product-brands/apple/apple.jpg",
           mime_type: "image/jpeg",
-          original_file_name: "electronics.jpg"
+          original_file_name: "apple.jpg"
         },
         created_at: "2026-04-03T00:00:00.000Z",
         updated_at: "2026-04-03T00:00:00.000Z"
@@ -283,17 +232,78 @@ describe("product category routes", () => {
     });
   });
 
-  it("returns updated image data when an admin patches a category image", async () => {
+  it("returns image data when an admin lists brands", async () => {
     process.env.SUPABASE_URL = "https://example.supabase.co";
 
-    const updateProductCategory = {
+    const listProductBrands = {
+      execute: jest.fn(async () => [makeBrand()])
+    };
+    const { server, baseUrl } = await createServer((app) => {
+      app.use(
+        "/admin",
+        createAdminRouter(
+          createAdminRouterDependencies({
+            listProductBrands
+          })
+        )
+      );
+    });
+    openServers.push(server);
+
+    const response = await fetch(`${baseUrl}/admin/product-brands`);
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.data[0].image).toEqual({
+      storage_path: "product-brands/apple/apple.jpg",
+      public_url:
+        "https://example.supabase.co/storage/v1/object/public/product-brand-images/product-brands/apple/apple.jpg",
+      mime_type: "image/jpeg",
+      original_file_name: "apple.jpg"
+    });
+  });
+
+  it("returns image data when an admin fetches one brand", async () => {
+    process.env.SUPABASE_URL = "https://example.supabase.co";
+
+    const getProductBrand = {
+      execute: jest.fn(async () => makeBrand())
+    };
+    const { server, baseUrl } = await createServer((app) => {
+      app.use(
+        "/admin",
+        createAdminRouter(
+          createAdminRouterDependencies({
+            getProductBrand
+          })
+        )
+      );
+    });
+    openServers.push(server);
+
+    const response = await fetch(`${baseUrl}/admin/product-brands/brand-id`);
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.data.image).toEqual({
+      storage_path: "product-brands/apple/apple.jpg",
+      public_url:
+        "https://example.supabase.co/storage/v1/object/public/product-brand-images/product-brands/apple/apple.jpg",
+      mime_type: "image/jpeg",
+      original_file_name: "apple.jpg"
+    });
+  });
+
+  it("returns updated image data when an admin patches a brand image", async () => {
+    process.env.SUPABASE_URL = "https://example.supabase.co";
+
+    const updateProductBrand = {
       execute: jest.fn(async () =>
-        makeCategory({
+        makeBrand({
           image: {
-            storagePath:
-              "product-categories/electronics/electronics-banner.png",
+            storagePath: "product-brands/apple/apple-banner.png",
             mimeType: "image/png",
-            originalFileName: "electronics-banner.png"
+            originalFileName: "apple-banner.png"
           }
         })
       )
@@ -303,95 +313,81 @@ describe("product category routes", () => {
         "/admin",
         createAdminRouter(
           createAdminRouterDependencies({
-            updateProductCategory
+            updateProductBrand
           })
         )
       );
     });
     openServers.push(server);
 
-    const response = await fetch(`${baseUrl}/admin/product-categories/category-id`, {
+    const response = await fetch(`${baseUrl}/admin/product-brands/brand-id`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
         image: {
-          file_name: "electronics-banner.png",
+          file_name: "apple-banner.png",
           mime_type: "image/png",
-          file_base64: `data:image/png;base64,${Buffer.from("new-image").toString("base64")}`
+          file_base64: `data:image/png;base64,${Buffer.from("image").toString("base64")}`
         }
       })
     });
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(updateProductCategory.execute as jest.Mock).toHaveBeenCalledWith({
-      categoryId: "category-id",
+    expect(updateProductBrand.execute as jest.Mock).toHaveBeenCalledWith({
+      brandId: "brand-id",
       name: undefined,
       description: undefined,
-      deductionPercentage: undefined,
       image: {
-        fileName: "electronics-banner.png",
+        fileName: "apple-banner.png",
         mimeType: "image/png",
-        fileContents: Buffer.from("new-image")
+        fileContents: Buffer.from("image")
       }
     });
-    expect(body).toEqual({
-      message: "Product category updated successfully.",
-      data: {
-        id: "category-id",
-        name: "Electronics",
-        description: "Phones, gadgets, and accessories",
-        deduction_percentage: 12.5,
-        image: {
-          storage_path:
-            "product-categories/electronics/electronics-banner.png",
-          public_url:
-            "https://example.supabase.co/storage/v1/object/public/product-category-images/product-categories/electronics/electronics-banner.png",
-          mime_type: "image/png",
-          original_file_name: "electronics-banner.png"
-        },
-        created_at: "2026-04-03T00:00:00.000Z",
-        updated_at: "2026-04-03T00:00:00.000Z"
-      }
+    expect(body.data.image).toEqual({
+      storage_path: "product-brands/apple/apple-banner.png",
+      public_url:
+        "https://example.supabase.co/storage/v1/object/public/product-brand-images/product-brands/apple/apple-banner.png",
+      mime_type: "image/png",
+      original_file_name: "apple-banner.png"
     });
   });
 
-  it("returns image data in the seller category list", async () => {
+  it("returns image data in the seller brand list", async () => {
     process.env.SUPABASE_URL = "https://example.supabase.co";
 
-    const listAvailableProductCategories = {
-      execute: jest.fn(async () => [makeCategory()])
+    const listAvailableProductBrands = {
+      execute: jest.fn(async () => [makeBrand()])
     };
     const { server, baseUrl } = await createServer((app) => {
       app.use(
-        "/sellers/product-categories",
-        createProtectedSellerCategoryRouter({
-          listAvailableProductCategories
+        "/sellers/product-brands",
+        createProtectedSellerBrandRouter({
+          listAvailableProductBrands
         })
       );
     });
     openServers.push(server);
 
-    const response = await fetch(`${baseUrl}/sellers/product-categories`);
+    const response = await fetch(`${baseUrl}/sellers/product-brands`);
     const body = await response.json();
 
     expect(response.status).toBe(200);
     expect(body).toEqual({
-      message: "Product categories fetched successfully.",
+      message: "Product brands fetched successfully.",
       data: [
         {
-          id: "category-id",
-          name: "Electronics",
-          description: "Phones, gadgets, and accessories",
-          deduction_percentage: 12.5,
+          id: "brand-id",
+          name: "Apple",
+          description: "Consumer electronics brand",
           image: {
-            storage_path: "product-categories/electronics/electronics.jpg",
+            storage_path: "product-brands/apple/apple.jpg",
             public_url:
-              "https://example.supabase.co/storage/v1/object/public/product-category-images/product-categories/electronics/electronics.jpg",
+              "https://example.supabase.co/storage/v1/object/public/product-brand-images/product-brands/apple/apple.jpg",
             mime_type: "image/jpeg",
-            original_file_name: "electronics.jpg"
+            original_file_name: "apple.jpg"
           },
           created_at: "2026-04-03T00:00:00.000Z",
           updated_at: "2026-04-03T00:00:00.000Z"
@@ -400,34 +396,40 @@ describe("product category routes", () => {
     });
   });
 
-  it("maps category image parse failures to a product-category validation response", async () => {
+  it("returns brand-specific validation errors from the admin brand endpoints", async () => {
     process.env.SUPABASE_URL = "https://example.supabase.co";
 
-    const updateProductCategory = {
-      execute: jest.fn()
+    const updateProductBrand = {
+      execute: jest.fn(async () => {
+        throw new ProductBrandError(
+          "Invalid product brand image content.",
+          400,
+          "image.file_base64"
+        );
+      })
     };
     const { server, baseUrl } = await createServer((app) => {
       app.use(
         "/admin",
         createAdminRouter(
           createAdminRouterDependencies({
-            updateProductCategory
+            updateProductBrand
           })
         )
       );
     });
     openServers.push(server);
 
-    const response = await fetch(`${baseUrl}/admin/product-categories/category-id`, {
+    const response = await fetch(`${baseUrl}/admin/product-brands/brand-id`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
         image: {
-          file_name: "electronics-banner.png",
+          file_name: "apple-banner.png",
           mime_type: "image/png",
-          file_base64: "data:image/png;base64,"
+          file_base64: ""
         }
       })
     });
@@ -435,9 +437,12 @@ describe("product category routes", () => {
 
     expect(response.status).toBe(400);
     expect(body).toEqual({
-      message: "Invalid product category image content.",
-      field: "image.file_base64"
+      message: "Validation failed.",
+      errors: expect.arrayContaining([
+        expect.objectContaining({
+          field: "image.file_base64"
+        })
+      ])
     });
-    expect(updateProductCategory.execute).not.toHaveBeenCalled();
   });
 });

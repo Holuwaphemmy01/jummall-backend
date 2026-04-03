@@ -25,7 +25,8 @@ describe("SupabaseDocumentStorage", () => {
       "service-role-key",
       "seller-kyc-documents",
       "product-images",
-      "product-category-images"
+      "product-category-images",
+      "product-brand-images"
     );
 
     const result = await storage.uploadSellerKycDocument({
@@ -56,7 +57,8 @@ describe("SupabaseDocumentStorage", () => {
       "service-role-key",
       "seller-kyc-documents",
       "product-images",
-      "product-category-images"
+      "product-category-images",
+      "product-brand-images"
     );
 
     const result = await storage.uploadProductImage({
@@ -87,7 +89,8 @@ describe("SupabaseDocumentStorage", () => {
       "service-role-key",
       "seller-kyc-documents",
       "product-images",
-      "product-category-images"
+      "product-category-images",
+      "product-brand-images"
     );
 
     const result = await storage.uploadProductCategoryImage({
@@ -110,5 +113,37 @@ describe("SupabaseDocumentStorage", () => {
     );
     expect(result.storagePath).toContain("product-categories/electronics/");
     expect(result.storagePath).toContain("electronics.jpg");
+  });
+
+  it("uploads product brand images to the configured brand image bucket", async () => {
+    const storage = new SupabaseDocumentStorage(
+      "https://example.supabase.co",
+      "service-role-key",
+      "seller-kyc-documents",
+      "product-images",
+      "product-category-images",
+      "product-brand-images"
+    );
+
+    const result = await storage.uploadProductBrandImage({
+      brandName: "Apple",
+      fileName: "apple.jpg",
+      mimeType: "image/jpeg",
+      fileContents: Buffer.from("brand-image")
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "/storage/v1/object/product-brand-images/product-brands/apple/"
+      ),
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          "Content-Type": "image/jpeg"
+        })
+      })
+    );
+    expect(result.storagePath).toContain("product-brands/apple/");
+    expect(result.storagePath).toContain("apple.jpg");
   });
 });

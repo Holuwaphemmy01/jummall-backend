@@ -5,6 +5,7 @@ import type { ProductCategoryImageUploadInput } from "../../../src/application/a
 import { ProductCategoryError } from "../../../src/application/admin/product-category-errors";
 import type {
   DocumentStorage,
+  UploadProductBrandImageInput,
   UploadProductCategoryImageInput,
   UploadProductImageInput,
   UploadSellerKycDocumentInput,
@@ -57,6 +58,9 @@ class DocumentStorageDouble implements DocumentStorage {
     .mockImplementation(async (input) => ({
       storagePath: `product-categories/${input.categoryName.toLowerCase()}/${input.fileName}`
     }));
+
+  uploadProductBrandImage = jest
+    .fn<(input: UploadProductBrandImageInput) => Promise<UploadedDocument>>();
 }
 
 function makeImageInput(

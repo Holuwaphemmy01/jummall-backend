@@ -64,6 +64,10 @@ import { createShippingZoneSchema } from "../validation/create-shipping-zone-sch
 import { ProductCategoryError } from "../../../application/admin/product-category-errors";
 import { approveSellerKycSchema } from "../validation/approve-seller-kyc-schema";
 import { parseBase64File } from "../files/parse-base64-file";
+import {
+  buildProductBrandImagePublicUrl,
+  buildProductCategoryImagePublicUrl
+} from "../../storage/build-public-storage-url";
 import { createProductCategorySchema } from "../validation/create-product-category-schema";
 import { rejectProductPendingReviewSchema } from "../validation/reject-product-pending-review-schema";
 import { updateCategoryShippingRuleSchema } from "../validation/update-category-shipping-rule-schema";
@@ -950,7 +954,8 @@ export default function createAdminRouter({
     try {
       const brand = await createProductBrand.execute({
         name: value.name,
-        description: value.description
+        description: value.description,
+        image: parseProductBrandImageInput(value.image)
       });
 
       return res.status(201).json({
@@ -1029,7 +1034,8 @@ export default function createAdminRouter({
       const brand = await updateProductBrand.execute({
         brandId: req.params.brandId,
         name: value.name,
-        description: value.description
+        description: value.description,
+        image: value.image ? parseProductBrandImageInput(value.image) : undefined
       });
 
       return res.status(200).json({
@@ -1460,6 +1466,9 @@ function thisCategoryResponse(category: {
     image: category.image
       ? {
           storage_path: category.image.storagePath,
+          public_url: buildProductCategoryImagePublicUrl(
+            category.image.storagePath
+          ),
           mime_type: category.image.mimeType,
           original_file_name: category.image.originalFileName
         }
@@ -1493,6 +1502,11 @@ function thisBrandResponse(brand: {
   id: string;
   name: string;
   description: string;
+  image: {
+    storagePath: string;
+    mimeType: string;
+    originalFileName: string;
+  } | null;
   createdAt: Date;
   updatedAt: Date;
 }) {
@@ -1500,9 +1514,37 @@ function thisBrandResponse(brand: {
     id: brand.id,
     name: brand.name,
     description: brand.description,
+    image: brand.image
+      ? {
+          storage_path: brand.image.storagePath,
+          public_url: buildProductBrandImagePublicUrl(brand.image.storagePath),
+          mime_type: brand.image.mimeType,
+          original_file_name: brand.image.originalFileName
+        }
+      : null,
     created_at: brand.createdAt.toISOString(),
     updated_at: brand.updatedAt.toISOString()
   };
+}
+
+function parseProductBrandImageInput(image: {
+  file_name: string;
+  mime_type: string;
+  file_base64: string;
+}) {
+  try {
+    return {
+      fileName: image.file_name,
+      mimeType: image.mime_type,
+      fileContents: parseBase64File(image.file_base64)
+    };
+  } catch {
+    throw new ProductBrandError(
+      "Invalid product brand image content.",
+      400,
+      "image.file_base64"
+    );
+  }
 }
 
 function thisShippingSettingsResponse(settings: {

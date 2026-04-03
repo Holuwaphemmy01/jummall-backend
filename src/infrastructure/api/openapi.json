@@ -394,6 +394,7 @@
                     "deduction_percentage": 12.5,
                     "image": {
                       "storage_path": "product-categories/electronics/1712140800000-electronics.jpg",
+                      "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-category-images/product-categories/electronics/1712140800000-electronics.jpg",
                       "mime_type": "image/jpeg",
                       "original_file_name": "electronics.jpg"
                     },
@@ -441,6 +442,7 @@
                       "deduction_percentage": 12.5,
                       "image": {
                         "storage_path": "product-categories/electronics/1712140800000-electronics.jpg",
+                        "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-category-images/product-categories/electronics/1712140800000-electronics.jpg",
                         "mime_type": "image/jpeg",
                         "original_file_name": "electronics.jpg"
                       },
@@ -1932,6 +1934,12 @@
                     "id": "brand-id",
                     "name": "Apple",
                     "description": "Consumer electronics brand",
+                    "image": {
+                      "storage_path": "product-brands/apple/1712140800000-apple.jpg",
+                      "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-brand-images/product-brands/apple/1712140800000-apple.jpg",
+                      "mime_type": "image/jpeg",
+                      "original_file_name": "apple.jpg"
+                    },
                     "created_at": "2026-03-29T00:00:00.000Z",
                     "updated_at": "2026-03-29T00:00:00.000Z"
                   }
@@ -1973,6 +1981,12 @@
                       "id": "brand-id",
                       "name": "Apple",
                       "description": "Consumer electronics brand",
+                      "image": {
+                        "storage_path": "product-brands/apple/1712140800000-apple.jpg",
+                        "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-brand-images/product-brands/apple/1712140800000-apple.jpg",
+                        "mime_type": "image/jpeg",
+                        "original_file_name": "apple.jpg"
+                      },
                       "created_at": "2026-03-29T00:00:00.000Z",
                       "updated_at": "2026-03-29T00:00:00.000Z"
                     }
@@ -2019,6 +2033,12 @@
                     "id": "brand-id",
                     "name": "Apple",
                     "description": "Consumer electronics brand",
+                    "image": {
+                      "storage_path": "product-brands/apple/1712140800000-apple.jpg",
+                      "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-brand-images/product-brands/apple/1712140800000-apple.jpg",
+                      "mime_type": "image/jpeg",
+                      "original_file_name": "apple.jpg"
+                    },
                     "created_at": "2026-03-29T00:00:00.000Z",
                     "updated_at": "2026-03-29T00:00:00.000Z"
                   }
@@ -2076,6 +2096,12 @@
                     "id": "brand-id",
                     "name": "Apple",
                     "description": "Updated brand description",
+                    "image": {
+                      "storage_path": "product-brands/apple/1712140800000-apple-banner.png",
+                      "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-brand-images/product-brands/apple/1712140800000-apple-banner.png",
+                      "mime_type": "image/png",
+                      "original_file_name": "apple-banner.png"
+                    },
                     "created_at": "2026-03-29T00:00:00.000Z",
                     "updated_at": "2026-03-29T01:00:00.000Z"
                   }
@@ -2133,6 +2159,7 @@
                     "deduction_percentage": 12.5,
                     "image": {
                       "storage_path": "product-categories/electronics/1712140800000-electronics.jpg",
+                      "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-category-images/product-categories/electronics/1712140800000-electronics.jpg",
                       "mime_type": "image/jpeg",
                       "original_file_name": "electronics.jpg"
                     },
@@ -2196,6 +2223,7 @@
                     "deduction_percentage": 15,
                     "image": {
                       "storage_path": "product-categories/electronics/1712144400000-electronics-banner.png",
+                      "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-category-images/product-categories/electronics/1712144400000-electronics-banner.png",
                       "mime_type": "image/png",
                       "original_file_name": "electronics-banner.png"
                     },
@@ -4120,6 +4148,12 @@
                       "id": "brand-id",
                       "name": "Apple",
                       "description": "Consumer electronics brand",
+                      "image": {
+                        "storage_path": "product-brands/apple/1712140800000-apple.jpg",
+                        "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-brand-images/product-brands/apple/1712140800000-apple.jpg",
+                        "mime_type": "image/jpeg",
+                        "original_file_name": "apple.jpg"
+                      },
                       "created_at": "2026-03-29T00:00:00.000Z",
                       "updated_at": "2026-03-29T00:00:00.000Z"
                     }
@@ -4161,6 +4195,7 @@
                       "deduction_percentage": 12.5,
                       "image": {
                         "storage_path": "product-categories/electronics/1712140800000-electronics.jpg",
+                        "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-category-images/product-categories/electronics/1712140800000-electronics.jpg",
                         "mime_type": "image/jpeg",
                         "original_file_name": "electronics.jpg"
                       },
@@ -5681,7 +5716,7 @@
       },
       "CreateProductBrandRequest": {
         "type": "object",
-        "required": ["name", "description"],
+        "required": ["name", "description", "image"],
         "properties": {
           "name": {
             "type": "string",
@@ -5690,6 +5725,9 @@
           "description": {
             "type": "string",
             "example": "Consumer electronics brand"
+          },
+          "image": {
+            "$ref": "#/components/schemas/ProductBrandImageUploadRequest"
           }
         }
       },
@@ -5740,6 +5778,11 @@
             "type": "string",
             "example": "product-categories/electronics/1712140800000-electronics.jpg"
           },
+          "public_url": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://your-project.supabase.co/storage/v1/object/public/product-category-images/product-categories/electronics/1712140800000-electronics.jpg"
+          },
           "mime_type": {
             "type": "string",
             "example": "image/jpeg"
@@ -5747,6 +5790,48 @@
           "original_file_name": {
             "type": "string",
             "example": "electronics.jpg"
+          }
+        }
+      },
+      "ProductBrandImageUploadRequest": {
+        "type": "object",
+        "required": ["file_name", "mime_type", "file_base64"],
+        "properties": {
+          "file_name": {
+            "type": "string",
+            "example": "apple.jpg"
+          },
+          "mime_type": {
+            "type": "string",
+            "enum": ["image/jpeg", "image/png", "image/webp"],
+            "example": "image/jpeg"
+          },
+          "file_base64": {
+            "type": "string",
+            "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."
+          }
+        }
+      },
+      "ProductBrandImageResponse": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "storage_path": {
+            "type": "string",
+            "example": "product-brands/apple/1712140800000-apple.jpg"
+          },
+          "public_url": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://your-project.supabase.co/storage/v1/object/public/product-brand-images/product-brands/apple/1712140800000-apple.jpg"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "image/jpeg"
+          },
+          "original_file_name": {
+            "type": "string",
+            "example": "apple.jpg"
           }
         }
       },
@@ -5760,6 +5845,9 @@
           "description": {
             "type": "string",
             "example": "Updated brand description"
+          },
+          "image": {
+            "$ref": "#/components/schemas/ProductBrandImageUploadRequest"
           }
         }
       },

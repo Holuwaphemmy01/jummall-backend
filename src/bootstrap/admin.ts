@@ -77,7 +77,10 @@ export function createAdminModule() {
   const createFreeShippingRule = new CreateFreeShippingRule(
     freeShippingRuleRepository
   );
-  const createProductBrand = new CreateProductBrand(productBrandRepository);
+  const createProductBrand = new CreateProductBrand(
+    productBrandRepository,
+    documentStorage
+  );
   const createProductCategory = new CreateProductCategory(
     productCategoryRepository,
     documentStorage
@@ -142,7 +145,10 @@ export function createAdminModule() {
   const updateFreeShippingRule = new UpdateFreeShippingRule(
     freeShippingRuleRepository
   );
-  const updateProductBrand = new UpdateProductBrand(productBrandRepository);
+  const updateProductBrand = new UpdateProductBrand(
+    productBrandRepository,
+    documentStorage
+  );
   const updateProductCategory = new UpdateProductCategory(
     productCategoryRepository,
     documentStorage
