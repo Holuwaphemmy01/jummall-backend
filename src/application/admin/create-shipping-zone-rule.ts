@@ -1,15 +1,20 @@
+import type { RawShippingSubtotalBandInput } from "../shipping/subtotal-band-helpers";
 import type { ShippingZoneRuleDetailRecord } from "../../ports/shipping/shipping-models";
 import type { ShippingZoneRepository } from "../../ports/shipping/shipping-zone-repository";
 import type {
   ShippingZoneRuleRepository
 } from "../../ports/shipping/shipping-zone-rule-repository";
-import { assertValidShippingRuleValue } from "./shipping-configuration-helpers";
+import {
+  assertValidShippingRuleValue,
+  normalizeShippingSubtotalBands
+} from "./shipping-configuration-helpers";
 import { ShippingConfigurationError } from "./shipping-configuration-error";
 
 export interface CreateShippingZoneRuleInput {
   zoneId: string;
   methodType: "fixed_rate" | "percentage_based";
   value: number;
+  subtotalBands?: RawShippingSubtotalBandInput[];
 }
 
 export interface CreateShippingZoneRuleUseCase {
@@ -43,7 +48,11 @@ export class CreateShippingZoneRule implements CreateShippingZoneRuleUseCase {
     }
 
     assertValidShippingRuleValue(input.methodType, input.value);
+    const subtotalBands = normalizeShippingSubtotalBands(input.subtotalBands);
 
-    return this.shippingZoneRuleRepository.createPlatform(input);
+    return this.shippingZoneRuleRepository.createPlatform({
+      ...input,
+      subtotalBands
+    });
   }
 }

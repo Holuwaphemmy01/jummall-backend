@@ -8,14 +8,18 @@ import { ShippingConfigurationError } from "../../../src/application/admin/shipp
 import { UpdateCategoryShippingRule } from "../../../src/application/admin/update-category-shipping-rule";
 import type {
   CategoryShippingRuleDetailRecord,
+  ShippingMethodType,
   ShippingRuleStatus
 } from "../../../src/ports/shipping/shipping-models";
 import type { ProductCategoryRecord, ProductCategoryRepository, UpdateProductCategoryInput } from "../../../src/ports/product-category-repository";
 import type {
   CategoryShippingRuleRepository,
   CreatePlatformCategoryShippingRuleInput,
+  CreateVendorCategoryShippingRuleInput,
   UpdatePlatformCategoryShippingRuleInput,
-  UpdatePlatformCategoryShippingRuleStatusInput
+  UpdatePlatformCategoryShippingRuleStatusInput,
+  UpdateVendorCategoryShippingRuleInput,
+  UpdateVendorCategoryShippingRuleStatusInput
 } from "../../../src/ports/shipping/category-shipping-rule-repository";
 
 class ProductCategoryRepositoryDouble implements ProductCategoryRepository {
@@ -76,6 +80,7 @@ class CategoryShippingRuleRepositoryDouble
       methodType: "fixed_rate",
       value: 1500,
       status: "active",
+      subtotalBands: [],
       createdAt: new Date("2026-04-02T00:00:00.000Z"),
       updatedAt: new Date("2026-04-02T00:00:00.000Z")
     }
@@ -94,6 +99,12 @@ class CategoryShippingRuleRepositoryDouble
       methodType: input.methodType,
       value: input.value,
       status: "active",
+      subtotalBands: (input.subtotalBands ?? []).map((band, index) =>
+        makeSubtotalBand({
+          id: `band-${this.rules.length + 1}-${index + 1}`,
+          ...band
+        })
+      ),
       createdAt: new Date("2026-04-02T00:00:00.000Z"),
       updatedAt: new Date("2026-04-02T00:00:00.000Z")
     };
@@ -103,8 +114,18 @@ class CategoryShippingRuleRepositoryDouble
     return rule;
   }
 
+  async createVendor(
+    _input: CreateVendorCategoryShippingRuleInput
+  ): Promise<CategoryShippingRuleDetailRecord> {
+    throw new Error("Not implemented in this test double.");
+  }
+
   async findAllPlatform(): Promise<CategoryShippingRuleDetailRecord[]> {
     return this.rules;
+  }
+
+  async findAllVendor(): Promise<CategoryShippingRuleDetailRecord[]> {
+    return [];
   }
 
   async findPlatformById(
@@ -113,10 +134,18 @@ class CategoryShippingRuleRepositoryDouble
     return this.rules.find((rule) => rule.id === ruleId) ?? null;
   }
 
+  async findVendorById(): Promise<CategoryShippingRuleDetailRecord | null> {
+    return null;
+  }
+
   async findPlatformByCategoryId(
     categoryId: string
   ): Promise<CategoryShippingRuleDetailRecord | null> {
     return this.rules.find((rule) => rule.categoryId === categoryId) ?? null;
+  }
+
+  async findVendorByCategoryId(): Promise<CategoryShippingRuleDetailRecord | null> {
+    return null;
   }
 
   async updatePlatform(
@@ -133,9 +162,24 @@ class CategoryShippingRuleRepositoryDouble
       rule.categoryId === "category-2" ? "Furniture" : "Electronics";
     rule.methodType = input.methodType ?? rule.methodType;
     rule.value = input.value ?? rule.value;
+    rule.subtotalBands =
+      input.subtotalBands === undefined
+        ? rule.subtotalBands
+        : input.subtotalBands.map((band, index) =>
+            makeSubtotalBand({
+              id: `band-${rule.id}-${index + 1}`,
+              ...band
+            })
+          );
     rule.updatedAt = new Date("2026-04-02T01:00:00.000Z");
 
     return rule;
+  }
+
+  async updateVendor(
+    _input: UpdateVendorCategoryShippingRuleInput
+  ): Promise<CategoryShippingRuleDetailRecord | null> {
+    return null;
   }
 
   async updatePlatformStatus(
@@ -152,6 +196,12 @@ class CategoryShippingRuleRepositoryDouble
 
     return rule;
   }
+
+  async updateVendorStatus(
+    _input: UpdateVendorCategoryShippingRuleStatusInput
+  ): Promise<CategoryShippingRuleDetailRecord | null> {
+    return null;
+  }
 }
 
 describe("category shipping rule admin use cases", () => {
@@ -164,11 +214,20 @@ describe("category shipping rule admin use cases", () => {
     const rule = await createCategoryShippingRule.execute({
       categoryId: "category-2",
       methodType: "percentage_based",
-      value: 10
+      value: 10,
+      subtotalBands: [
+        {
+          minSubtotal: 0,
+          maxSubtotal: 50000,
+          methodType: "fixed_rate",
+          value: 2000
+        }
+      ]
     });
 
     expect(rule.categoryId).toBe("category-2");
     expect(rule.methodType).toBe("percentage_based");
+    expect(rule.subtotalBands).toHaveLength(1);
   });
 
   it("throws when creating a category shipping rule for a missing category", async () => {
@@ -216,6 +275,35 @@ describe("category shipping rule admin use cases", () => {
     ).rejects.toBeInstanceOf(ShippingConfigurationError);
   });
 
+  it("throws when a subtotal band is open-ended before the last band", async () => {
+    const createCategoryShippingRule = new CreateCategoryShippingRule(
+      new CategoryShippingRuleRepositoryDouble(),
+      new ProductCategoryRepositoryDouble()
+    );
+
+    await expect(
+      createCategoryShippingRule.execute({
+        categoryId: "category-2",
+        methodType: "fixed_rate",
+        value: 1200,
+        subtotalBands: [
+          {
+            minSubtotal: 0,
+            maxSubtotal: null,
+            methodType: "fixed_rate",
+            value: 0
+          },
+          {
+            minSubtotal: 50000,
+            maxSubtotal: null,
+            methodType: "fixed_rate",
+            value: 500
+          }
+        ]
+      })
+    ).rejects.toBeInstanceOf(ShippingConfigurationError);
+  });
+
   it("lists the existing category shipping rules", async () => {
     const listCategoryShippingRules = new ListCategoryShippingRules(
       new CategoryShippingRuleRepositoryDouble()
@@ -246,11 +334,13 @@ describe("category shipping rule admin use cases", () => {
     const rule = await updateCategoryShippingRule.execute({
       ruleId: "rule-1",
       methodType: "percentage_based",
-      value: 15
+      value: 15,
+      subtotalBands: []
     });
 
     expect(rule.methodType).toBe("percentage_based");
     expect(rule.value).toBe(15);
+    expect(rule.subtotalBands).toHaveLength(0);
   });
 
   it("throws when updating a category shipping rule without any fields", async () => {
@@ -304,3 +394,21 @@ describe("category shipping rule admin use cases", () => {
     ).rejects.toBeInstanceOf(ShippingConfigurationError);
   });
 });
+
+function makeSubtotalBand(overrides: {
+  id: string;
+  minSubtotal: number;
+  maxSubtotal: number | null;
+  methodType: ShippingMethodType;
+  value: number;
+}) {
+  return {
+    id: overrides.id,
+    minSubtotal: overrides.minSubtotal,
+    maxSubtotal: overrides.maxSubtotal,
+    methodType: overrides.methodType,
+    value: overrides.value,
+    createdAt: new Date("2026-04-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-04-02T00:00:00.000Z")
+  };
+}

@@ -6,10 +6,25 @@ import { PostgresProductCategoryRepository } from "../infrastructure/database/re
 import { PostgresProductRepository } from "../infrastructure/database/repositories/postgres-product-repository";
 import { InitiateEmailVerification } from "../application/auth/initiate-email-verification";
 import { SendWelcomeEmail } from "../application/notification/send-welcome-email";
+import { CreateSellerCategoryShippingRule } from "../application/seller/create-category-shipping-rule";
+import { CreateSellerShippingZone } from "../application/seller/create-shipping-zone";
+import { CreateSellerShippingZoneRule } from "../application/seller/create-shipping-zone-rule";
+import { GetSellerCategoryShippingRule } from "../application/seller/get-category-shipping-rule";
+import { GetSellerShippingZone } from "../application/seller/get-shipping-zone";
+import { GetSellerShippingZoneRule } from "../application/seller/get-shipping-zone-rule";
 import { ListAvailableProductBrands } from "../application/seller/list-available-product-brands";
 import { ListAvailableProductCategories } from "../application/seller/list-available-product-categories";
+import { ListSellerCategoryShippingRules } from "../application/seller/list-category-shipping-rules";
 import { ListSellerProducts } from "../application/seller/list-seller-products";
+import { ListSellerShippingZoneRules } from "../application/seller/list-shipping-zone-rules";
+import { ListSellerShippingZones } from "../application/seller/list-shipping-zones";
 import { RegisterSeller } from "../application/seller/register-seller";
+import { SetSellerCategoryShippingRuleStatus } from "../application/seller/set-category-shipping-rule-status";
+import { SetSellerShippingZoneStatus } from "../application/seller/set-shipping-zone-status";
+import { SetSellerShippingZoneRuleStatus } from "../application/seller/set-shipping-zone-rule-status";
+import { UpdateSellerCategoryShippingRule } from "../application/seller/update-category-shipping-rule";
+import { UpdateSellerShippingZone } from "../application/seller/update-shipping-zone";
+import { UpdateSellerShippingZoneRule } from "../application/seller/update-shipping-zone-rule";
 import { UploadProduct } from "../application/seller/upload-product";
 import { SaveSellerKycDraft } from "../application/seller-kyc/save-seller-kyc-draft";
 import { SubmitSellerKyc } from "../application/seller-kyc/submit-seller-kyc";
@@ -20,11 +35,16 @@ import createSellerRouter, {
   createProtectedSellerBrandRouter,
   createProtectedSellerCategoryRouter,
   createProtectedSellerProductListRouter,
-  createProtectedSellerProductRouter
+  createProtectedSellerProductRouter,
+  createProtectedSellerShippingRouter
 } from "../infrastructure/api/routes/seller-routes";
 import { PostgresEmailVerificationRepository } from "../infrastructure/database/repositories/postgres-email-verification-repository";
+import { PostgresCategoryShippingRuleRepository } from "../infrastructure/database/repositories/postgres-category-shipping-rule-repository";
 import { PostgresSellerKycRepository } from "../infrastructure/database/repositories/postgres-seller-kyc-repository";
 import { PostgresSellerRepository } from "../infrastructure/database/repositories/postgres-seller-repository";
+import { PostgresShippingSettingsRepository } from "../infrastructure/database/repositories/postgres-shipping-settings-repository";
+import { PostgresShippingZoneRepository } from "../infrastructure/database/repositories/postgres-shipping-zone-repository";
+import { PostgresShippingZoneRuleRepository } from "../infrastructure/database/repositories/postgres-shipping-zone-rule-repository";
 import { createMailProvider } from "../infrastructure/notification/create-mail-provider";
 import { SupabaseDocumentStorage } from "../infrastructure/storage/supabase-document-storage";
 import { JwtTokenVerifier } from "../infrastructure/security/jwt-token-verifier";
@@ -40,6 +60,11 @@ export function createSellerModule() {
   const productRepository = new PostgresProductRepository();
   const sellerRepository = new PostgresSellerRepository();
   const sellerKycRepository = new PostgresSellerKycRepository();
+  const shippingZoneRepository = new PostgresShippingZoneRepository();
+  const shippingZoneRuleRepository = new PostgresShippingZoneRuleRepository();
+  const categoryShippingRuleRepository =
+    new PostgresCategoryShippingRuleRepository();
+  const shippingSettingsRepository = new PostgresShippingSettingsRepository();
   const emailVerificationRepository = new PostgresEmailVerificationRepository();
   const passwordHasher = new ScryptPasswordHasher();
   const verificationCodeGenerator = new NumericVerificationCodeGenerator();
@@ -67,6 +92,86 @@ export function createSellerModule() {
   const listAvailableProductCategories = new ListAvailableProductCategories(
     productCategoryRepository
   );
+  const createSellerShippingZone = new CreateSellerShippingZone(
+    authenticationRepository,
+    shippingSettingsRepository,
+    shippingZoneRepository
+  );
+  const listSellerShippingZones = new ListSellerShippingZones(
+    authenticationRepository,
+    shippingSettingsRepository,
+    shippingZoneRepository
+  );
+  const getSellerShippingZone = new GetSellerShippingZone(
+    authenticationRepository,
+    shippingSettingsRepository,
+    shippingZoneRepository
+  );
+  const updateSellerShippingZone = new UpdateSellerShippingZone(
+    authenticationRepository,
+    shippingSettingsRepository,
+    shippingZoneRepository
+  );
+  const setSellerShippingZoneStatus = new SetSellerShippingZoneStatus(
+    authenticationRepository,
+    shippingSettingsRepository,
+    shippingZoneRepository
+  );
+  const createSellerShippingZoneRule = new CreateSellerShippingZoneRule(
+    authenticationRepository,
+    shippingSettingsRepository,
+    shippingZoneRepository,
+    shippingZoneRuleRepository
+  );
+  const listSellerShippingZoneRules = new ListSellerShippingZoneRules(
+    authenticationRepository,
+    shippingSettingsRepository,
+    shippingZoneRuleRepository
+  );
+  const getSellerShippingZoneRule = new GetSellerShippingZoneRule(
+    authenticationRepository,
+    shippingSettingsRepository,
+    shippingZoneRuleRepository
+  );
+  const updateSellerShippingZoneRule = new UpdateSellerShippingZoneRule(
+    authenticationRepository,
+    shippingSettingsRepository,
+    shippingZoneRepository,
+    shippingZoneRuleRepository
+  );
+  const setSellerShippingZoneRuleStatus = new SetSellerShippingZoneRuleStatus(
+    authenticationRepository,
+    shippingSettingsRepository,
+    shippingZoneRuleRepository
+  );
+  const createSellerCategoryShippingRule = new CreateSellerCategoryShippingRule(
+    authenticationRepository,
+    shippingSettingsRepository,
+    productCategoryRepository,
+    categoryShippingRuleRepository
+  );
+  const listSellerCategoryShippingRules = new ListSellerCategoryShippingRules(
+    authenticationRepository,
+    shippingSettingsRepository,
+    categoryShippingRuleRepository
+  );
+  const getSellerCategoryShippingRule = new GetSellerCategoryShippingRule(
+    authenticationRepository,
+    shippingSettingsRepository,
+    categoryShippingRuleRepository
+  );
+  const updateSellerCategoryShippingRule = new UpdateSellerCategoryShippingRule(
+    authenticationRepository,
+    shippingSettingsRepository,
+    productCategoryRepository,
+    categoryShippingRuleRepository
+  );
+  const setSellerCategoryShippingRuleStatus =
+    new SetSellerCategoryShippingRuleStatus(
+      authenticationRepository,
+      shippingSettingsRepository,
+      categoryShippingRuleRepository
+    );
   const listSellerProducts = new ListSellerProducts(
     authenticationRepository,
     productRepository
@@ -115,6 +220,27 @@ export function createSellerModule() {
       saveSellerKycDraft,
       uploadSellerKycDocument,
       submitSellerKyc
+    })
+  );
+  sellerRouter.use(
+    "/shipping",
+    authenticateSeller,
+    createProtectedSellerShippingRouter({
+      createCategoryShippingRule: createSellerCategoryShippingRule,
+      createShippingZone: createSellerShippingZone,
+      createShippingZoneRule: createSellerShippingZoneRule,
+      getCategoryShippingRule: getSellerCategoryShippingRule,
+      getShippingZone: getSellerShippingZone,
+      getShippingZoneRule: getSellerShippingZoneRule,
+      listCategoryShippingRules: listSellerCategoryShippingRules,
+      listShippingZoneRules: listSellerShippingZoneRules,
+      listShippingZones: listSellerShippingZones,
+      setCategoryShippingRuleStatus: setSellerCategoryShippingRuleStatus,
+      setShippingZoneStatus: setSellerShippingZoneStatus,
+      setShippingZoneRuleStatus: setSellerShippingZoneRuleStatus,
+      updateCategoryShippingRule: updateSellerCategoryShippingRule,
+      updateShippingZone: updateSellerShippingZone,
+      updateShippingZoneRule: updateSellerShippingZoneRule
     })
   );
 

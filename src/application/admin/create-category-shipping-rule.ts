@@ -1,13 +1,18 @@
+import type { RawShippingSubtotalBandInput } from "../shipping/subtotal-band-helpers";
 import type { ProductCategoryRepository } from "../../ports/product-category-repository";
 import type { CategoryShippingRuleDetailRecord } from "../../ports/shipping/shipping-models";
 import type { CategoryShippingRuleRepository } from "../../ports/shipping/category-shipping-rule-repository";
-import { assertValidShippingRuleValue } from "./shipping-configuration-helpers";
+import {
+  assertValidShippingRuleValue,
+  normalizeShippingSubtotalBands
+} from "./shipping-configuration-helpers";
 import { ShippingConfigurationError } from "./shipping-configuration-error";
 
 export interface CreateCategoryShippingRuleInput {
   categoryId: string;
   methodType: "fixed_rate" | "percentage_based";
   value: number;
+  subtotalBands?: RawShippingSubtotalBandInput[];
 }
 
 export interface CreateCategoryShippingRuleUseCase {
@@ -53,7 +58,11 @@ export class CreateCategoryShippingRule
     }
 
     assertValidShippingRuleValue(input.methodType, input.value);
+    const subtotalBands = normalizeShippingSubtotalBands(input.subtotalBands);
 
-    return this.categoryShippingRuleRepository.createPlatform(input);
+    return this.categoryShippingRuleRepository.createPlatform({
+      ...input,
+      subtotalBands
+    });
   }
 }

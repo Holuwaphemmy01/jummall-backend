@@ -1,4 +1,10 @@
-import type { ShippingMethodType, ShippingRuleStatus, ShippingZoneStatus } from "../../ports/shipping/shipping-models";
+import { normalizeAndValidateSubtotalBands, type RawShippingSubtotalBandInput } from "../shipping/subtotal-band-helpers";
+import type {
+  ShippingMethodType,
+  ShippingRuleStatus,
+  ShippingSubtotalBandInput,
+  ShippingZoneStatus
+} from "../../ports/shipping/shipping-models";
 import type { ShippingZoneStateInput } from "../../ports/shipping/shipping-zone-repository";
 import { ShippingConfigurationError } from "./shipping-configuration-error";
 
@@ -57,6 +63,22 @@ export function assertValidShippingRuleValue(
       "value"
     );
   }
+}
+
+export function normalizeShippingSubtotalBands(
+  subtotalBands: RawShippingSubtotalBandInput[] | undefined
+): ShippingSubtotalBandInput[] | undefined {
+  const result = normalizeAndValidateSubtotalBands(subtotalBands);
+
+  if (result.issue) {
+    throw new ShippingConfigurationError(
+      result.issue.message,
+      400,
+      result.issue.field
+    );
+  }
+
+  return result.subtotalBands;
 }
 
 export function assertValidShippingZoneStatus(status: string): asserts status is ShippingZoneStatus {
