@@ -4,6 +4,8 @@ import type { AddProductToCartUseCase } from "../../../application/buyer/add-pro
 import type { AddBillingAddressUseCase } from "../../../application/buyer/add-billing-address";
 import { AddBillingAddressError } from "../../../application/buyer/add-billing-address";
 import { AddProductToCartError } from "../../../application/buyer/add-product-to-cart";
+import type { CalculateCartShippingUseCase } from "../../../application/shipping/calculate-cart-shipping";
+import { CalculateCartShippingError } from "../../../application/shipping/calculate-cart-shipping";
 import type { ClearBuyerCartUseCase } from "../../../application/buyer/clear-buyer-cart";
 import { ClearBuyerCartError } from "../../../application/buyer/clear-buyer-cart";
 import type { GetActiveCartUseCase } from "../../../application/buyer/get-active-cart";
@@ -28,6 +30,7 @@ import { addProductToCartSchema } from "../validation/add-product-to-cart-schema
 import type { AuthenticatedUser } from "../middleware/create-auth-middleware";
 import { addBillingAddressSchema } from "../validation/add-billing-address-schema";
 import { addProductToWishlistSchema } from "../validation/add-product-to-wishlist-schema";
+import { calculateCartShippingSchema } from "../validation/calculate-cart-shipping-schema";
 import { registerBuyerSchema } from "../validation/register-buyer-schema";
 import { updateProductQuantityInCartSchema } from "../validation/update-product-quantity-in-cart-schema";
 
@@ -51,6 +54,7 @@ interface BuyerCartRouterDependencies {
   clearBuyerCart: ClearBuyerCartUseCase;
   getActiveCart: GetActiveCartUseCase;
   addProductToCart: AddProductToCartUseCase;
+  calculateCartShipping: CalculateCartShippingUseCase;
   removeProductFromCart: RemoveProductFromCartUseCase;
   updateProductQuantityInCart: UpdateProductQuantityInCartUseCase;
 }
@@ -400,6 +404,7 @@ export function createProtectedBuyerCartRouter({
   clearBuyerCart,
   getActiveCart,
   addProductToCart,
+  calculateCartShipping,
   removeProductFromCart,
   updateProductQuantityInCart
 }: BuyerCartRouterDependencies) {
@@ -523,6 +528,81 @@ export function createProtectedBuyerCartRouter({
 
       return res.status(500).json({
         message: "Unable to add product to cart."
+      });
+    }
+  });
+
+  buyerCartRouter.post("/shipping-preview", async (req, res) => {
+    const { error, value } = calculateCartShippingSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      const result = await calculateCartShipping.execute({
+        buyerId: authUser.sub,
+        billingAddressId: value.billing_address_id,
+        discountedSubtotal: value.discounted_subtotal,
+        freeShippingCouponCode: value.free_shipping_coupon_code ?? undefined
+      });
+
+      return res.status(200).json({
+        message: "Shipping preview calculated successfully.",
+        data: {
+          cart_id: result.cartId,
+          currency: result.currency,
+          raw_subtotal: result.rawSubtotal,
+          discounted_subtotal: result.discountedSubtotal,
+          total_items: result.totalItems,
+          shipping_mode: result.shippingMode,
+          category_shipping_mode: result.categoryShippingMode,
+          base_shipping_fee: result.baseShippingFee,
+          final_shipping_fee: result.finalShippingFee,
+          free_shipping: {
+            applied: result.freeShipping.applied,
+            rule_id: result.freeShipping.ruleId,
+            rule_type: result.freeShipping.ruleType,
+            coupon_code: result.freeShipping.couponCode
+          },
+          breakdown: result.breakdown.map((segment) => ({
+            seller_id: segment.sellerId,
+            rule_owner_type: segment.ruleOwnerType,
+            final_shipping_owner_type: segment.finalShippingOwnerType,
+            used_fallback: segment.usedFallback,
+            matched_zone: {
+              id: segment.matchedZone.id,
+              name: segment.matchedZone.name,
+              match_type: segment.matchedZone.matchType
+            },
+            zone_fee: segment.zoneFee,
+            category_fee: segment.categoryFee,
+            base_shipping_fee: segment.baseShippingFee,
+            final_shipping_fee: segment.finalShippingFee
+          }))
+        }
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof CalculateCartShippingError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to calculate shipping preview."
       });
     }
   });
