@@ -542,6 +542,824 @@
         }
       }
     },
+    "/admin/shipping/zones": {
+      "post": {
+        "tags": ["admin-shipping-zones"],
+        "summary": "Create shipping zone",
+        "description": "Creates a platform-owned shipping zone with one or more covered states and optional city-level targeting.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateShippingZoneRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Shipping zone created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Shipping zone created successfully.",
+                  "data": {
+                    "id": "zone-id",
+                    "name": "Lagos Urban",
+                    "status": "active",
+                    "states": [
+                      {
+                        "id": "zone-state-id",
+                        "state_name": "Lagos",
+                        "cities": [
+                          {
+                            "id": "zone-city-id",
+                            "city_name": "Ikeja"
+                          },
+                          {
+                            "id": "zone-city-id-2",
+                            "city_name": "Yaba"
+                          }
+                        ]
+                      }
+                    ],
+                    "created_at": "2026-04-02T00:00:00.000Z",
+                    "updated_at": "2026-04-02T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation failed" },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "409": { "description": "Shipping zone name already exists" }
+        }
+      },
+      "get": {
+        "tags": ["admin-shipping-zones"],
+        "summary": "List shipping zones",
+        "description": "Returns all platform-owned shipping zones configured by admins.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Shipping zones fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Shipping zones fetched successfully.",
+                  "data": [
+                    {
+                      "id": "zone-id",
+                      "name": "Lagos Urban",
+                      "status": "active",
+                      "states": [
+                        {
+                          "id": "zone-state-id",
+                          "state_name": "Lagos",
+                          "cities": [
+                            {
+                              "id": "zone-city-id",
+                              "city_name": "Ikeja"
+                            }
+                          ]
+                        }
+                      ],
+                      "created_at": "2026-04-02T00:00:00.000Z",
+                      "updated_at": "2026-04-02T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" }
+        }
+      }
+    },
+    "/admin/shipping/zones/{zoneId}": {
+      "get": {
+        "tags": ["admin-shipping-zones"],
+        "summary": "Get shipping zone",
+        "description": "Returns a single platform-owned shipping zone with its state and city coverage.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "zoneId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipping zone fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Shipping zone fetched successfully.",
+                  "data": {
+                    "id": "zone-id",
+                    "name": "Lagos Urban",
+                    "status": "active",
+                    "states": [
+                      {
+                        "id": "zone-state-id",
+                        "state_name": "Lagos",
+                        "cities": [
+                          {
+                            "id": "zone-city-id",
+                            "city_name": "Ikeja"
+                          }
+                        ]
+                      }
+                    ],
+                    "created_at": "2026-04-02T00:00:00.000Z",
+                    "updated_at": "2026-04-02T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Shipping zone not found" }
+        }
+      },
+      "patch": {
+        "tags": ["admin-shipping-zones"],
+        "summary": "Update shipping zone",
+        "description": "Updates a platform-owned shipping zone name and/or replaces its full state and city coverage.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "zoneId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateShippingZoneRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Shipping zone updated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Shipping zone updated successfully.",
+                  "data": {
+                    "id": "zone-id",
+                    "name": "Lagos Mainland",
+                    "status": "active",
+                    "states": [
+                      {
+                        "id": "zone-state-id",
+                        "state_name": "Lagos",
+                        "cities": [
+                          {
+                            "id": "zone-city-id",
+                            "city_name": "Yaba"
+                          }
+                        ]
+                      }
+                    ],
+                    "created_at": "2026-04-02T00:00:00.000Z",
+                    "updated_at": "2026-04-02T01:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation failed" },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Shipping zone not found" },
+          "409": { "description": "Shipping zone name already exists" }
+        }
+      }
+    },
+    "/admin/shipping/zones/{zoneId}/activate": {
+      "post": {
+        "tags": ["admin-shipping-zones"],
+        "summary": "Activate shipping zone",
+        "description": "Marks a platform-owned shipping zone as active so it can be used by the shipping engine.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "zoneId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipping zone activated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Shipping zone activated successfully.",
+                  "data": {
+                    "id": "zone-id",
+                    "name": "Lagos Urban",
+                    "status": "active",
+                    "states": [
+                      {
+                        "id": "zone-state-id",
+                        "state_name": "Lagos",
+                        "cities": []
+                      }
+                    ],
+                    "created_at": "2026-04-02T00:00:00.000Z",
+                    "updated_at": "2026-04-02T02:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Shipping zone not found" }
+        }
+      }
+    },
+    "/admin/shipping/zones/{zoneId}/deactivate": {
+      "post": {
+        "tags": ["admin-shipping-zones"],
+        "summary": "Deactivate shipping zone",
+        "description": "Marks a platform-owned shipping zone as inactive without deleting it.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "zoneId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipping zone deactivated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Shipping zone deactivated successfully.",
+                  "data": {
+                    "id": "zone-id",
+                    "name": "Lagos Urban",
+                    "status": "inactive",
+                    "states": [
+                      {
+                        "id": "zone-state-id",
+                        "state_name": "Lagos",
+                        "cities": []
+                      }
+                    ],
+                    "created_at": "2026-04-02T00:00:00.000Z",
+                    "updated_at": "2026-04-02T02:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Shipping zone not found" }
+        }
+      }
+    },
+    "/admin/shipping/zone-rules": {
+      "post": {
+        "tags": ["admin-shipping-zone-rules"],
+        "summary": "Create shipping zone rule",
+        "description": "Creates the platform shipping rule for a platform-owned zone. Only one platform zone rule can exist per zone.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateShippingZoneRuleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Shipping zone rule created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Shipping zone rule created successfully.",
+                  "data": {
+                    "id": "zone-rule-id",
+                    "zone_id": "zone-id",
+                    "zone_name": "Lagos Urban",
+                    "method_type": "fixed_rate",
+                    "value": 1500,
+                    "status": "active",
+                    "created_at": "2026-04-02T00:00:00.000Z",
+                    "updated_at": "2026-04-02T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation failed" },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Shipping zone not found" },
+          "409": { "description": "Platform shipping zone rule already exists for this zone" }
+        }
+      },
+      "get": {
+        "tags": ["admin-shipping-zone-rules"],
+        "summary": "List shipping zone rules",
+        "description": "Returns all platform-owned shipping zone rules.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Shipping zone rules fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Shipping zone rules fetched successfully.",
+                  "data": [
+                    {
+                      "id": "zone-rule-id",
+                      "zone_id": "zone-id",
+                      "zone_name": "Lagos Urban",
+                      "method_type": "fixed_rate",
+                      "value": 1500,
+                      "status": "active",
+                      "created_at": "2026-04-02T00:00:00.000Z",
+                      "updated_at": "2026-04-02T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" }
+        }
+      }
+    },
+    "/admin/shipping/zone-rules/{ruleId}": {
+      "get": {
+        "tags": ["admin-shipping-zone-rules"],
+        "summary": "Get shipping zone rule",
+        "description": "Returns a single platform-owned shipping zone rule.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipping zone rule fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Shipping zone rule fetched successfully.",
+                  "data": {
+                    "id": "zone-rule-id",
+                    "zone_id": "zone-id",
+                    "zone_name": "Lagos Urban",
+                    "method_type": "fixed_rate",
+                    "value": 1500,
+                    "status": "active",
+                    "created_at": "2026-04-02T00:00:00.000Z",
+                    "updated_at": "2026-04-02T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Shipping zone rule not found" }
+        }
+      },
+      "patch": {
+        "tags": ["admin-shipping-zone-rules"],
+        "summary": "Update shipping zone rule",
+        "description": "Updates a platform-owned shipping zone rule's target zone and/or pricing method.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateShippingZoneRuleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Shipping zone rule updated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Shipping zone rule updated successfully.",
+                  "data": {
+                    "id": "zone-rule-id",
+                    "zone_id": "zone-id",
+                    "zone_name": "Lagos Urban",
+                    "method_type": "percentage_based",
+                    "value": 10,
+                    "status": "active",
+                    "created_at": "2026-04-02T00:00:00.000Z",
+                    "updated_at": "2026-04-02T01:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation failed" },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Shipping zone rule not found" },
+          "409": { "description": "Platform shipping zone rule already exists for this zone" }
+        }
+      }
+    },
+    "/admin/shipping/zone-rules/{ruleId}/activate": {
+      "post": {
+        "tags": ["admin-shipping-zone-rules"],
+        "summary": "Activate shipping zone rule",
+        "description": "Marks a platform-owned shipping zone rule as active.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipping zone rule activated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Shipping zone rule activated successfully.",
+                  "data": {
+                    "id": "zone-rule-id",
+                    "zone_id": "zone-id",
+                    "zone_name": "Lagos Urban",
+                    "method_type": "fixed_rate",
+                    "value": 1500,
+                    "status": "active",
+                    "created_at": "2026-04-02T00:00:00.000Z",
+                    "updated_at": "2026-04-02T02:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Shipping zone rule not found" }
+        }
+      }
+    },
+    "/admin/shipping/zone-rules/{ruleId}/deactivate": {
+      "post": {
+        "tags": ["admin-shipping-zone-rules"],
+        "summary": "Deactivate shipping zone rule",
+        "description": "Marks a platform-owned shipping zone rule as inactive without deleting it.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipping zone rule deactivated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Shipping zone rule deactivated successfully.",
+                  "data": {
+                    "id": "zone-rule-id",
+                    "zone_id": "zone-id",
+                    "zone_name": "Lagos Urban",
+                    "method_type": "fixed_rate",
+                    "value": 1500,
+                    "status": "inactive",
+                    "created_at": "2026-04-02T00:00:00.000Z",
+                    "updated_at": "2026-04-02T02:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Shipping zone rule not found" }
+        }
+      }
+    },
+    "/admin/shipping/category-rules": {
+      "post": {
+        "tags": ["admin-shipping-category-rules"],
+        "summary": "Create category shipping rule",
+        "description": "Creates the platform category-based shipping rule for a product category. Only one platform category shipping rule can exist per category.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryShippingRuleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Category shipping rule created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Category shipping rule created successfully.",
+                  "data": {
+                    "id": "category-rule-id",
+                    "category_id": "category-id",
+                    "category_name": "Electronics",
+                    "method_type": "fixed_rate",
+                    "value": 1500,
+                    "status": "active",
+                    "created_at": "2026-04-02T00:00:00.000Z",
+                    "updated_at": "2026-04-02T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation failed" },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Product category not found" },
+          "409": { "description": "Platform category shipping rule already exists for this category" }
+        }
+      },
+      "get": {
+        "tags": ["admin-shipping-category-rules"],
+        "summary": "List category shipping rules",
+        "description": "Returns all platform-owned category shipping rules.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Category shipping rules fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Category shipping rules fetched successfully.",
+                  "data": [
+                    {
+                      "id": "category-rule-id",
+                      "category_id": "category-id",
+                      "category_name": "Electronics",
+                      "method_type": "fixed_rate",
+                      "value": 1500,
+                      "status": "active",
+                      "created_at": "2026-04-02T00:00:00.000Z",
+                      "updated_at": "2026-04-02T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" }
+        }
+      }
+    },
+    "/admin/shipping/category-rules/{ruleId}": {
+      "get": {
+        "tags": ["admin-shipping-category-rules"],
+        "summary": "Get category shipping rule",
+        "description": "Returns a single platform-owned category shipping rule.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category shipping rule fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Category shipping rule fetched successfully.",
+                  "data": {
+                    "id": "category-rule-id",
+                    "category_id": "category-id",
+                    "category_name": "Electronics",
+                    "method_type": "fixed_rate",
+                    "value": 1500,
+                    "status": "active",
+                    "created_at": "2026-04-02T00:00:00.000Z",
+                    "updated_at": "2026-04-02T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Category shipping rule not found" }
+        }
+      },
+      "patch": {
+        "tags": ["admin-shipping-category-rules"],
+        "summary": "Update category shipping rule",
+        "description": "Updates a platform-owned category shipping rule's target category and/or pricing method.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryShippingRuleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Category shipping rule updated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Category shipping rule updated successfully.",
+                  "data": {
+                    "id": "category-rule-id",
+                    "category_id": "category-id",
+                    "category_name": "Electronics",
+                    "method_type": "percentage_based",
+                    "value": 10,
+                    "status": "active",
+                    "created_at": "2026-04-02T00:00:00.000Z",
+                    "updated_at": "2026-04-02T01:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation failed" },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Category shipping rule not found" },
+          "409": { "description": "Platform category shipping rule already exists for this category" }
+        }
+      }
+    },
+    "/admin/shipping/category-rules/{ruleId}/activate": {
+      "post": {
+        "tags": ["admin-shipping-category-rules"],
+        "summary": "Activate category shipping rule",
+        "description": "Marks a platform-owned category shipping rule as active.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category shipping rule activated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Category shipping rule activated successfully.",
+                  "data": {
+                    "id": "category-rule-id",
+                    "category_id": "category-id",
+                    "category_name": "Electronics",
+                    "method_type": "fixed_rate",
+                    "value": 1500,
+                    "status": "active",
+                    "created_at": "2026-04-02T00:00:00.000Z",
+                    "updated_at": "2026-04-02T02:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Category shipping rule not found" }
+        }
+      }
+    },
+    "/admin/shipping/category-rules/{ruleId}/deactivate": {
+      "post": {
+        "tags": ["admin-shipping-category-rules"],
+        "summary": "Deactivate category shipping rule",
+        "description": "Marks a platform-owned category shipping rule as inactive without deleting it.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category shipping rule deactivated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Category shipping rule deactivated successfully.",
+                  "data": {
+                    "id": "category-rule-id",
+                    "category_id": "category-id",
+                    "category_name": "Electronics",
+                    "method_type": "fixed_rate",
+                    "value": 1500,
+                    "status": "inactive",
+                    "created_at": "2026-04-02T00:00:00.000Z",
+                    "updated_at": "2026-04-02T02:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Category shipping rule not found" }
+        }
+      }
+    },
     "/admin/product-brands": {
       "post": {
         "tags": ["admin-product-brands"],
@@ -3229,6 +4047,141 @@
             "type": "string",
             "enum": ["USE_PLATFORM_RULES", "BLOCK_CHECKOUT"],
             "example": "BLOCK_CHECKOUT"
+          }
+        }
+      },
+      "CreateShippingZoneRequest": {
+        "type": "object",
+        "required": ["name", "states"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Lagos Urban"
+          },
+          "states": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["state_name"],
+              "properties": {
+                "state_name": {
+                  "type": "string",
+                  "example": "Lagos"
+                },
+                "cities": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "example": "Ikeja"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "UpdateShippingZoneRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Lagos Mainland"
+          },
+          "states": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["state_name"],
+              "properties": {
+                "state_name": {
+                  "type": "string",
+                  "example": "Lagos"
+                },
+                "cities": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "example": "Yaba"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "CreateShippingZoneRuleRequest": {
+        "type": "object",
+        "required": ["zone_id", "method_type", "value"],
+        "properties": {
+          "zone_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "method_type": {
+            "type": "string",
+            "enum": ["fixed_rate", "percentage_based"],
+            "example": "fixed_rate"
+          },
+          "value": {
+            "type": "number",
+            "example": 1500
+          }
+        }
+      },
+      "UpdateShippingZoneRuleRequest": {
+        "type": "object",
+        "properties": {
+          "zone_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "method_type": {
+            "type": "string",
+            "enum": ["fixed_rate", "percentage_based"],
+            "example": "percentage_based"
+          },
+          "value": {
+            "type": "number",
+            "example": 10
+          }
+        }
+      },
+      "CreateCategoryShippingRuleRequest": {
+        "type": "object",
+        "required": ["category_id", "method_type", "value"],
+        "properties": {
+          "category_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "method_type": {
+            "type": "string",
+            "enum": ["fixed_rate", "percentage_based"],
+            "example": "fixed_rate"
+          },
+          "value": {
+            "type": "number",
+            "example": 1500
+          }
+        }
+      },
+      "UpdateCategoryShippingRuleRequest": {
+        "type": "object",
+        "properties": {
+          "category_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "method_type": {
+            "type": "string",
+            "enum": ["fixed_rate", "percentage_based"],
+            "example": "percentage_based"
+          },
+          "value": {
+            "type": "number",
+            "example": 10
           }
         }
       },

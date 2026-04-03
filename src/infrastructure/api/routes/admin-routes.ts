@@ -8,57 +8,94 @@ import {
   ApproveSellerKycError,
   type ApproveSellerKycUseCase
 } from "../../../application/admin/approve-seller-kyc";
+import type { CreateCategoryShippingRuleUseCase } from "../../../application/admin/create-category-shipping-rule";
 import type { CreateProductBrandUseCase } from "../../../application/admin/create-product-brand";
 import type { CreateProductCategoryUseCase } from "../../../application/admin/create-product-category";
+import type { CreateShippingZoneUseCase } from "../../../application/admin/create-shipping-zone";
+import type { CreateShippingZoneRuleUseCase } from "../../../application/admin/create-shipping-zone-rule";
+import type { GetCategoryShippingRuleUseCase } from "../../../application/admin/get-category-shipping-rule";
 import type { GetProductBrandUseCase } from "../../../application/admin/get-product-brand";
 import {
   GetProductPendingReviewDetailError,
   type GetProductPendingReviewDetailUseCase
 } from "../../../application/admin/get-product-pending-review-detail";
 import type { GetProductCategoryUseCase } from "../../../application/admin/get-product-category";
+import type { GetShippingZoneUseCase } from "../../../application/admin/get-shipping-zone";
+import type { GetShippingZoneRuleUseCase } from "../../../application/admin/get-shipping-zone-rule";
 import type { GetShippingSettingsUseCase } from "../../../application/admin/get-shipping-settings";
 import {
   GetCompletedSellerKycError,
   type GetCompletedSellerKycUseCase
 } from "../../../application/admin/get-completed-seller-kyc";
+import type { ListCategoryShippingRulesUseCase } from "../../../application/admin/list-category-shipping-rules";
 import type { ListCompletedSellerKycUseCase } from "../../../application/admin/list-completed-seller-kyc";
 import type { ListProductBrandsUseCase } from "../../../application/admin/list-product-brands";
 import type { ListProductsPendingReviewUseCase } from "../../../application/admin/list-products-pending-review";
 import type { ListProductCategoriesUseCase } from "../../../application/admin/list-product-categories";
+import type { ListShippingZoneRulesUseCase } from "../../../application/admin/list-shipping-zone-rules";
+import type { ListShippingZonesUseCase } from "../../../application/admin/list-shipping-zones";
 import {
   RejectProductPendingReviewError,
   type RejectProductPendingReviewUseCase
 } from "../../../application/admin/reject-product-pending-review";
+import { ShippingConfigurationError } from "../../../application/admin/shipping-configuration-error";
 import { ShippingSettingsError } from "../../../application/admin/shipping-settings-error";
 import { ProductBrandError } from "../../../application/admin/product-brand-errors";
+import type { SetCategoryShippingRuleStatusUseCase } from "../../../application/admin/set-category-shipping-rule-status";
+import type { SetShippingZoneRuleStatusUseCase } from "../../../application/admin/set-shipping-zone-rule-status";
+import type { SetShippingZoneStatusUseCase } from "../../../application/admin/set-shipping-zone-status";
+import type { UpdateCategoryShippingRuleUseCase } from "../../../application/admin/update-category-shipping-rule";
 import type { UpdateProductBrandUseCase } from "../../../application/admin/update-product-brand";
 import type { UpdateProductCategoryUseCase } from "../../../application/admin/update-product-category";
+import type { UpdateShippingZoneUseCase } from "../../../application/admin/update-shipping-zone";
+import type { UpdateShippingZoneRuleUseCase } from "../../../application/admin/update-shipping-zone-rule";
 import type { UpdateShippingSettingsUseCase } from "../../../application/admin/update-shipping-settings";
 import { approveProductPendingReviewSchema } from "../validation/approve-product-pending-review-schema";
+import { createCategoryShippingRuleSchema } from "../validation/create-category-shipping-rule-schema";
 import { createProductBrandSchema } from "../validation/create-product-brand-schema";
+import { createShippingZoneRuleSchema } from "../validation/create-shipping-zone-rule-schema";
+import { createShippingZoneSchema } from "../validation/create-shipping-zone-schema";
 import { ProductCategoryError } from "../../../application/admin/product-category-errors";
 import { approveSellerKycSchema } from "../validation/approve-seller-kyc-schema";
 import { createProductCategorySchema } from "../validation/create-product-category-schema";
 import { rejectProductPendingReviewSchema } from "../validation/reject-product-pending-review-schema";
+import { updateCategoryShippingRuleSchema } from "../validation/update-category-shipping-rule-schema";
 import { updateShippingSettingsSchema } from "../validation/update-shipping-settings-schema";
 import { updateProductBrandSchema } from "../validation/update-product-brand-schema";
 import { updateProductCategorySchema } from "../validation/update-product-category-schema";
+import { updateShippingZoneRuleSchema } from "../validation/update-shipping-zone-rule-schema";
+import { updateShippingZoneSchema } from "../validation/update-shipping-zone-schema";
 
 interface AdminRouterDependencies {
   approveProductPendingReview: ApproveProductPendingReviewUseCase;
   approveSellerKyc: ApproveSellerKycUseCase;
+  createCategoryShippingRule: CreateCategoryShippingRuleUseCase;
   createProductBrand: CreateProductBrandUseCase;
   createProductCategory: CreateProductCategoryUseCase;
+  createShippingZone: CreateShippingZoneUseCase;
+  createShippingZoneRule: CreateShippingZoneRuleUseCase;
+  getCategoryShippingRule: GetCategoryShippingRuleUseCase;
   getProductBrand: GetProductBrandUseCase;
   getProductPendingReviewDetail: GetProductPendingReviewDetailUseCase;
+  getShippingZone: GetShippingZoneUseCase;
+  getShippingZoneRule: GetShippingZoneRuleUseCase;
   listCompletedSellerKyc: ListCompletedSellerKycUseCase;
+  listCategoryShippingRules: ListCategoryShippingRulesUseCase;
   listProductBrands: ListProductBrandsUseCase;
   listProductsPendingReview: ListProductsPendingReviewUseCase;
   listProductCategories: ListProductCategoriesUseCase;
+  listShippingZoneRules: ListShippingZoneRulesUseCase;
+  listShippingZones: ListShippingZonesUseCase;
   rejectProductPendingReview: RejectProductPendingReviewUseCase;
+  setCategoryShippingRuleStatus: SetCategoryShippingRuleStatusUseCase;
+  setShippingZoneRuleStatus: SetShippingZoneRuleStatusUseCase;
+  setShippingZoneStatus: SetShippingZoneStatusUseCase;
+  updateCategoryShippingRule: UpdateCategoryShippingRuleUseCase;
   getCompletedSellerKyc: GetCompletedSellerKycUseCase;
   getProductCategory: GetProductCategoryUseCase;
   getShippingSettings: GetShippingSettingsUseCase;
+  updateShippingZone: UpdateShippingZoneUseCase;
+  updateShippingZoneRule: UpdateShippingZoneRuleUseCase;
   updateShippingSettings: UpdateShippingSettingsUseCase;
   updateProductBrand: UpdateProductBrandUseCase;
   updateProductCategory: UpdateProductCategoryUseCase;
@@ -67,18 +104,33 @@ interface AdminRouterDependencies {
 export default function createAdminRouter({
   approveProductPendingReview,
   approveSellerKyc,
+  createCategoryShippingRule,
   createProductBrand,
   createProductCategory,
+  createShippingZone,
+  createShippingZoneRule,
+  getCategoryShippingRule,
   getProductBrand,
   getProductPendingReviewDetail,
+  getShippingZone,
+  getShippingZoneRule,
   listCompletedSellerKyc,
+  listCategoryShippingRules,
   listProductBrands,
   listProductsPendingReview,
   listProductCategories,
+  listShippingZoneRules,
+  listShippingZones,
   rejectProductPendingReview,
+  setCategoryShippingRuleStatus,
+  setShippingZoneRuleStatus,
+  setShippingZoneStatus,
+  updateCategoryShippingRule,
   getCompletedSellerKyc,
   getProductCategory,
   getShippingSettings,
+  updateShippingZone,
+  updateShippingZoneRule,
   updateShippingSettings,
   updateProductBrand,
   updateProductCategory
@@ -147,6 +199,500 @@ export default function createAdminRouter({
       });
     }
   });
+
+  adminRouter.post("/shipping/zones", async (req, res) => {
+    const { error, value } = createShippingZoneSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return validationFailure(res, error);
+    }
+
+    try {
+      const zone = await createShippingZone.execute({
+        name: value.name,
+        states: value.states.map(
+          (state: { state_name: string; cities?: string[] }) => ({
+            stateName: state.state_name,
+            cities: state.cities ?? []
+          })
+        )
+      });
+
+      return res.status(201).json({
+        message: "Shipping zone created successfully.",
+        data: thisShippingZoneResponse(zone)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ShippingConfigurationError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to create shipping zone."
+      });
+    }
+  });
+
+  adminRouter.get("/shipping/zones", async (_req, res) => {
+    try {
+      const zones = await listShippingZones.execute();
+
+      return res.status(200).json({
+        message: "Shipping zones fetched successfully.",
+        data: zones.map((zone) => thisShippingZoneResponse(zone))
+      });
+    } catch {
+      return res.status(500).json({
+        message: "Unable to fetch shipping zones."
+      });
+    }
+  });
+
+  adminRouter.get("/shipping/zones/:zoneId", async (req, res) => {
+    try {
+      const zone = await getShippingZone.execute({
+        zoneId: req.params.zoneId
+      });
+
+      return res.status(200).json({
+        message: "Shipping zone fetched successfully.",
+        data: thisShippingZoneResponse(zone)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ShippingConfigurationError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch shipping zone."
+      });
+    }
+  });
+
+  adminRouter.patch("/shipping/zones/:zoneId", async (req, res) => {
+    const { error, value } = updateShippingZoneSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return validationFailure(res, error);
+    }
+
+    try {
+      const zone = await updateShippingZone.execute({
+        zoneId: req.params.zoneId,
+        name: value.name,
+        states: value.states?.map(
+          (state: { state_name: string; cities?: string[] }) => ({
+            stateName: state.state_name,
+            cities: state.cities ?? []
+          })
+        )
+      });
+
+      return res.status(200).json({
+        message: "Shipping zone updated successfully.",
+        data: thisShippingZoneResponse(zone)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ShippingConfigurationError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to update shipping zone."
+      });
+    }
+  });
+
+  adminRouter.post("/shipping/zones/:zoneId/activate", async (req, res) => {
+    try {
+      const zone = await setShippingZoneStatus.execute({
+        zoneId: req.params.zoneId,
+        status: "active"
+      });
+
+      return res.status(200).json({
+        message: "Shipping zone activated successfully.",
+        data: thisShippingZoneResponse(zone)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ShippingConfigurationError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to activate shipping zone."
+      });
+    }
+  });
+
+  adminRouter.post("/shipping/zones/:zoneId/deactivate", async (req, res) => {
+    try {
+      const zone = await setShippingZoneStatus.execute({
+        zoneId: req.params.zoneId,
+        status: "inactive"
+      });
+
+      return res.status(200).json({
+        message: "Shipping zone deactivated successfully.",
+        data: thisShippingZoneResponse(zone)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ShippingConfigurationError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to deactivate shipping zone."
+      });
+    }
+  });
+
+  adminRouter.post("/shipping/zone-rules", async (req, res) => {
+    const { error, value } = createShippingZoneRuleSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return validationFailure(res, error);
+    }
+
+    try {
+      const rule = await createShippingZoneRule.execute({
+        zoneId: value.zone_id,
+        methodType: value.method_type,
+        value: value.value
+      });
+
+      return res.status(201).json({
+        message: "Shipping zone rule created successfully.",
+        data: thisShippingZoneRuleResponse(rule)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ShippingConfigurationError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to create shipping zone rule."
+      });
+    }
+  });
+
+  adminRouter.get("/shipping/zone-rules", async (_req, res) => {
+    try {
+      const rules = await listShippingZoneRules.execute();
+
+      return res.status(200).json({
+        message: "Shipping zone rules fetched successfully.",
+        data: rules.map((rule) => thisShippingZoneRuleResponse(rule))
+      });
+    } catch {
+      return res.status(500).json({
+        message: "Unable to fetch shipping zone rules."
+      });
+    }
+  });
+
+  adminRouter.get("/shipping/zone-rules/:ruleId", async (req, res) => {
+    try {
+      const rule = await getShippingZoneRule.execute({
+        ruleId: req.params.ruleId
+      });
+
+      return res.status(200).json({
+        message: "Shipping zone rule fetched successfully.",
+        data: thisShippingZoneRuleResponse(rule)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ShippingConfigurationError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch shipping zone rule."
+      });
+    }
+  });
+
+  adminRouter.patch("/shipping/zone-rules/:ruleId", async (req, res) => {
+    const { error, value } = updateShippingZoneRuleSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return validationFailure(res, error);
+    }
+
+    try {
+      const rule = await updateShippingZoneRule.execute({
+        ruleId: req.params.ruleId,
+        zoneId: value.zone_id,
+        methodType: value.method_type,
+        value: value.value
+      });
+
+      return res.status(200).json({
+        message: "Shipping zone rule updated successfully.",
+        data: thisShippingZoneRuleResponse(rule)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ShippingConfigurationError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to update shipping zone rule."
+      });
+    }
+  });
+
+  adminRouter.post(
+    "/shipping/zone-rules/:ruleId/activate",
+    async (req, res) => {
+      try {
+        const rule = await setShippingZoneRuleStatus.execute({
+          ruleId: req.params.ruleId,
+          status: "active"
+        });
+
+        return res.status(200).json({
+          message: "Shipping zone rule activated successfully.",
+          data: thisShippingZoneRuleResponse(rule)
+        });
+      } catch (caughtError) {
+        if (caughtError instanceof ShippingConfigurationError) {
+          return res.status(caughtError.statusCode).json({
+            message: caughtError.message
+          });
+        }
+
+        return res.status(500).json({
+          message: "Unable to activate shipping zone rule."
+        });
+      }
+    }
+  );
+
+  adminRouter.post(
+    "/shipping/zone-rules/:ruleId/deactivate",
+    async (req, res) => {
+      try {
+        const rule = await setShippingZoneRuleStatus.execute({
+          ruleId: req.params.ruleId,
+          status: "inactive"
+        });
+
+        return res.status(200).json({
+          message: "Shipping zone rule deactivated successfully.",
+          data: thisShippingZoneRuleResponse(rule)
+        });
+      } catch (caughtError) {
+        if (caughtError instanceof ShippingConfigurationError) {
+          return res.status(caughtError.statusCode).json({
+            message: caughtError.message
+          });
+        }
+
+        return res.status(500).json({
+          message: "Unable to deactivate shipping zone rule."
+        });
+      }
+    }
+  );
+
+  adminRouter.post("/shipping/category-rules", async (req, res) => {
+    const { error, value } = createCategoryShippingRuleSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return validationFailure(res, error);
+    }
+
+    try {
+      const rule = await createCategoryShippingRule.execute({
+        categoryId: value.category_id,
+        methodType: value.method_type,
+        value: value.value
+      });
+
+      return res.status(201).json({
+        message: "Category shipping rule created successfully.",
+        data: thisCategoryShippingRuleResponse(rule)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ShippingConfigurationError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to create category shipping rule."
+      });
+    }
+  });
+
+  adminRouter.get("/shipping/category-rules", async (_req, res) => {
+    try {
+      const rules = await listCategoryShippingRules.execute();
+
+      return res.status(200).json({
+        message: "Category shipping rules fetched successfully.",
+        data: rules.map((rule) => thisCategoryShippingRuleResponse(rule))
+      });
+    } catch {
+      return res.status(500).json({
+        message: "Unable to fetch category shipping rules."
+      });
+    }
+  });
+
+  adminRouter.get("/shipping/category-rules/:ruleId", async (req, res) => {
+    try {
+      const rule = await getCategoryShippingRule.execute({
+        ruleId: req.params.ruleId
+      });
+
+      return res.status(200).json({
+        message: "Category shipping rule fetched successfully.",
+        data: thisCategoryShippingRuleResponse(rule)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ShippingConfigurationError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch category shipping rule."
+      });
+    }
+  });
+
+  adminRouter.patch("/shipping/category-rules/:ruleId", async (req, res) => {
+    const { error, value } = updateCategoryShippingRuleSchema.validate(
+      req.body,
+      {
+        abortEarly: false,
+        stripUnknown: true
+      }
+    );
+
+    if (error) {
+      return validationFailure(res, error);
+    }
+
+    try {
+      const rule = await updateCategoryShippingRule.execute({
+        ruleId: req.params.ruleId,
+        categoryId: value.category_id,
+        methodType: value.method_type,
+        value: value.value
+      });
+
+      return res.status(200).json({
+        message: "Category shipping rule updated successfully.",
+        data: thisCategoryShippingRuleResponse(rule)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ShippingConfigurationError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to update category shipping rule."
+      });
+    }
+  });
+
+  adminRouter.post(
+    "/shipping/category-rules/:ruleId/activate",
+    async (req, res) => {
+      try {
+        const rule = await setCategoryShippingRuleStatus.execute({
+          ruleId: req.params.ruleId,
+          status: "active"
+        });
+
+        return res.status(200).json({
+          message: "Category shipping rule activated successfully.",
+          data: thisCategoryShippingRuleResponse(rule)
+        });
+      } catch (caughtError) {
+        if (caughtError instanceof ShippingConfigurationError) {
+          return res.status(caughtError.statusCode).json({
+            message: caughtError.message
+          });
+        }
+
+        return res.status(500).json({
+          message: "Unable to activate category shipping rule."
+        });
+      }
+    }
+  );
+
+  adminRouter.post(
+    "/shipping/category-rules/:ruleId/deactivate",
+    async (req, res) => {
+      try {
+        const rule = await setCategoryShippingRuleStatus.execute({
+          ruleId: req.params.ruleId,
+          status: "inactive"
+        });
+
+        return res.status(200).json({
+          message: "Category shipping rule deactivated successfully.",
+          data: thisCategoryShippingRuleResponse(rule)
+        });
+      } catch (caughtError) {
+        if (caughtError instanceof ShippingConfigurationError) {
+          return res.status(caughtError.statusCode).json({
+            message: caughtError.message
+          });
+        }
+
+        return res.status(500).json({
+          message: "Unable to deactivate category shipping rule."
+        });
+      }
+    }
+  );
 
   adminRouter.post("/product-brands", async (req, res) => {
     const { error, value } = createProductBrandSchema.validate(req.body, {
@@ -704,6 +1250,104 @@ function thisShippingSettingsResponse(settings: {
     created_at: settings.createdAt.toISOString(),
     updated_at: settings.updatedAt.toISOString()
   };
+}
+
+function thisShippingZoneResponse(zone: {
+  id: string;
+  name: string;
+  status: string;
+  states: Array<{
+    id: string;
+    stateName: string;
+    cities: Array<{
+      id: string;
+      cityName: string;
+    }>;
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: zone.id,
+    name: zone.name,
+    status: zone.status,
+    states: zone.states.map((state) => ({
+      id: state.id,
+      state_name: state.stateName,
+      cities: state.cities.map((city) => ({
+        id: city.id,
+        city_name: city.cityName
+      }))
+    })),
+    created_at: zone.createdAt.toISOString(),
+    updated_at: zone.updatedAt.toISOString()
+  };
+}
+
+function thisShippingZoneRuleResponse(rule: {
+  id: string;
+  zoneId: string;
+  zoneName: string;
+  methodType: string;
+  value: number;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: rule.id,
+    zone_id: rule.zoneId,
+    zone_name: rule.zoneName,
+    method_type: rule.methodType,
+    value: rule.value,
+    status: rule.status,
+    created_at: rule.createdAt.toISOString(),
+    updated_at: rule.updatedAt.toISOString()
+  };
+}
+
+function thisCategoryShippingRuleResponse(rule: {
+  id: string;
+  categoryId: string;
+  categoryName: string;
+  methodType: string;
+  value: number;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: rule.id,
+    category_id: rule.categoryId,
+    category_name: rule.categoryName,
+    method_type: rule.methodType,
+    value: rule.value,
+    status: rule.status,
+    created_at: rule.createdAt.toISOString(),
+    updated_at: rule.updatedAt.toISOString()
+  };
+}
+
+function validationFailure(
+  res: {
+    status: (statusCode: number) => {
+      json: (body: unknown) => unknown;
+    };
+  },
+  error: {
+    details: Array<{
+      path: Array<string | number>;
+      message: string;
+    }>;
+  }
+) {
+  return res.status(400).json({
+    message: "Validation failed.",
+    errors: error.details.map((detail) => ({
+      field: detail.path.join("."),
+      message: detail.message
+    }))
+  });
 }
 
 function thisProductResponse(product: {
