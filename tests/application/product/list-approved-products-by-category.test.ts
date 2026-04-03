@@ -49,6 +49,7 @@ class ProductCategoryRepositoryDouble implements ProductCategoryRepository {
       name: "Electronics",
       description: "Phones and gadgets",
       deductionPercentage: 12.5,
+      image: null,
       createdAt: new Date("2026-03-29T00:00:00.000Z"),
       updatedAt: new Date("2026-03-29T00:00:00.000Z")
     });

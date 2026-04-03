@@ -49,6 +49,7 @@ import { PostgresShippingZoneRepository } from "../infrastructure/database/repos
 import { PostgresShippingZoneRuleRepository } from "../infrastructure/database/repositories/postgres-shipping-zone-rule-repository";
 import { PostgresShippingSettingsRepository } from "../infrastructure/database/repositories/postgres-shipping-settings-repository";
 import { JwtTokenVerifier } from "../infrastructure/security/jwt-token-verifier";
+import { SupabaseDocumentStorage } from "../infrastructure/storage/supabase-document-storage";
 
 export function createAdminModule() {
   const adminRouter = Router();
@@ -62,6 +63,7 @@ export function createAdminModule() {
     new PostgresCategoryShippingRuleRepository();
   const freeShippingRuleRepository = new PostgresFreeShippingRuleRepository();
   const shippingSettingsRepository = new PostgresShippingSettingsRepository();
+  const documentStorage = new SupabaseDocumentStorage();
   const tokenVerifier = new JwtTokenVerifier();
   const authenticateAdmin = createAuthMiddleware(tokenVerifier, "admin");
   const approveProductPendingReview = new ApproveProductPendingReview(
@@ -77,7 +79,8 @@ export function createAdminModule() {
   );
   const createProductBrand = new CreateProductBrand(productBrandRepository);
   const createProductCategory = new CreateProductCategory(
-    productCategoryRepository
+    productCategoryRepository,
+    documentStorage
   );
   const createShippingZone = new CreateShippingZone(shippingZoneRepository);
   const createShippingZoneRule = new CreateShippingZoneRule(
@@ -141,7 +144,8 @@ export function createAdminModule() {
   );
   const updateProductBrand = new UpdateProductBrand(productBrandRepository);
   const updateProductCategory = new UpdateProductCategory(
-    productCategoryRepository
+    productCategoryRepository,
+    documentStorage
   );
   const updateShippingZone = new UpdateShippingZone(shippingZoneRepository);
   const updateShippingZoneRule = new UpdateShippingZoneRule(

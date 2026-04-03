@@ -18,6 +18,11 @@ class ProductCategoryRepositoryDouble implements ProductCategoryRepository {
       name: "Electronics",
       description: "Phones, gadgets, and accessories",
       deductionPercentage: 12.5,
+      image: {
+        storagePath: "product-categories/electronics/electronics.jpg",
+        mimeType: "image/jpeg",
+        originalFileName: "electronics.jpg"
+      },
       createdAt: new Date("2026-03-28T00:00:00.000Z"),
       updatedAt: new Date("2026-03-28T00:00:00.000Z")
     }
@@ -47,7 +52,10 @@ describe("ListProductCategories", () => {
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({
       name: "Electronics",
-      deductionPercentage: 12.5
+      deductionPercentage: 12.5,
+      image: {
+        storagePath: "product-categories/electronics/electronics.jpg"
+      }
     });
   });
 });

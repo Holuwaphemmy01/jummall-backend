@@ -10,6 +10,7 @@ import type {
 } from "../../../src/ports/authentication-repository";
 import type {
   DocumentStorage,
+  UploadProductCategoryImageInput,
   UploadProductImageInput as StorageUploadProductImageInput,
   UploadSellerKycDocumentInput,
   UploadedDocument
@@ -130,6 +131,7 @@ class ProductCategoryRepositoryDouble implements ProductCategoryRepository {
       name: "Electronics",
       description: "Phones and gadgets",
       deductionPercentage: 12.5,
+      image: null,
       createdAt: new Date("2026-03-28T00:00:00.000Z"),
       updatedAt: new Date("2026-03-28T00:00:00.000Z")
     });
@@ -223,6 +225,9 @@ class DocumentStorageDouble implements DocumentStorage {
     .mockImplementation(async (input) => ({
       storagePath: `products/${input.sellerId}/${input.fileName}`
     }));
+
+  uploadProductCategoryImage = jest
+    .fn<(input: UploadProductCategoryImageInput) => Promise<UploadedDocument>>();
 }
 
 class ProductSkuGeneratorDouble implements ProductSkuGenerator {

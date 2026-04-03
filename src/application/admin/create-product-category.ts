@@ -1,13 +1,19 @@
+import type { DocumentStorage } from "../../ports/document-storage";
 import type {
   ProductCategoryRecord,
   ProductCategoryRepository
 } from "../../ports/product-category-repository";
 import { ProductCategoryError } from "./product-category-errors";
+import {
+  type ProductCategoryImageUploadInput,
+  validateProductCategoryImage
+} from "./product-category-image";
 
 export interface CreateProductCategoryInput {
   name: string;
   description: string;
   deductionPercentage: number;
+  image: ProductCategoryImageUploadInput;
 }
 
 export interface CreateProductCategoryUseCase {
@@ -16,7 +22,8 @@ export interface CreateProductCategoryUseCase {
 
 export class CreateProductCategory implements CreateProductCategoryUseCase {
   constructor(
-    private readonly productCategoryRepository: ProductCategoryRepository
+    private readonly productCategoryRepository: ProductCategoryRepository,
+    private readonly documentStorage: DocumentStorage
   ) {}
 
   async execute(
@@ -34,6 +41,24 @@ export class CreateProductCategory implements CreateProductCategoryUseCase {
       );
     }
 
-    return this.productCategoryRepository.create(input);
+    validateProductCategoryImage(input.image);
+
+    const uploadedImage = await this.documentStorage.uploadProductCategoryImage({
+      categoryName: input.name,
+      fileName: input.image.fileName,
+      mimeType: input.image.mimeType,
+      fileContents: input.image.fileContents
+    });
+
+    return this.productCategoryRepository.create({
+      name: input.name,
+      description: input.description,
+      deductionPercentage: input.deductionPercentage,
+      image: {
+        storagePath: uploadedImage.storagePath,
+        mimeType: input.image.mimeType,
+        originalFileName: input.image.fileName
+      }
+    });
   }
 }
