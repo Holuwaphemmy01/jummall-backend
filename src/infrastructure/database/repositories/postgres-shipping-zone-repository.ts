@@ -4,6 +4,8 @@ import databasePool from "../client";
 import type {
   CreatePlatformShippingZoneInput,
   CreateVendorShippingZoneInput,
+  FindMatchingPlatformShippingZonesInput,
+  FindMatchingVendorShippingZonesInput,
   ShippingZoneRepository,
   ShippingZoneStateInput,
   UpdatePlatformShippingZoneInput,
@@ -66,6 +68,18 @@ export class PostgresShippingZoneRepository implements ShippingZoneRepository {
 
   async findAllVendor(ownerId: string): Promise<ShippingZoneDetailRecord[]> {
     return this.findAllOwnedZones("vendor", ownerId);
+  }
+
+  async findMatchingActivePlatform(
+    input: FindMatchingPlatformShippingZonesInput
+  ): Promise<ShippingZoneDetailRecord[]> {
+    return this.findMatchingActiveOwnedZones("platform", null, input);
+  }
+
+  async findMatchingActiveVendor(
+    input: FindMatchingVendorShippingZonesInput
+  ): Promise<ShippingZoneDetailRecord[]> {
+    return this.findMatchingActiveOwnedZones("vendor", input.ownerId, input);
   }
 
   async findPlatformById(
@@ -210,6 +224,40 @@ export class PostgresShippingZoneRepository implements ShippingZoneRepository {
     );
 
     return this.mapZoneRows(result.rows);
+  }
+
+  private async findMatchingActiveOwnedZones(
+    ownerType: ShippingOwnerType,
+    ownerId: string | null,
+    input: FindMatchingPlatformShippingZonesInput
+  ): Promise<ShippingZoneDetailRecord[]> {
+    const normalizedStateName = input.stateName.trim().toLowerCase();
+    const normalizedCityName = input.cityName?.trim().toLowerCase() ?? null;
+    const zones = await this.findAllOwnedZones(ownerType, ownerId);
+
+    return zones.filter((zone) => {
+      if (zone.status !== "active") {
+        return false;
+      }
+
+      return zone.states.some((state) => {
+        if (state.stateName.trim().toLowerCase() !== normalizedStateName) {
+          return false;
+        }
+
+        if (state.cities.length === 0) {
+          return true;
+        }
+
+        if (!normalizedCityName) {
+          return false;
+        }
+
+        return state.cities.some(
+          (city) => city.cityName.trim().toLowerCase() === normalizedCityName
+        );
+      });
+    });
   }
 
   private async findOwnedZoneById(

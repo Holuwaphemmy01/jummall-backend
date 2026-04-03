@@ -72,6 +72,19 @@ class FreeShippingRuleRepositoryDouble implements FreeShippingRuleRepository {
     );
   }
 
+  findActiveByCouponCode(
+    couponCode: string
+  ): Promise<FreeShippingRuleRecord | null> {
+    return Promise.resolve(
+      this.rules.find(
+        (rule) =>
+          rule.status === "active" &&
+          rule.couponCode !== null &&
+          rule.couponCode.toLowerCase() === couponCode.toLowerCase()
+      ) ?? null
+    );
+  }
+
   findActiveThresholdRule(): Promise<FreeShippingRuleRecord | null> {
     return Promise.resolve(
       this.rules.find(

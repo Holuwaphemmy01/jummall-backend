@@ -43,11 +43,27 @@ export interface UpdateVendorShippingZoneStatusInput {
   status: ShippingZoneStatus;
 }
 
+export interface FindMatchingPlatformShippingZonesInput {
+  stateName: string;
+  cityName?: string | null;
+}
+
+export interface FindMatchingVendorShippingZonesInput
+  extends FindMatchingPlatformShippingZonesInput {
+  ownerId: string;
+}
+
 export interface ShippingZoneRepository {
   createPlatform(input: CreatePlatformShippingZoneInput): Promise<ShippingZoneDetailRecord>;
   createVendor(input: CreateVendorShippingZoneInput): Promise<ShippingZoneDetailRecord>;
   findAllPlatform(): Promise<ShippingZoneDetailRecord[]>;
   findAllVendor(ownerId: string): Promise<ShippingZoneDetailRecord[]>;
+  findMatchingActivePlatform(
+    input: FindMatchingPlatformShippingZonesInput
+  ): Promise<ShippingZoneDetailRecord[]>;
+  findMatchingActiveVendor(
+    input: FindMatchingVendorShippingZonesInput
+  ): Promise<ShippingZoneDetailRecord[]>;
   findPlatformById(zoneId: string): Promise<ShippingZoneDetailRecord | null>;
   findVendorById(
     ownerId: string,
