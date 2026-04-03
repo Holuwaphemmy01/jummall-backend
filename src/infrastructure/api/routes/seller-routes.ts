@@ -30,6 +30,7 @@ import {
   buildProductBrandImagePublicUrl,
   buildProductCategoryImagePublicUrl
 } from "../../storage/build-public-storage-url";
+import { toProductImageResponse } from "../responses/product-image-response";
 import { createCategoryShippingRuleSchema } from "../validation/create-category-shipping-rule-schema";
 import { registerSellerSchema } from "../validation/register-seller-schema";
 import { createShippingZoneRuleSchema } from "../validation/create-shipping-zone-rule-schema";
@@ -212,15 +213,9 @@ export function createProtectedSellerProductRouter({
           status: product.status,
           review_note: product.reviewNote,
           reviewed_at: product.reviewedAt?.toISOString() ?? null,
-          images: product.images.map((image) => ({
-            id: image.id,
-            storage_path: image.storagePath,
-            mime_type: image.mimeType,
-            original_file_name: image.originalFileName,
-            position: image.position,
-            created_at: image.createdAt.toISOString(),
-            updated_at: image.updatedAt.toISOString()
-          })),
+          images: product.images.map((image) =>
+            toProductImageResponse(image, { includeTimestamps: true })
+          ),
           created_at: product.createdAt.toISOString(),
           updated_at: product.updatedAt.toISOString()
         }
@@ -280,15 +275,9 @@ export function createProtectedSellerProductListRouter({
           status: product.status,
           review_note: product.reviewNote,
           reviewed_at: product.reviewedAt?.toISOString() ?? null,
-          images: product.images.map((image) => ({
-            id: image.id,
-            storage_path: image.storagePath,
-            mime_type: image.mimeType,
-            original_file_name: image.originalFileName,
-            position: image.position,
-            created_at: image.createdAt.toISOString(),
-            updated_at: image.updatedAt.toISOString()
-          })),
+          images: product.images.map((image) =>
+            toProductImageResponse(image, { includeTimestamps: true })
+          ),
           created_at: product.createdAt.toISOString(),
           updated_at: product.updatedAt.toISOString()
         }))
