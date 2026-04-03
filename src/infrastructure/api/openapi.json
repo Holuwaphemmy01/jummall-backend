@@ -542,6 +542,298 @@
         }
       }
     },
+    "/admin/shipping/free-shipping-rules": {
+      "post": {
+        "tags": ["admin-free-shipping"],
+        "summary": "Create free shipping rule",
+        "description": "Creates an admin-managed free shipping rule. Use the coupon variant when free shipping should be unlocked by a code, or use the threshold variant when free shipping should apply automatically after a discounted order subtotal is reached. Threshold requests must send `minimum_order_subtotal` and must not send `coupon_code`. Only one active threshold rule can exist at a time.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFreeShippingRuleRequest"
+              },
+              "examples": {
+                "coupon_rule": {
+                  "summary": "Coupon free shipping rule",
+                  "value": {
+                    "name": "Launch Day Free Shipping",
+                    "type": "coupon",
+                    "coupon_code": "FREESHIP"
+                  }
+                },
+                "threshold_rule": {
+                  "summary": "Threshold free shipping rule",
+                  "description": "Free shipping applies automatically once the discounted order subtotal reaches 50000.",
+                  "value": {
+                    "name": "Orders Above 50000",
+                    "type": "threshold",
+                    "minimum_order_subtotal": 50000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Free shipping rule created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Free shipping rule created successfully.",
+                  "data": {
+                    "id": "free-shipping-rule-id",
+                    "name": "Launch Day Free Shipping",
+                    "type": "coupon",
+                    "coupon_code": "FREESHIP",
+                    "minimum_order_subtotal": null,
+                    "status": "active",
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation failed" },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "409": {
+            "description": "Coupon code already exists or an active threshold rule already exists"
+          }
+        }
+      },
+      "get": {
+        "tags": ["admin-free-shipping"],
+        "summary": "List free shipping rules",
+        "description": "Returns all admin-managed free shipping rules, including both coupon and threshold rules.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Free shipping rules fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Free shipping rules fetched successfully.",
+                  "data": [
+                    {
+                      "id": "free-shipping-rule-id",
+                      "name": "Launch Day Free Shipping",
+                      "type": "coupon",
+                      "coupon_code": "FREESHIP",
+                      "minimum_order_subtotal": null,
+                      "status": "active",
+                      "created_at": "2026-04-03T00:00:00.000Z",
+                      "updated_at": "2026-04-03T00:00:00.000Z"
+                    },
+                    {
+                      "id": "threshold-rule-id",
+                      "name": "Orders Above 50000",
+                      "type": "threshold",
+                      "coupon_code": null,
+                      "minimum_order_subtotal": 50000,
+                      "status": "inactive",
+                      "created_at": "2026-04-03T00:00:00.000Z",
+                      "updated_at": "2026-04-03T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" }
+        }
+      }
+    },
+    "/admin/shipping/free-shipping-rules/{ruleId}": {
+      "get": {
+        "tags": ["admin-free-shipping"],
+        "summary": "Get free shipping rule",
+        "description": "Returns one admin-managed free shipping rule by id.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Free shipping rule fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Free shipping rule fetched successfully.",
+                  "data": {
+                    "id": "free-shipping-rule-id",
+                    "name": "Launch Day Free Shipping",
+                    "type": "coupon",
+                    "coupon_code": "FREESHIP",
+                    "minimum_order_subtotal": null,
+                    "status": "active",
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Free shipping rule not found" }
+        }
+      },
+      "patch": {
+        "tags": ["admin-free-shipping"],
+        "summary": "Update free shipping rule",
+        "description": "Updates an existing free shipping rule. You can change its name, type, coupon code, or threshold amount. Active threshold uniqueness is still enforced.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFreeShippingRuleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Free shipping rule updated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Free shipping rule updated successfully.",
+                  "data": {
+                    "id": "threshold-rule-id",
+                    "name": "Orders Above 75000",
+                    "type": "threshold",
+                    "coupon_code": null,
+                    "minimum_order_subtotal": 75000,
+                    "status": "inactive",
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T01:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation failed" },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Free shipping rule not found" },
+          "409": {
+            "description": "Coupon code already exists or an active threshold rule already exists"
+          }
+        }
+      }
+    },
+    "/admin/shipping/free-shipping-rules/{ruleId}/activate": {
+      "post": {
+        "tags": ["admin-free-shipping"],
+        "summary": "Activate free shipping rule",
+        "description": "Activates a free shipping rule. Only one threshold free shipping rule can be active at a time.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Free shipping rule activated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Free shipping rule activated successfully.",
+                  "data": {
+                    "id": "threshold-rule-id",
+                    "name": "Orders Above 50000",
+                    "type": "threshold",
+                    "coupon_code": null,
+                    "minimum_order_subtotal": 50000,
+                    "status": "active",
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T02:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Free shipping rule not found" },
+          "409": {
+            "description": "Another active threshold free shipping rule already exists"
+          }
+        }
+      }
+    },
+    "/admin/shipping/free-shipping-rules/{ruleId}/deactivate": {
+      "post": {
+        "tags": ["admin-free-shipping"],
+        "summary": "Deactivate free shipping rule",
+        "description": "Deactivates a free shipping rule without deleting it.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Free shipping rule deactivated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Free shipping rule deactivated successfully.",
+                  "data": {
+                    "id": "free-shipping-rule-id",
+                    "name": "Launch Day Free Shipping",
+                    "type": "coupon",
+                    "coupon_code": "FREESHIP",
+                    "minimum_order_subtotal": null,
+                    "status": "inactive",
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T02:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Admin access required" },
+          "404": { "description": "Free shipping rule not found" }
+        }
+      }
+    },
     "/admin/shipping/zones": {
       "post": {
         "tags": ["admin-shipping-zones"],
@@ -5333,6 +5625,81 @@
             "type": "string",
             "enum": ["USE_PLATFORM_RULES", "BLOCK_CHECKOUT"],
             "example": "BLOCK_CHECKOUT"
+          }
+        }
+      },
+      "CreateFreeShippingRuleRequest": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/CreateCouponFreeShippingRuleRequest"
+          },
+          {
+            "$ref": "#/components/schemas/CreateThresholdFreeShippingRuleRequest"
+          }
+        ],
+        "description": "Use the coupon variant with `coupon_code`, or the threshold variant with `minimum_order_subtotal`."
+      },
+      "CreateCouponFreeShippingRuleRequest": {
+        "type": "object",
+        "required": ["name", "type", "coupon_code"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Launch Day Free Shipping",
+            "description": "Admin-friendly display name for the free shipping rule."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["coupon"],
+            "example": "coupon"
+          },
+          "coupon_code": {
+            "type": "string",
+            "example": "FREESHIP",
+            "description": "Coupon code the buyer must enter to unlock free shipping."
+          }
+        }
+      },
+      "CreateThresholdFreeShippingRuleRequest": {
+        "type": "object",
+        "required": ["name", "type", "minimum_order_subtotal"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Orders Above 50000",
+            "description": "Admin-friendly display name for the threshold rule."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["threshold"],
+            "example": "threshold"
+          },
+          "minimum_order_subtotal": {
+            "type": "number",
+            "example": 50000,
+            "description": "Discounted order subtotal that must be reached before free shipping applies automatically."
+          }
+        }
+      },
+      "UpdateFreeShippingRuleRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Orders Above 75000"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["coupon", "threshold"],
+            "example": "threshold"
+          },
+          "coupon_code": {
+            "type": "string",
+            "example": "WEEKENDFREE"
+          },
+          "minimum_order_subtotal": {
+            "type": "number",
+            "example": 75000
           }
         }
       },
