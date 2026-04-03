@@ -379,7 +379,20 @@ export default function createAdminRouter({
       const rule = await createShippingZoneRule.execute({
         zoneId: value.zone_id,
         methodType: value.method_type,
-        value: value.value
+        value: value.value,
+        subtotalBands: value.subtotal_bands?.map(
+          (band: {
+            min_subtotal: number;
+            max_subtotal?: number | null;
+            method_type: "fixed_rate" | "percentage_based";
+            value: number;
+          }) => ({
+            minSubtotal: band.min_subtotal,
+            maxSubtotal: band.max_subtotal ?? null,
+            methodType: band.method_type,
+            value: band.value
+          })
+        )
       });
 
       return res.status(201).json({
@@ -453,7 +466,20 @@ export default function createAdminRouter({
         ruleId: req.params.ruleId,
         zoneId: value.zone_id,
         methodType: value.method_type,
-        value: value.value
+        value: value.value,
+        subtotalBands: value.subtotal_bands?.map(
+          (band: {
+            min_subtotal: number;
+            max_subtotal?: number | null;
+            method_type: "fixed_rate" | "percentage_based";
+            value: number;
+          }) => ({
+            minSubtotal: band.min_subtotal,
+            maxSubtotal: band.max_subtotal ?? null,
+            methodType: band.method_type,
+            value: band.value
+          })
+        )
       });
 
       return res.status(200).json({
@@ -542,7 +568,20 @@ export default function createAdminRouter({
       const rule = await createCategoryShippingRule.execute({
         categoryId: value.category_id,
         methodType: value.method_type,
-        value: value.value
+        value: value.value,
+        subtotalBands: value.subtotal_bands?.map(
+          (band: {
+            min_subtotal: number;
+            max_subtotal?: number | null;
+            method_type: "fixed_rate" | "percentage_based";
+            value: number;
+          }) => ({
+            minSubtotal: band.min_subtotal,
+            maxSubtotal: band.max_subtotal ?? null,
+            methodType: band.method_type,
+            value: band.value
+          })
+        )
       });
 
       return res.status(201).json({
@@ -619,7 +658,20 @@ export default function createAdminRouter({
         ruleId: req.params.ruleId,
         categoryId: value.category_id,
         methodType: value.method_type,
-        value: value.value
+        value: value.value,
+        subtotalBands: value.subtotal_bands?.map(
+          (band: {
+            min_subtotal: number;
+            max_subtotal?: number | null;
+            method_type: "fixed_rate" | "percentage_based";
+            value: number;
+          }) => ({
+            minSubtotal: band.min_subtotal,
+            maxSubtotal: band.max_subtotal ?? null,
+            methodType: band.method_type,
+            value: band.value
+          })
+        )
       });
 
       return res.status(200).json({
@@ -1291,6 +1343,15 @@ function thisShippingZoneRuleResponse(rule: {
   methodType: string;
   value: number;
   status: string;
+  subtotalBands: Array<{
+    id: string;
+    minSubtotal: number;
+    maxSubtotal: number | null;
+    methodType: string;
+    value: number;
+    createdAt: Date;
+    updatedAt: Date;
+  }>;
   createdAt: Date;
   updatedAt: Date;
 }) {
@@ -1301,6 +1362,15 @@ function thisShippingZoneRuleResponse(rule: {
     method_type: rule.methodType,
     value: rule.value,
     status: rule.status,
+    subtotal_bands: rule.subtotalBands.map((band) => ({
+      id: band.id,
+      min_subtotal: band.minSubtotal,
+      max_subtotal: band.maxSubtotal,
+      method_type: band.methodType,
+      value: band.value,
+      created_at: band.createdAt.toISOString(),
+      updated_at: band.updatedAt.toISOString()
+    })),
     created_at: rule.createdAt.toISOString(),
     updated_at: rule.updatedAt.toISOString()
   };
@@ -1313,6 +1383,15 @@ function thisCategoryShippingRuleResponse(rule: {
   methodType: string;
   value: number;
   status: string;
+  subtotalBands: Array<{
+    id: string;
+    minSubtotal: number;
+    maxSubtotal: number | null;
+    methodType: string;
+    value: number;
+    createdAt: Date;
+    updatedAt: Date;
+  }>;
   createdAt: Date;
   updatedAt: Date;
 }) {
@@ -1323,6 +1402,15 @@ function thisCategoryShippingRuleResponse(rule: {
     method_type: rule.methodType,
     value: rule.value,
     status: rule.status,
+    subtotal_bands: rule.subtotalBands.map((band) => ({
+      id: band.id,
+      min_subtotal: band.minSubtotal,
+      max_subtotal: band.maxSubtotal,
+      method_type: band.methodType,
+      value: band.value,
+      created_at: band.createdAt.toISOString(),
+      updated_at: band.updatedAt.toISOString()
+    })),
     created_at: rule.createdAt.toISOString(),
     updated_at: rule.updatedAt.toISOString()
   };

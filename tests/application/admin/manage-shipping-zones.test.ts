@@ -12,9 +12,12 @@ import type {
 } from "../../../src/ports/shipping/shipping-models";
 import type {
   CreatePlatformShippingZoneInput,
+  CreateVendorShippingZoneInput,
   ShippingZoneRepository,
   UpdatePlatformShippingZoneInput,
-  UpdatePlatformShippingZoneStatusInput
+  UpdatePlatformShippingZoneStatusInput,
+  UpdateVendorShippingZoneInput,
+  UpdateVendorShippingZoneStatusInput
 } from "../../../src/ports/shipping/shipping-zone-repository";
 
 class ShippingZoneRepositoryDouble implements ShippingZoneRepository {
@@ -72,14 +75,28 @@ class ShippingZoneRepositoryDouble implements ShippingZoneRepository {
     return zone;
   }
 
+  async createVendor(
+    _input: CreateVendorShippingZoneInput
+  ): Promise<ShippingZoneDetailRecord> {
+    throw new Error("Not implemented in this test double.");
+  }
+
   async findAllPlatform(): Promise<ShippingZoneDetailRecord[]> {
     return this.zones;
+  }
+
+  async findAllVendor(): Promise<ShippingZoneDetailRecord[]> {
+    return [];
   }
 
   async findPlatformById(
     zoneId: string
   ): Promise<ShippingZoneDetailRecord | null> {
     return this.zones.find((zone) => zone.id === zoneId) ?? null;
+  }
+
+  async findVendorById(): Promise<ShippingZoneDetailRecord | null> {
+    return null;
   }
 
   async findPlatformByName(
@@ -89,6 +106,10 @@ class ShippingZoneRepositoryDouble implements ShippingZoneRepository {
       this.zones.find((zone) => zone.name.toLowerCase() === name.toLowerCase()) ??
       null
     );
+  }
+
+  async findVendorByName(): Promise<ShippingZoneDetailRecord | null> {
+    return null;
   }
 
   async updatePlatform(
@@ -117,6 +138,12 @@ class ShippingZoneRepositoryDouble implements ShippingZoneRepository {
     return zone;
   }
 
+  async updateVendor(
+    _input: UpdateVendorShippingZoneInput
+  ): Promise<ShippingZoneDetailRecord | null> {
+    return null;
+  }
+
   async updatePlatformStatus(
     input: UpdatePlatformShippingZoneStatusInput
   ): Promise<ShippingZoneDetailRecord | null> {
@@ -130,6 +157,12 @@ class ShippingZoneRepositoryDouble implements ShippingZoneRepository {
     zone.updatedAt = new Date("2026-04-02T02:00:00.000Z");
 
     return zone;
+  }
+
+  async updateVendorStatus(
+    _input: UpdateVendorShippingZoneStatusInput
+  ): Promise<ShippingZoneDetailRecord | null> {
+    return null;
   }
 }
 

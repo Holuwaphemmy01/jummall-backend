@@ -877,6 +877,26 @@
                     "method_type": "fixed_rate",
                     "value": 1500,
                     "status": "active",
+                    "subtotal_bands": [
+                      {
+                        "id": "zone-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 20000,
+                        "method_type": "fixed_rate",
+                        "value": 2500,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      },
+                      {
+                        "id": "zone-rule-band-id-2",
+                        "min_subtotal": 20000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 1500,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      }
+                    ],
                     "created_at": "2026-04-02T00:00:00.000Z",
                     "updated_at": "2026-04-02T00:00:00.000Z"
                   }
@@ -912,6 +932,26 @@
                       "method_type": "fixed_rate",
                       "value": 1500,
                       "status": "active",
+                      "subtotal_bands": [
+                        {
+                          "id": "zone-rule-band-id-1",
+                          "min_subtotal": 0,
+                          "max_subtotal": 20000,
+                          "method_type": "fixed_rate",
+                          "value": 2500,
+                          "created_at": "2026-04-02T00:00:00.000Z",
+                          "updated_at": "2026-04-02T00:00:00.000Z"
+                        },
+                        {
+                          "id": "zone-rule-band-id-2",
+                          "min_subtotal": 20000,
+                          "max_subtotal": null,
+                          "method_type": "fixed_rate",
+                          "value": 1500,
+                          "created_at": "2026-04-02T00:00:00.000Z",
+                          "updated_at": "2026-04-02T00:00:00.000Z"
+                        }
+                      ],
                       "created_at": "2026-04-02T00:00:00.000Z",
                       "updated_at": "2026-04-02T00:00:00.000Z"
                     }
@@ -954,6 +994,26 @@
                     "method_type": "fixed_rate",
                     "value": 1500,
                     "status": "active",
+                    "subtotal_bands": [
+                      {
+                        "id": "zone-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 20000,
+                        "method_type": "fixed_rate",
+                        "value": 2500,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      },
+                      {
+                        "id": "zone-rule-band-id-2",
+                        "min_subtotal": 20000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 1500,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      }
+                    ],
                     "created_at": "2026-04-02T00:00:00.000Z",
                     "updated_at": "2026-04-02T00:00:00.000Z"
                   }
@@ -1004,6 +1064,26 @@
                     "method_type": "percentage_based",
                     "value": 10,
                     "status": "active",
+                    "subtotal_bands": [
+                      {
+                        "id": "zone-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 20000,
+                        "method_type": "fixed_rate",
+                        "value": 2500,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      },
+                      {
+                        "id": "zone-rule-band-id-2",
+                        "min_subtotal": 20000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 1500,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      }
+                    ],
                     "created_at": "2026-04-02T00:00:00.000Z",
                     "updated_at": "2026-04-02T01:00:00.000Z"
                   }
@@ -1048,6 +1128,26 @@
                     "method_type": "fixed_rate",
                     "value": 1500,
                     "status": "active",
+                    "subtotal_bands": [
+                      {
+                        "id": "zone-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 20000,
+                        "method_type": "fixed_rate",
+                        "value": 2500,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      },
+                      {
+                        "id": "zone-rule-band-id-2",
+                        "min_subtotal": 20000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 1500,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      }
+                    ],
                     "created_at": "2026-04-02T00:00:00.000Z",
                     "updated_at": "2026-04-02T02:00:00.000Z"
                   }
@@ -1090,6 +1190,26 @@
                     "method_type": "fixed_rate",
                     "value": 1500,
                     "status": "inactive",
+                    "subtotal_bands": [
+                      {
+                        "id": "zone-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 20000,
+                        "method_type": "fixed_rate",
+                        "value": 2500,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      },
+                      {
+                        "id": "zone-rule-band-id-2",
+                        "min_subtotal": 20000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 1500,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      }
+                    ],
                     "created_at": "2026-04-02T00:00:00.000Z",
                     "updated_at": "2026-04-02T02:00:00.000Z"
                   }
@@ -1134,6 +1254,26 @@
                     "method_type": "fixed_rate",
                     "value": 1500,
                     "status": "active",
+                    "subtotal_bands": [
+                      {
+                        "id": "category-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 50000,
+                        "method_type": "fixed_rate",
+                        "value": 2000,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      },
+                      {
+                        "id": "category-rule-band-id-2",
+                        "min_subtotal": 50000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 0,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      }
+                    ],
                     "created_at": "2026-04-02T00:00:00.000Z",
                     "updated_at": "2026-04-02T00:00:00.000Z"
                   }
@@ -1169,6 +1309,26 @@
                       "method_type": "fixed_rate",
                       "value": 1500,
                       "status": "active",
+                      "subtotal_bands": [
+                        {
+                          "id": "category-rule-band-id-1",
+                          "min_subtotal": 0,
+                          "max_subtotal": 50000,
+                          "method_type": "fixed_rate",
+                          "value": 2000,
+                          "created_at": "2026-04-02T00:00:00.000Z",
+                          "updated_at": "2026-04-02T00:00:00.000Z"
+                        },
+                        {
+                          "id": "category-rule-band-id-2",
+                          "min_subtotal": 50000,
+                          "max_subtotal": null,
+                          "method_type": "fixed_rate",
+                          "value": 0,
+                          "created_at": "2026-04-02T00:00:00.000Z",
+                          "updated_at": "2026-04-02T00:00:00.000Z"
+                        }
+                      ],
                       "created_at": "2026-04-02T00:00:00.000Z",
                       "updated_at": "2026-04-02T00:00:00.000Z"
                     }
@@ -1211,6 +1371,26 @@
                     "method_type": "fixed_rate",
                     "value": 1500,
                     "status": "active",
+                    "subtotal_bands": [
+                      {
+                        "id": "category-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 50000,
+                        "method_type": "fixed_rate",
+                        "value": 2000,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      },
+                      {
+                        "id": "category-rule-band-id-2",
+                        "min_subtotal": 50000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 0,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      }
+                    ],
                     "created_at": "2026-04-02T00:00:00.000Z",
                     "updated_at": "2026-04-02T00:00:00.000Z"
                   }
@@ -1261,6 +1441,26 @@
                     "method_type": "percentage_based",
                     "value": 10,
                     "status": "active",
+                    "subtotal_bands": [
+                      {
+                        "id": "category-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 50000,
+                        "method_type": "fixed_rate",
+                        "value": 2000,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      },
+                      {
+                        "id": "category-rule-band-id-2",
+                        "min_subtotal": 50000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 0,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      }
+                    ],
                     "created_at": "2026-04-02T00:00:00.000Z",
                     "updated_at": "2026-04-02T01:00:00.000Z"
                   }
@@ -1305,6 +1505,26 @@
                     "method_type": "fixed_rate",
                     "value": 1500,
                     "status": "active",
+                    "subtotal_bands": [
+                      {
+                        "id": "category-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 50000,
+                        "method_type": "fixed_rate",
+                        "value": 2000,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      },
+                      {
+                        "id": "category-rule-band-id-2",
+                        "min_subtotal": 50000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 0,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      }
+                    ],
                     "created_at": "2026-04-02T00:00:00.000Z",
                     "updated_at": "2026-04-02T02:00:00.000Z"
                   }
@@ -1347,6 +1567,26 @@
                     "method_type": "fixed_rate",
                     "value": 1500,
                     "status": "inactive",
+                    "subtotal_bands": [
+                      {
+                        "id": "category-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 50000,
+                        "method_type": "fixed_rate",
+                        "value": 2000,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      },
+                      {
+                        "id": "category-rule-band-id-2",
+                        "min_subtotal": 50000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 0,
+                        "created_at": "2026-04-02T00:00:00.000Z",
+                        "updated_at": "2026-04-02T00:00:00.000Z"
+                      }
+                    ],
                     "created_at": "2026-04-02T00:00:00.000Z",
                     "updated_at": "2026-04-02T02:00:00.000Z"
                   }
@@ -3537,6 +3777,1052 @@
         }
       }
     },
+    "/sellers/shipping/zones": {
+      "post": {
+        "tags": ["seller-shipping-zones"],
+        "summary": "Create seller shipping zone",
+        "description": "Creates a seller-owned shipping zone. This endpoint is only available when the admin has switched marketplace shipping mode to `VENDOR`.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateShippingZoneRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Seller shipping zone created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller shipping zone created successfully.",
+                  "data": {
+                    "id": "seller-zone-id",
+                    "name": "Lagos Seller Zone",
+                    "status": "active",
+                    "states": [
+                      {
+                        "id": "seller-zone-state-id",
+                        "state_name": "Lagos",
+                        "cities": [
+                          {
+                            "id": "seller-zone-city-id",
+                            "city_name": "Ikeja"
+                          }
+                        ]
+                      }
+                    ],
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation failed" },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Seller account or shipping settings not found" },
+          "409": { "description": "Shipping zone name already exists for this seller" }
+        }
+      },
+      "get": {
+        "tags": ["seller-shipping-zones"],
+        "summary": "List seller shipping zones",
+        "description": "Returns all shipping zones owned by the authenticated seller.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Seller shipping zones fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller shipping zones fetched successfully.",
+                  "data": [
+                    {
+                      "id": "seller-zone-id",
+                      "name": "Lagos Seller Zone",
+                      "status": "active",
+                      "states": [
+                        {
+                          "id": "seller-zone-state-id",
+                          "state_name": "Lagos",
+                          "cities": [
+                            {
+                              "id": "seller-zone-city-id",
+                              "city_name": "Ikeja"
+                            }
+                          ]
+                        }
+                      ],
+                      "created_at": "2026-04-03T00:00:00.000Z",
+                      "updated_at": "2026-04-03T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Seller account or shipping settings not found" }
+        }
+      }
+    },
+    "/sellers/shipping/zones/{zoneId}": {
+      "get": {
+        "tags": ["seller-shipping-zones"],
+        "summary": "Get seller shipping zone",
+        "description": "Returns one seller-owned shipping zone belonging to the authenticated seller.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "zoneId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seller shipping zone fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller shipping zone fetched successfully.",
+                  "data": {
+                    "id": "seller-zone-id",
+                    "name": "Lagos Seller Zone",
+                    "status": "active",
+                    "states": [
+                      {
+                        "id": "seller-zone-state-id",
+                        "state_name": "Lagos",
+                        "cities": [
+                          {
+                            "id": "seller-zone-city-id",
+                            "city_name": "Ikeja"
+                          }
+                        ]
+                      }
+                    ],
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Seller shipping zone, seller account, or shipping settings not found" }
+        }
+      },
+      "patch": {
+        "tags": ["seller-shipping-zones"],
+        "summary": "Update seller shipping zone",
+        "description": "Updates a seller-owned shipping zone name and/or replaces its coverage.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "zoneId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateShippingZoneRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Seller shipping zone updated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller shipping zone updated successfully.",
+                  "data": {
+                    "id": "seller-zone-id",
+                    "name": "Lagos Mainland Seller Zone",
+                    "status": "active",
+                    "states": [
+                      {
+                        "id": "seller-zone-state-id",
+                        "state_name": "Lagos",
+                        "cities": [
+                          {
+                            "id": "seller-zone-city-id",
+                            "city_name": "Yaba"
+                          }
+                        ]
+                      }
+                    ],
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T01:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation failed" },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Seller shipping zone, seller account, or shipping settings not found" },
+          "409": { "description": "Shipping zone name already exists for this seller" }
+        }
+      }
+    },
+    "/sellers/shipping/zones/{zoneId}/activate": {
+      "post": {
+        "tags": ["seller-shipping-zones"],
+        "summary": "Activate seller shipping zone",
+        "description": "Marks a seller-owned shipping zone as active.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "zoneId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seller shipping zone activated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller shipping zone activated successfully.",
+                  "data": {
+                    "id": "seller-zone-id",
+                    "name": "Lagos Seller Zone",
+                    "status": "active",
+                    "states": [],
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T02:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Seller shipping zone, seller account, or shipping settings not found" }
+        }
+      }
+    },
+    "/sellers/shipping/zones/{zoneId}/deactivate": {
+      "post": {
+        "tags": ["seller-shipping-zones"],
+        "summary": "Deactivate seller shipping zone",
+        "description": "Marks a seller-owned shipping zone as inactive without deleting it.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "zoneId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seller shipping zone deactivated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller shipping zone deactivated successfully.",
+                  "data": {
+                    "id": "seller-zone-id",
+                    "name": "Lagos Seller Zone",
+                    "status": "inactive",
+                    "states": [],
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T02:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Seller shipping zone, seller account, or shipping settings not found" }
+        }
+      }
+    },
+    "/sellers/shipping/zone-rules": {
+      "post": {
+        "tags": ["seller-shipping-zone-rules"],
+        "summary": "Create seller shipping zone rule",
+        "description": "Creates a seller-owned shipping rule for one of the authenticated seller's shipping zones. This endpoint is only available when the admin has switched marketplace shipping mode to `VENDOR`.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateShippingZoneRuleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Seller shipping zone rule created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller shipping zone rule created successfully.",
+                  "data": {
+                    "id": "seller-zone-rule-id",
+                    "zone_id": "seller-zone-id",
+                    "zone_name": "Lagos Seller Zone",
+                    "method_type": "fixed_rate",
+                    "value": 1500,
+                    "status": "active",
+                    "subtotal_bands": [
+                      {
+                        "id": "seller-zone-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 20000,
+                        "method_type": "fixed_rate",
+                        "value": 2500,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      },
+                      {
+                        "id": "seller-zone-rule-band-id-2",
+                        "min_subtotal": 20000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 1500,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      }
+                    ],
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation failed" },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Seller shipping zone, seller account, or shipping settings not found" },
+          "409": { "description": "Seller shipping zone rule already exists for this zone" }
+        }
+      },
+      "get": {
+        "tags": ["seller-shipping-zone-rules"],
+        "summary": "List seller shipping zone rules",
+        "description": "Returns all shipping zone rules owned by the authenticated seller.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Seller shipping zone rules fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller shipping zone rules fetched successfully.",
+                  "data": [
+                    {
+                      "id": "seller-zone-rule-id",
+                      "zone_id": "seller-zone-id",
+                      "zone_name": "Lagos Seller Zone",
+                      "method_type": "fixed_rate",
+                      "value": 1500,
+                      "status": "active",
+                      "subtotal_bands": [
+                        {
+                          "id": "seller-zone-rule-band-id-1",
+                          "min_subtotal": 0,
+                          "max_subtotal": 20000,
+                          "method_type": "fixed_rate",
+                          "value": 2500,
+                          "created_at": "2026-04-03T00:00:00.000Z",
+                          "updated_at": "2026-04-03T00:00:00.000Z"
+                        },
+                        {
+                          "id": "seller-zone-rule-band-id-2",
+                          "min_subtotal": 20000,
+                          "max_subtotal": null,
+                          "method_type": "fixed_rate",
+                          "value": 1500,
+                          "created_at": "2026-04-03T00:00:00.000Z",
+                          "updated_at": "2026-04-03T00:00:00.000Z"
+                        }
+                      ],
+                      "created_at": "2026-04-03T00:00:00.000Z",
+                      "updated_at": "2026-04-03T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Seller account or shipping settings not found" }
+        }
+      }
+    },
+    "/sellers/shipping/zone-rules/{ruleId}": {
+      "get": {
+        "tags": ["seller-shipping-zone-rules"],
+        "summary": "Get seller shipping zone rule",
+        "description": "Returns one seller-owned shipping zone rule belonging to the authenticated seller.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seller shipping zone rule fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller shipping zone rule fetched successfully.",
+                  "data": {
+                    "id": "seller-zone-rule-id",
+                    "zone_id": "seller-zone-id",
+                    "zone_name": "Lagos Seller Zone",
+                    "method_type": "fixed_rate",
+                    "value": 1500,
+                    "status": "active",
+                    "subtotal_bands": [
+                      {
+                        "id": "seller-zone-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 20000,
+                        "method_type": "fixed_rate",
+                        "value": 2500,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      },
+                      {
+                        "id": "seller-zone-rule-band-id-2",
+                        "min_subtotal": 20000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 1500,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      }
+                    ],
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Seller shipping zone rule, seller account, or shipping settings not found" }
+        }
+      },
+      "patch": {
+        "tags": ["seller-shipping-zone-rules"],
+        "summary": "Update seller shipping zone rule",
+        "description": "Updates a seller-owned shipping zone rule's target zone and/or pricing method.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateShippingZoneRuleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Seller shipping zone rule updated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller shipping zone rule updated successfully.",
+                  "data": {
+                    "id": "seller-zone-rule-id",
+                    "zone_id": "seller-zone-id",
+                    "zone_name": "Lagos Seller Zone",
+                    "method_type": "percentage_based",
+                    "value": 10,
+                    "status": "active",
+                    "subtotal_bands": [
+                      {
+                        "id": "seller-zone-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 20000,
+                        "method_type": "fixed_rate",
+                        "value": 2500,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      },
+                      {
+                        "id": "seller-zone-rule-band-id-2",
+                        "min_subtotal": 20000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 1500,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      }
+                    ],
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T01:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation failed" },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Seller shipping zone rule, seller account, or shipping settings not found" },
+          "409": { "description": "Seller shipping zone rule already exists for this zone" }
+        }
+      }
+    },
+    "/sellers/shipping/zone-rules/{ruleId}/activate": {
+      "post": {
+        "tags": ["seller-shipping-zone-rules"],
+        "summary": "Activate seller shipping zone rule",
+        "description": "Marks a seller-owned shipping zone rule as active.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seller shipping zone rule activated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller shipping zone rule activated successfully.",
+                  "data": {
+                    "id": "seller-zone-rule-id",
+                    "zone_id": "seller-zone-id",
+                    "zone_name": "Lagos Seller Zone",
+                    "method_type": "fixed_rate",
+                    "value": 1500,
+                    "status": "active",
+                    "subtotal_bands": [
+                      {
+                        "id": "seller-zone-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 20000,
+                        "method_type": "fixed_rate",
+                        "value": 2500,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      },
+                      {
+                        "id": "seller-zone-rule-band-id-2",
+                        "min_subtotal": 20000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 1500,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      }
+                    ],
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T02:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Seller shipping zone rule, seller account, or shipping settings not found" }
+        }
+      }
+    },
+    "/sellers/shipping/zone-rules/{ruleId}/deactivate": {
+      "post": {
+        "tags": ["seller-shipping-zone-rules"],
+        "summary": "Deactivate seller shipping zone rule",
+        "description": "Marks a seller-owned shipping zone rule as inactive without deleting it.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seller shipping zone rule deactivated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller shipping zone rule deactivated successfully.",
+                  "data": {
+                    "id": "seller-zone-rule-id",
+                    "zone_id": "seller-zone-id",
+                    "zone_name": "Lagos Seller Zone",
+                    "method_type": "fixed_rate",
+                    "value": 1500,
+                    "status": "inactive",
+                    "subtotal_bands": [
+                      {
+                        "id": "seller-zone-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 20000,
+                        "method_type": "fixed_rate",
+                        "value": 2500,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      },
+                      {
+                        "id": "seller-zone-rule-band-id-2",
+                        "min_subtotal": 20000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 1500,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      }
+                    ],
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T02:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Seller shipping zone rule, seller account, or shipping settings not found" }
+        }
+      }
+    },
+    "/sellers/shipping/category-rules": {
+      "post": {
+        "tags": ["seller-shipping-category-rules"],
+        "summary": "Create seller category shipping rule",
+        "description": "Creates a seller-owned category shipping rule for one product category. This endpoint is only available when the admin has switched marketplace shipping mode to `VENDOR`.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryShippingRuleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Seller category shipping rule created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller category shipping rule created successfully.",
+                  "data": {
+                    "id": "seller-category-rule-id",
+                    "category_id": "category-id",
+                    "category_name": "Electronics",
+                    "method_type": "fixed_rate",
+                    "value": 1500,
+                    "status": "active",
+                    "subtotal_bands": [
+                      {
+                        "id": "seller-category-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 50000,
+                        "method_type": "fixed_rate",
+                        "value": 2000,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      },
+                      {
+                        "id": "seller-category-rule-band-id-2",
+                        "min_subtotal": 50000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 0,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      }
+                    ],
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation failed" },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Product category, seller account, or shipping settings not found" },
+          "409": { "description": "Seller category shipping rule already exists for this category" }
+        }
+      },
+      "get": {
+        "tags": ["seller-shipping-category-rules"],
+        "summary": "List seller category shipping rules",
+        "description": "Returns all category shipping rules owned by the authenticated seller.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Seller category shipping rules fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller category shipping rules fetched successfully.",
+                  "data": [
+                    {
+                      "id": "seller-category-rule-id",
+                      "category_id": "category-id",
+                      "category_name": "Electronics",
+                      "method_type": "fixed_rate",
+                      "value": 1500,
+                      "status": "active",
+                      "subtotal_bands": [
+                        {
+                          "id": "seller-category-rule-band-id-1",
+                          "min_subtotal": 0,
+                          "max_subtotal": 50000,
+                          "method_type": "fixed_rate",
+                          "value": 2000,
+                          "created_at": "2026-04-03T00:00:00.000Z",
+                          "updated_at": "2026-04-03T00:00:00.000Z"
+                        },
+                        {
+                          "id": "seller-category-rule-band-id-2",
+                          "min_subtotal": 50000,
+                          "max_subtotal": null,
+                          "method_type": "fixed_rate",
+                          "value": 0,
+                          "created_at": "2026-04-03T00:00:00.000Z",
+                          "updated_at": "2026-04-03T00:00:00.000Z"
+                        }
+                      ],
+                      "created_at": "2026-04-03T00:00:00.000Z",
+                      "updated_at": "2026-04-03T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Seller account or shipping settings not found" }
+        }
+      }
+    },
+    "/sellers/shipping/category-rules/{ruleId}": {
+      "get": {
+        "tags": ["seller-shipping-category-rules"],
+        "summary": "Get seller category shipping rule",
+        "description": "Returns one seller-owned category shipping rule belonging to the authenticated seller.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seller category shipping rule fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller category shipping rule fetched successfully.",
+                  "data": {
+                    "id": "seller-category-rule-id",
+                    "category_id": "category-id",
+                    "category_name": "Electronics",
+                    "method_type": "fixed_rate",
+                    "value": 1500,
+                    "status": "active",
+                    "subtotal_bands": [
+                      {
+                        "id": "seller-category-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 50000,
+                        "method_type": "fixed_rate",
+                        "value": 2000,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      },
+                      {
+                        "id": "seller-category-rule-band-id-2",
+                        "min_subtotal": 50000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 0,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      }
+                    ],
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Seller category shipping rule, seller account, or shipping settings not found" }
+        }
+      },
+      "patch": {
+        "tags": ["seller-shipping-category-rules"],
+        "summary": "Update seller category shipping rule",
+        "description": "Updates a seller-owned category shipping rule's target category and/or pricing method.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryShippingRuleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Seller category shipping rule updated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller category shipping rule updated successfully.",
+                  "data": {
+                    "id": "seller-category-rule-id",
+                    "category_id": "category-id",
+                    "category_name": "Electronics",
+                    "method_type": "percentage_based",
+                    "value": 10,
+                    "status": "active",
+                    "subtotal_bands": [
+                      {
+                        "id": "seller-category-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 50000,
+                        "method_type": "fixed_rate",
+                        "value": 2000,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      },
+                      {
+                        "id": "seller-category-rule-band-id-2",
+                        "min_subtotal": 50000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 0,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      }
+                    ],
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T01:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation failed" },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Seller category shipping rule, seller account, or shipping settings not found" },
+          "409": { "description": "Seller category shipping rule already exists for this category" }
+        }
+      }
+    },
+    "/sellers/shipping/category-rules/{ruleId}/activate": {
+      "post": {
+        "tags": ["seller-shipping-category-rules"],
+        "summary": "Activate seller category shipping rule",
+        "description": "Marks a seller-owned category shipping rule as active.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seller category shipping rule activated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller category shipping rule activated successfully.",
+                  "data": {
+                    "id": "seller-category-rule-id",
+                    "category_id": "category-id",
+                    "category_name": "Electronics",
+                    "method_type": "fixed_rate",
+                    "value": 1500,
+                    "status": "active",
+                    "subtotal_bands": [
+                      {
+                        "id": "seller-category-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 50000,
+                        "method_type": "fixed_rate",
+                        "value": 2000,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      },
+                      {
+                        "id": "seller-category-rule-band-id-2",
+                        "min_subtotal": 50000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 0,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      }
+                    ],
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T02:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Seller category shipping rule, seller account, or shipping settings not found" }
+        }
+      }
+    },
+    "/sellers/shipping/category-rules/{ruleId}/deactivate": {
+      "post": {
+        "tags": ["seller-shipping-category-rules"],
+        "summary": "Deactivate seller category shipping rule",
+        "description": "Marks a seller-owned category shipping rule as inactive without deleting it.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seller category shipping rule deactivated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" },
+                "example": {
+                  "message": "Seller category shipping rule deactivated successfully.",
+                  "data": {
+                    "id": "seller-category-rule-id",
+                    "category_id": "category-id",
+                    "category_name": "Electronics",
+                    "method_type": "fixed_rate",
+                    "value": 1500,
+                    "status": "inactive",
+                    "subtotal_bands": [
+                      {
+                        "id": "seller-category-rule-band-id-1",
+                        "min_subtotal": 0,
+                        "max_subtotal": 50000,
+                        "method_type": "fixed_rate",
+                        "value": 2000,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      },
+                      {
+                        "id": "seller-category-rule-band-id-2",
+                        "min_subtotal": 50000,
+                        "max_subtotal": null,
+                        "method_type": "fixed_rate",
+                        "value": 0,
+                        "created_at": "2026-04-03T00:00:00.000Z",
+                        "updated_at": "2026-04-03T00:00:00.000Z"
+                      }
+                    ],
+                    "created_at": "2026-04-03T00:00:00.000Z",
+                    "updated_at": "2026-04-03T02:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication required" },
+          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
+          "404": { "description": "Seller category shipping rule, seller account, or shipping settings not found" }
+        }
+      }
+    },
     "/sellers/kyc": {
       "put": {
         "tags": ["seller-kyc"],
@@ -4127,6 +5413,12 @@
           "value": {
             "type": "number",
             "example": 1500
+          },
+          "subtotal_bands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShippingSubtotalBandRequest"
+            }
           }
         }
       },
@@ -4145,6 +5437,12 @@
           "value": {
             "type": "number",
             "example": 10
+          },
+          "subtotal_bands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShippingSubtotalBandRequest"
+            }
           }
         }
       },
@@ -4164,6 +5462,12 @@
           "value": {
             "type": "number",
             "example": 1500
+          },
+          "subtotal_bands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShippingSubtotalBandRequest"
+            }
           }
         }
       },
@@ -4182,6 +5486,38 @@
           "value": {
             "type": "number",
             "example": 10
+          },
+          "subtotal_bands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShippingSubtotalBandRequest"
+            }
+          }
+        }
+      },
+      "ShippingSubtotalBandRequest": {
+        "type": "object",
+        "required": ["min_subtotal", "method_type", "value"],
+        "properties": {
+          "min_subtotal": {
+            "type": "number",
+            "minimum": 0,
+            "example": 0
+          },
+          "max_subtotal": {
+            "type": "number",
+            "nullable": true,
+            "example": 20000
+          },
+          "method_type": {
+            "type": "string",
+            "enum": ["fixed_rate", "percentage_based"],
+            "example": "fixed_rate"
+          },
+          "value": {
+            "type": "number",
+            "minimum": 0,
+            "example": 2500
           }
         }
       },

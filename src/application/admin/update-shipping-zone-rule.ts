@@ -1,10 +1,14 @@
+import type { RawShippingSubtotalBandInput } from "../shipping/subtotal-band-helpers";
 import type {
   ShippingMethodType,
   ShippingZoneRuleDetailRecord
 } from "../../ports/shipping/shipping-models";
 import type { ShippingZoneRepository } from "../../ports/shipping/shipping-zone-repository";
 import type { ShippingZoneRuleRepository } from "../../ports/shipping/shipping-zone-rule-repository";
-import { assertValidShippingRuleValue } from "./shipping-configuration-helpers";
+import {
+  assertValidShippingRuleValue,
+  normalizeShippingSubtotalBands
+} from "./shipping-configuration-helpers";
 import { ShippingConfigurationError } from "./shipping-configuration-error";
 
 export interface UpdateShippingZoneRuleInput {
@@ -12,6 +16,7 @@ export interface UpdateShippingZoneRuleInput {
   zoneId?: string;
   methodType?: ShippingMethodType;
   value?: number;
+  subtotalBands?: RawShippingSubtotalBandInput[];
 }
 
 export interface UpdateShippingZoneRuleUseCase {
@@ -30,7 +35,8 @@ export class UpdateShippingZoneRule implements UpdateShippingZoneRuleUseCase {
     if (
       input.zoneId === undefined &&
       input.methodType === undefined &&
-      input.value === undefined
+      input.value === undefined &&
+      input.subtotalBands === undefined
     ) {
       throw new ShippingConfigurationError(
         "At least one shipping zone rule field must be provided.",
@@ -71,12 +77,14 @@ export class UpdateShippingZoneRule implements UpdateShippingZoneRuleUseCase {
     const nextValue = input.value ?? existingRule.value;
 
     assertValidShippingRuleValue(nextMethodType, nextValue);
+    const subtotalBands = normalizeShippingSubtotalBands(input.subtotalBands);
 
     const updatedRule = await this.shippingZoneRuleRepository.updatePlatform({
       ruleId: input.ruleId,
       zoneId: input.zoneId,
       methodType: input.methodType,
-      value: input.value
+      value: input.value,
+      subtotalBands
     });
 
     if (!updatedRule) {

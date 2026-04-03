@@ -1,10 +1,14 @@
+import type { RawShippingSubtotalBandInput } from "../shipping/subtotal-band-helpers";
 import type { ProductCategoryRepository } from "../../ports/product-category-repository";
 import type {
   CategoryShippingRuleDetailRecord,
   ShippingMethodType
 } from "../../ports/shipping/shipping-models";
 import type { CategoryShippingRuleRepository } from "../../ports/shipping/category-shipping-rule-repository";
-import { assertValidShippingRuleValue } from "./shipping-configuration-helpers";
+import {
+  assertValidShippingRuleValue,
+  normalizeShippingSubtotalBands
+} from "./shipping-configuration-helpers";
 import { ShippingConfigurationError } from "./shipping-configuration-error";
 
 export interface UpdateCategoryShippingRuleInput {
@@ -12,6 +16,7 @@ export interface UpdateCategoryShippingRuleInput {
   categoryId?: string;
   methodType?: ShippingMethodType;
   value?: number;
+  subtotalBands?: RawShippingSubtotalBandInput[];
 }
 
 export interface UpdateCategoryShippingRuleUseCase {
@@ -34,7 +39,8 @@ export class UpdateCategoryShippingRule
     if (
       input.categoryId === undefined &&
       input.methodType === undefined &&
-      input.value === undefined
+      input.value === undefined &&
+      input.subtotalBands === undefined
     ) {
       throw new ShippingConfigurationError(
         "At least one category shipping rule field must be provided.",
@@ -83,13 +89,15 @@ export class UpdateCategoryShippingRule
     const nextValue = input.value ?? existingRule.value;
 
     assertValidShippingRuleValue(nextMethodType, nextValue);
+    const subtotalBands = normalizeShippingSubtotalBands(input.subtotalBands);
 
     const updatedRule = await this.categoryShippingRuleRepository.updatePlatform(
       {
         ruleId: input.ruleId,
         categoryId: input.categoryId,
         methodType: input.methodType,
-        value: input.value
+        value: input.value,
+        subtotalBands
       }
     );
 

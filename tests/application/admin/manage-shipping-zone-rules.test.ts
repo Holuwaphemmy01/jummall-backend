@@ -15,9 +15,12 @@ import type {
 import type { ShippingZoneRepository } from "../../../src/ports/shipping/shipping-zone-repository";
 import type {
   CreatePlatformShippingZoneRuleInput,
+  CreateVendorShippingZoneRuleInput,
   ShippingZoneRuleRepository,
   UpdatePlatformShippingZoneRuleInput,
-  UpdatePlatformShippingZoneRuleStatusInput
+  UpdatePlatformShippingZoneRuleStatusInput,
+  UpdateVendorShippingZoneRuleInput,
+  UpdateVendorShippingZoneRuleStatusInput
 } from "../../../src/ports/shipping/shipping-zone-rule-repository";
 
 class ShippingZoneRepositoryDouble implements ShippingZoneRepository {
@@ -27,15 +30,31 @@ class ShippingZoneRepositoryDouble implements ShippingZoneRepository {
     throw new Error("Not implemented in this test double.");
   }
 
+  createVendor(): Promise<ShippingZoneDetailRecord> {
+    throw new Error("Not implemented in this test double.");
+  }
+
   findAllPlatform(): Promise<ShippingZoneDetailRecord[]> {
     return Promise.resolve(this.zones);
+  }
+
+  findAllVendor(): Promise<ShippingZoneDetailRecord[]> {
+    return Promise.resolve([]);
   }
 
   findPlatformById(zoneId: string): Promise<ShippingZoneDetailRecord | null> {
     return Promise.resolve(this.zones.find((zone) => zone.id === zoneId) ?? null);
   }
 
+  findVendorById(): Promise<ShippingZoneDetailRecord | null> {
+    return Promise.resolve(null);
+  }
+
   findPlatformByName(): Promise<ShippingZoneDetailRecord | null> {
+    return Promise.resolve(null);
+  }
+
+  findVendorByName(): Promise<ShippingZoneDetailRecord | null> {
     return Promise.resolve(null);
   }
 
@@ -43,8 +62,16 @@ class ShippingZoneRepositoryDouble implements ShippingZoneRepository {
     throw new Error("Not implemented in this test double.");
   }
 
+  updateVendor(): Promise<ShippingZoneDetailRecord | null> {
+    return Promise.resolve(null);
+  }
+
   updatePlatformStatus(): Promise<ShippingZoneDetailRecord | null> {
     throw new Error("Not implemented in this test double.");
+  }
+
+  updateVendorStatus(): Promise<ShippingZoneDetailRecord | null> {
+    return Promise.resolve(null);
   }
 }
 
@@ -59,6 +86,7 @@ class ShippingZoneRuleRepositoryDouble implements ShippingZoneRuleRepository {
       methodType: "fixed_rate",
       value: 1500,
       status: "active",
+      subtotalBands: [],
       createdAt: new Date("2026-04-02T00:00:00.000Z"),
       updatedAt: new Date("2026-04-02T00:00:00.000Z")
     }
@@ -76,6 +104,12 @@ class ShippingZoneRuleRepositoryDouble implements ShippingZoneRuleRepository {
       methodType: input.methodType,
       value: input.value,
       status: "active",
+      subtotalBands: (input.subtotalBands ?? []).map((band, index) =>
+        makeSubtotalBand({
+          id: `band-${this.rules.length + 1}-${index + 1}`,
+          ...band
+        })
+      ),
       createdAt: new Date("2026-04-02T00:00:00.000Z"),
       updatedAt: new Date("2026-04-02T00:00:00.000Z")
     };
@@ -85,8 +119,18 @@ class ShippingZoneRuleRepositoryDouble implements ShippingZoneRuleRepository {
     return rule;
   }
 
+  async createVendor(
+    _input: CreateVendorShippingZoneRuleInput
+  ): Promise<ShippingZoneRuleDetailRecord> {
+    throw new Error("Not implemented in this test double.");
+  }
+
   async findAllPlatform(): Promise<ShippingZoneRuleDetailRecord[]> {
     return this.rules;
+  }
+
+  async findAllVendor(): Promise<ShippingZoneRuleDetailRecord[]> {
+    return [];
   }
 
   async findPlatformById(
@@ -95,10 +139,18 @@ class ShippingZoneRuleRepositoryDouble implements ShippingZoneRuleRepository {
     return this.rules.find((rule) => rule.id === ruleId) ?? null;
   }
 
+  async findVendorById(): Promise<ShippingZoneRuleDetailRecord | null> {
+    return null;
+  }
+
   async findPlatformByZoneId(
     zoneId: string
   ): Promise<ShippingZoneRuleDetailRecord | null> {
     return this.rules.find((rule) => rule.zoneId === zoneId) ?? null;
+  }
+
+  async findVendorByZoneId(): Promise<ShippingZoneRuleDetailRecord | null> {
+    return null;
   }
 
   async updatePlatform(
@@ -114,9 +166,24 @@ class ShippingZoneRuleRepositoryDouble implements ShippingZoneRuleRepository {
     rule.zoneName = rule.zoneId === "zone-2" ? "Abuja Urban" : "Lagos Urban";
     rule.methodType = input.methodType ?? rule.methodType;
     rule.value = input.value ?? rule.value;
+    rule.subtotalBands =
+      input.subtotalBands === undefined
+        ? rule.subtotalBands
+        : input.subtotalBands.map((band, index) =>
+            makeSubtotalBand({
+              id: `band-${rule.id}-${index + 1}`,
+              ...band
+            })
+          );
     rule.updatedAt = new Date("2026-04-02T01:00:00.000Z");
 
     return rule;
+  }
+
+  async updateVendor(
+    _input: UpdateVendorShippingZoneRuleInput
+  ): Promise<ShippingZoneRuleDetailRecord | null> {
+    return null;
   }
 
   async updatePlatformStatus(
@@ -132,6 +199,12 @@ class ShippingZoneRuleRepositoryDouble implements ShippingZoneRuleRepository {
     rule.updatedAt = new Date("2026-04-02T02:00:00.000Z");
 
     return rule;
+  }
+
+  async updateVendorStatus(
+    _input: UpdateVendorShippingZoneRuleStatusInput
+  ): Promise<ShippingZoneRuleDetailRecord | null> {
+    return null;
   }
 }
 
@@ -168,11 +241,26 @@ describe("shipping zone rule admin use cases", () => {
     const rule = await createShippingZoneRule.execute({
       zoneId: "zone-2",
       methodType: "percentage_based",
-      value: 10
+      value: 10,
+      subtotalBands: [
+        {
+          minSubtotal: 0,
+          maxSubtotal: 20000,
+          methodType: "fixed_rate",
+          value: 2500
+        },
+        {
+          minSubtotal: 20000,
+          maxSubtotal: null,
+          methodType: "fixed_rate",
+          value: 1500
+        }
+      ]
     });
 
     expect(rule.zoneId).toBe("zone-2");
     expect(rule.methodType).toBe("percentage_based");
+    expect(rule.subtotalBands).toHaveLength(2);
   });
 
   it("throws when creating a shipping zone rule for a missing zone", async () => {
@@ -220,6 +308,35 @@ describe("shipping zone rule admin use cases", () => {
     ).rejects.toBeInstanceOf(ShippingConfigurationError);
   });
 
+  it("throws when subtotal bands overlap", async () => {
+    const createShippingZoneRule = new CreateShippingZoneRule(
+      new ShippingZoneRuleRepositoryDouble(),
+      new ShippingZoneRepositoryDouble(zones)
+    );
+
+    await expect(
+      createShippingZoneRule.execute({
+        zoneId: "zone-2",
+        methodType: "fixed_rate",
+        value: 1200,
+        subtotalBands: [
+          {
+            minSubtotal: 0,
+            maxSubtotal: 20000,
+            methodType: "fixed_rate",
+            value: 2500
+          },
+          {
+            minSubtotal: 15000,
+            maxSubtotal: null,
+            methodType: "fixed_rate",
+            value: 1500
+          }
+        ]
+      })
+    ).rejects.toBeInstanceOf(ShippingConfigurationError);
+  });
+
   it("lists the existing shipping zone rules", async () => {
     const listShippingZoneRules = new ListShippingZoneRules(
       new ShippingZoneRuleRepositoryDouble()
@@ -250,11 +367,13 @@ describe("shipping zone rule admin use cases", () => {
     const rule = await updateShippingZoneRule.execute({
       ruleId: "rule-1",
       methodType: "percentage_based",
-      value: 15
+      value: 15,
+      subtotalBands: []
     });
 
     expect(rule.methodType).toBe("percentage_based");
     expect(rule.value).toBe(15);
+    expect(rule.subtotalBands).toHaveLength(0);
   });
 
   it("throws when updating a zone rule without any fields", async () => {
@@ -308,3 +427,21 @@ describe("shipping zone rule admin use cases", () => {
     ).rejects.toBeInstanceOf(ShippingConfigurationError);
   });
 });
+
+function makeSubtotalBand(overrides: {
+  id: string;
+  minSubtotal: number;
+  maxSubtotal: number | null;
+  methodType: ShippingMethodType;
+  value: number;
+}) {
+  return {
+    id: overrides.id,
+    minSubtotal: overrides.minSubtotal,
+    maxSubtotal: overrides.maxSubtotal,
+    methodType: overrides.methodType,
+    value: overrides.value,
+    createdAt: new Date("2026-04-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-04-02T00:00:00.000Z")
+  };
+}

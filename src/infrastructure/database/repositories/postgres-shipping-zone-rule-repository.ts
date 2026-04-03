@@ -1,29 +1,46 @@
-import type { Pool } from "pg";
+import type { Pool, PoolClient } from "pg";
 
 import databasePool from "../client";
 import type {
   CreatePlatformShippingZoneRuleInput,
+  CreateVendorShippingZoneRuleInput,
   ShippingZoneRuleRepository,
   UpdatePlatformShippingZoneRuleInput,
-  UpdatePlatformShippingZoneRuleStatusInput
+  UpdatePlatformShippingZoneRuleStatusInput,
+  UpdateVendorShippingZoneRuleInput,
+  UpdateVendorShippingZoneRuleStatusInput
 } from "../../../ports/shipping/shipping-zone-rule-repository";
 import type {
   ShippingMethodType,
+  ShippingOwnerType,
   ShippingRuleStatus,
+  ShippingSubtotalBandInput,
+  ShippingSubtotalBandRecord,
   ShippingZoneRuleDetailRecord
 } from "../../../ports/shipping/shipping-models";
 
 interface ShippingZoneRuleRow {
   id: string;
   zoneId: string;
-  ownerType: "platform";
-  ownerId: null;
+  ownerType: ShippingOwnerType;
+  ownerId: string | null;
   methodType: ShippingMethodType;
   value: string;
   status: ShippingRuleStatus;
   createdAt: Date;
   updatedAt: Date;
   zoneName: string;
+}
+
+interface ShippingZoneRuleSubtotalBandRow {
+  id: string;
+  shippingZoneRuleId: string;
+  minSubtotal: string;
+  maxSubtotal: string | null;
+  methodType: ShippingMethodType;
+  value: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export class PostgresShippingZoneRuleRepository
@@ -34,43 +51,156 @@ export class PostgresShippingZoneRuleRepository
   async createPlatform(
     input: CreatePlatformShippingZoneRuleInput
   ): Promise<ShippingZoneRuleDetailRecord> {
-    const result = await this.pool.query<ShippingZoneRuleRow>(
-      `
-        INSERT INTO "ShippingZoneRule" (
-          "zoneId",
-          "ownerType",
-          "ownerId",
-          "methodType",
-          "value",
-          "status"
-        )
-        VALUES ($1, 'platform', NULL, $2, $3, 'active')
-        RETURNING
-          "id",
-          "zoneId",
-          "ownerType",
-          "ownerId",
-          "methodType",
-          "value",
-          "status",
-          "createdAt",
-          "updatedAt"
-      `,
-      [input.zoneId, input.methodType, input.value]
-    );
+    return this.createOwnedRule({
+      ownerType: "platform",
+      ownerId: null,
+      zoneId: input.zoneId,
+      methodType: input.methodType,
+      value: input.value,
+      subtotalBands: input.subtotalBands ?? []
+    });
+  }
 
-    return this.findPlatformById(result.rows[0].id).then((rule) => {
-      if (!rule) {
-        throw new Error(
-          "Platform shipping zone rule was created but could not be loaded."
-        );
-      }
-
-      return rule;
+  async createVendor(
+    input: CreateVendorShippingZoneRuleInput
+  ): Promise<ShippingZoneRuleDetailRecord> {
+    return this.createOwnedRule({
+      ownerType: "vendor",
+      ownerId: input.ownerId,
+      zoneId: input.zoneId,
+      methodType: input.methodType,
+      value: input.value,
+      subtotalBands: input.subtotalBands ?? []
     });
   }
 
   async findAllPlatform(): Promise<ShippingZoneRuleDetailRecord[]> {
+    return this.findAllOwnedRules("platform", null);
+  }
+
+  async findAllVendor(ownerId: string): Promise<ShippingZoneRuleDetailRecord[]> {
+    return this.findAllOwnedRules("vendor", ownerId);
+  }
+
+  async findPlatformById(
+    ruleId: string
+  ): Promise<ShippingZoneRuleDetailRecord | null> {
+    return this.findOwnedRuleById("platform", null, ruleId);
+  }
+
+  async findVendorById(
+    ownerId: string,
+    ruleId: string
+  ): Promise<ShippingZoneRuleDetailRecord | null> {
+    return this.findOwnedRuleById("vendor", ownerId, ruleId);
+  }
+
+  async findPlatformByZoneId(
+    zoneId: string
+  ): Promise<ShippingZoneRuleDetailRecord | null> {
+    return this.findOwnedRuleByZoneId("platform", null, zoneId);
+  }
+
+  async findVendorByZoneId(
+    ownerId: string,
+    zoneId: string
+  ): Promise<ShippingZoneRuleDetailRecord | null> {
+    return this.findOwnedRuleByZoneId("vendor", ownerId, zoneId);
+  }
+
+  async updatePlatform(
+    input: UpdatePlatformShippingZoneRuleInput
+  ): Promise<ShippingZoneRuleDetailRecord | null> {
+    return this.updateOwnedRule("platform", null, input);
+  }
+
+  async updateVendor(
+    input: UpdateVendorShippingZoneRuleInput
+  ): Promise<ShippingZoneRuleDetailRecord | null> {
+    return this.updateOwnedRule("vendor", input.ownerId, input);
+  }
+
+  async updatePlatformStatus(
+    input: UpdatePlatformShippingZoneRuleStatusInput
+  ): Promise<ShippingZoneRuleDetailRecord | null> {
+    return this.updateOwnedRuleStatus("platform", null, input.ruleId, input.status);
+  }
+
+  async updateVendorStatus(
+    input: UpdateVendorShippingZoneRuleStatusInput
+  ): Promise<ShippingZoneRuleDetailRecord | null> {
+    return this.updateOwnedRuleStatus(
+      "vendor",
+      input.ownerId,
+      input.ruleId,
+      input.status
+    );
+  }
+
+  private async createOwnedRule(input: {
+    ownerType: ShippingOwnerType;
+    ownerId: string | null;
+    zoneId: string;
+    methodType: ShippingMethodType;
+    value: number;
+    subtotalBands: ShippingSubtotalBandInput[];
+  }): Promise<ShippingZoneRuleDetailRecord> {
+    const client = await this.pool.connect();
+
+    try {
+      await client.query("BEGIN");
+
+      const result = await client.query<{ id: string }>(
+        `
+          INSERT INTO "ShippingZoneRule" (
+            "zoneId",
+            "ownerType",
+            "ownerId",
+            "methodType",
+            "value",
+            "status"
+          )
+          VALUES ($1, $2, $3, $4, $5, 'active')
+          RETURNING "id"
+        `,
+        [
+          input.zoneId,
+          input.ownerType,
+          input.ownerId,
+          input.methodType,
+          input.value
+        ]
+      );
+
+      const createdRuleId = result.rows[0].id;
+
+      await this.replaceSubtotalBands(client, createdRuleId, input.subtotalBands);
+
+      await client.query("COMMIT");
+
+      const createdRule = await this.findOwnedRuleById(
+        input.ownerType,
+        input.ownerId,
+        createdRuleId
+      );
+
+      if (!createdRule) {
+        throw new Error("Shipping zone rule was created but could not be loaded.");
+      }
+
+      return createdRule;
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  private async findAllOwnedRules(
+    ownerType: ShippingOwnerType,
+    ownerId: string | null
+  ): Promise<ShippingZoneRuleDetailRecord[]> {
     const result = await this.pool.query<ShippingZoneRuleRow>(
       `
         SELECT
@@ -87,16 +217,29 @@ export class PostgresShippingZoneRuleRepository
         FROM "ShippingZoneRule" rule
         INNER JOIN "ShippingZone" zone
           ON zone."id" = rule."zoneId"
-        WHERE rule."ownerType" = 'platform'
-          AND rule."ownerId" IS NULL
+        WHERE rule."ownerType" = $1
+          AND (
+            ($2::text IS NULL AND rule."ownerId" IS NULL)
+            OR rule."ownerId" = $2
+          )
         ORDER BY zone."name" ASC
-      `
+      `,
+      [ownerType, ownerId]
     );
 
-    return result.rows.map((row) => this.mapRow(row));
+    const subtotalBandsByRuleId = await this.findSubtotalBandsByRuleIds(
+      this.pool,
+      result.rows.map((row) => row.id)
+    );
+
+    return result.rows.map((row) =>
+      this.mapRow(row, subtotalBandsByRuleId.get(row.id) ?? [])
+    );
   }
 
-  async findPlatformById(
+  private async findOwnedRuleById(
+    ownerType: ShippingOwnerType,
+    ownerId: string | null,
     ruleId: string
   ): Promise<ShippingZoneRuleDetailRecord | null> {
     const result = await this.pool.query<ShippingZoneRuleRow>(
@@ -115,20 +258,33 @@ export class PostgresShippingZoneRuleRepository
         FROM "ShippingZoneRule" rule
         INNER JOIN "ShippingZone" zone
           ON zone."id" = rule."zoneId"
-        WHERE rule."id" = $1
-          AND rule."ownerType" = 'platform'
-          AND rule."ownerId" IS NULL
+        WHERE rule."id" = $3
+          AND rule."ownerType" = $1
+          AND (
+            ($2::text IS NULL AND rule."ownerId" IS NULL)
+            OR rule."ownerId" = $2
+          )
         LIMIT 1
       `,
-      [ruleId]
+      [ownerType, ownerId, ruleId]
     );
 
     const row = result.rows[0];
 
-    return row ? this.mapRow(row) : null;
+    if (!row) {
+      return null;
+    }
+
+    const subtotalBandsByRuleId = await this.findSubtotalBandsByRuleIds(this.pool, [
+      row.id
+    ]);
+
+    return this.mapRow(row, subtotalBandsByRuleId.get(row.id) ?? []);
   }
 
-  async findPlatformByZoneId(
+  private async findOwnedRuleByZoneId(
+    ownerType: ShippingOwnerType,
+    ownerId: string | null,
     zoneId: string
   ): Promise<ShippingZoneRuleDetailRecord | null> {
     const result = await this.pool.query<ShippingZoneRuleRow>(
@@ -147,92 +303,210 @@ export class PostgresShippingZoneRuleRepository
         FROM "ShippingZoneRule" rule
         INNER JOIN "ShippingZone" zone
           ON zone."id" = rule."zoneId"
-        WHERE rule."zoneId" = $1
-          AND rule."ownerType" = 'platform'
-          AND rule."ownerId" IS NULL
+        WHERE rule."zoneId" = $3
+          AND rule."ownerType" = $1
+          AND (
+            ($2::text IS NULL AND rule."ownerId" IS NULL)
+            OR rule."ownerId" = $2
+          )
         LIMIT 1
       `,
-      [zoneId]
+      [ownerType, ownerId, zoneId]
     );
 
     const row = result.rows[0];
 
-    return row ? this.mapRow(row) : null;
-  }
-
-  async updatePlatform(
-    input: UpdatePlatformShippingZoneRuleInput
-  ): Promise<ShippingZoneRuleDetailRecord | null> {
-    const result = await this.pool.query<ShippingZoneRuleRow>(
-      `
-        UPDATE "ShippingZoneRule"
-        SET
-          "zoneId" = COALESCE($2, "zoneId"),
-          "methodType" = COALESCE($3, "methodType"),
-          "value" = COALESCE($4, "value"),
-          "updatedAt" = CURRENT_TIMESTAMP
-        WHERE "id" = $1
-          AND "ownerType" = 'platform'
-          AND "ownerId" IS NULL
-        RETURNING
-          "id",
-          "zoneId",
-          "ownerType",
-          "ownerId",
-          "methodType",
-          "value",
-          "status",
-          "createdAt",
-          "updatedAt"
-      `,
-      [input.ruleId, input.zoneId, input.methodType, input.value]
-    );
-
-    const ruleId = result.rows[0]?.id;
-
-    if (!ruleId) {
+    if (!row) {
       return null;
     }
 
-    return this.findPlatformById(ruleId);
+    const subtotalBandsByRuleId = await this.findSubtotalBandsByRuleIds(this.pool, [
+      row.id
+    ]);
+
+    return this.mapRow(row, subtotalBandsByRuleId.get(row.id) ?? []);
   }
 
-  async updatePlatformStatus(
-    input: UpdatePlatformShippingZoneRuleStatusInput
+  private async updateOwnedRule(
+    ownerType: ShippingOwnerType,
+    ownerId: string | null,
+    input:
+      | UpdatePlatformShippingZoneRuleInput
+      | UpdateVendorShippingZoneRuleInput
   ): Promise<ShippingZoneRuleDetailRecord | null> {
-    const result = await this.pool.query<ShippingZoneRuleRow>(
+    const client = await this.pool.connect();
+
+    try {
+      await client.query("BEGIN");
+
+      const result = await client.query<{ id: string }>(
+        `
+          UPDATE "ShippingZoneRule"
+          SET
+            "zoneId" = COALESCE($4, "zoneId"),
+            "methodType" = COALESCE($5, "methodType"),
+            "value" = COALESCE($6, "value"),
+            "updatedAt" = CURRENT_TIMESTAMP
+          WHERE "id" = $3
+            AND "ownerType" = $1
+            AND (
+              ($2::text IS NULL AND "ownerId" IS NULL)
+              OR "ownerId" = $2
+            )
+          RETURNING "id"
+        `,
+        [
+          ownerType,
+          ownerId,
+          input.ruleId,
+          input.zoneId,
+          input.methodType,
+          input.value
+        ]
+      );
+
+      const updatedRuleId = result.rows[0]?.id;
+
+      if (!updatedRuleId) {
+        await client.query("ROLLBACK");
+        return null;
+      }
+
+      if (input.subtotalBands !== undefined) {
+        await this.replaceSubtotalBands(client, updatedRuleId, input.subtotalBands);
+      }
+
+      await client.query("COMMIT");
+
+      return this.findOwnedRuleById(ownerType, ownerId, updatedRuleId);
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  private async updateOwnedRuleStatus(
+    ownerType: ShippingOwnerType,
+    ownerId: string | null,
+    ruleId: string,
+    status: ShippingRuleStatus
+  ): Promise<ShippingZoneRuleDetailRecord | null> {
+    const result = await this.pool.query<{ id: string }>(
       `
         UPDATE "ShippingZoneRule"
         SET
-          "status" = $2,
+          "status" = $4,
           "updatedAt" = CURRENT_TIMESTAMP
-        WHERE "id" = $1
-          AND "ownerType" = 'platform'
-          AND "ownerId" IS NULL
-        RETURNING
-          "id",
-          "zoneId",
-          "ownerType",
-          "ownerId",
-          "methodType",
-          "value",
-          "status",
-          "createdAt",
-          "updatedAt"
+        WHERE "id" = $3
+          AND "ownerType" = $1
+          AND (
+            ($2::text IS NULL AND "ownerId" IS NULL)
+            OR "ownerId" = $2
+          )
+        RETURNING "id"
       `,
-      [input.ruleId, input.status]
+      [ownerType, ownerId, ruleId, status]
     );
 
-    const ruleId = result.rows[0]?.id;
+    const updatedRuleId = result.rows[0]?.id;
 
-    if (!ruleId) {
+    if (!updatedRuleId) {
       return null;
     }
 
-    return this.findPlatformById(ruleId);
+    return this.findOwnedRuleById(ownerType, ownerId, updatedRuleId);
   }
 
-  private mapRow(row: ShippingZoneRuleRow): ShippingZoneRuleDetailRecord {
+  private async replaceSubtotalBands(
+    client: PoolClient,
+    ruleId: string,
+    subtotalBands: ShippingSubtotalBandInput[]
+  ) {
+    await client.query(
+      `
+        DELETE FROM "ShippingZoneRuleSubtotalBand"
+        WHERE "shippingZoneRuleId" = $1
+      `,
+      [ruleId]
+    );
+
+    for (const subtotalBand of subtotalBands) {
+      await client.query(
+        `
+          INSERT INTO "ShippingZoneRuleSubtotalBand" (
+            "shippingZoneRuleId",
+            "minSubtotal",
+            "maxSubtotal",
+            "methodType",
+            "value"
+          )
+          VALUES ($1, $2, $3, $4, $5)
+        `,
+        [
+          ruleId,
+          subtotalBand.minSubtotal,
+          subtotalBand.maxSubtotal,
+          subtotalBand.methodType,
+          subtotalBand.value
+        ]
+      );
+    }
+  }
+
+  private async findSubtotalBandsByRuleIds(
+    executor: Pool | PoolClient,
+    ruleIds: string[]
+  ): Promise<Map<string, ShippingSubtotalBandRecord[]>> {
+    const subtotalBandsByRuleId = new Map<string, ShippingSubtotalBandRecord[]>();
+
+    if (ruleIds.length === 0) {
+      return subtotalBandsByRuleId;
+    }
+
+    const result = await executor.query<ShippingZoneRuleSubtotalBandRow>(
+      `
+        SELECT
+          band."id",
+          band."shippingZoneRuleId",
+          band."minSubtotal",
+          band."maxSubtotal",
+          band."methodType",
+          band."value",
+          band."createdAt",
+          band."updatedAt"
+        FROM "ShippingZoneRuleSubtotalBand" band
+        WHERE band."shippingZoneRuleId" = ANY($1::text[])
+        ORDER BY band."minSubtotal" ASC, band."createdAt" ASC
+      `,
+      [ruleIds]
+    );
+
+    for (const row of result.rows) {
+      const subtotalBands = subtotalBandsByRuleId.get(row.shippingZoneRuleId) ?? [];
+
+      subtotalBands.push({
+        id: row.id,
+        minSubtotal: Number(row.minSubtotal),
+        maxSubtotal:
+          row.maxSubtotal === null ? null : Number(row.maxSubtotal),
+        methodType: row.methodType,
+        value: Number(row.value),
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt
+      });
+
+      subtotalBandsByRuleId.set(row.shippingZoneRuleId, subtotalBands);
+    }
+
+    return subtotalBandsByRuleId;
+  }
+
+  private mapRow(
+    row: ShippingZoneRuleRow,
+    subtotalBands: ShippingSubtotalBandRecord[]
+  ): ShippingZoneRuleDetailRecord {
     return {
       id: row.id,
       zoneId: row.zoneId,
@@ -243,7 +517,8 @@ export class PostgresShippingZoneRuleRepository
       status: row.status,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
-      zoneName: row.zoneName
+      zoneName: row.zoneName,
+      subtotalBands
     };
   }
 }

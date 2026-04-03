@@ -3,20 +3,24 @@ import type { Pool, PoolClient } from "pg";
 import databasePool from "../client";
 import type {
   CreatePlatformShippingZoneInput,
+  CreateVendorShippingZoneInput,
   ShippingZoneRepository,
   ShippingZoneStateInput,
   UpdatePlatformShippingZoneInput,
-  UpdatePlatformShippingZoneStatusInput
+  UpdatePlatformShippingZoneStatusInput,
+  UpdateVendorShippingZoneInput,
+  UpdateVendorShippingZoneStatusInput
 } from "../../../ports/shipping/shipping-zone-repository";
 import type {
+  ShippingOwnerType,
   ShippingZoneDetailRecord,
   ShippingZoneStatus
 } from "../../../ports/shipping/shipping-models";
 
 interface ShippingZoneRow {
   zoneId: string;
-  ownerType: "platform";
-  ownerId: null;
+  ownerType: ShippingOwnerType;
+  ownerId: string | null;
   zoneName: string;
   zoneStatus: ShippingZoneStatus;
   zoneCreatedAt: Date;
@@ -37,6 +41,94 @@ export class PostgresShippingZoneRepository implements ShippingZoneRepository {
   async createPlatform(
     input: CreatePlatformShippingZoneInput
   ): Promise<ShippingZoneDetailRecord> {
+    return this.createOwnedZone({
+      ownerType: "platform",
+      ownerId: null,
+      name: input.name,
+      states: input.states
+    });
+  }
+
+  async createVendor(
+    input: CreateVendorShippingZoneInput
+  ): Promise<ShippingZoneDetailRecord> {
+    return this.createOwnedZone({
+      ownerType: "vendor",
+      ownerId: input.ownerId,
+      name: input.name,
+      states: input.states
+    });
+  }
+
+  async findAllPlatform(): Promise<ShippingZoneDetailRecord[]> {
+    return this.findAllOwnedZones("platform", null);
+  }
+
+  async findAllVendor(ownerId: string): Promise<ShippingZoneDetailRecord[]> {
+    return this.findAllOwnedZones("vendor", ownerId);
+  }
+
+  async findPlatformById(
+    zoneId: string
+  ): Promise<ShippingZoneDetailRecord | null> {
+    return this.findOwnedZoneById("platform", null, zoneId);
+  }
+
+  async findVendorById(
+    ownerId: string,
+    zoneId: string
+  ): Promise<ShippingZoneDetailRecord | null> {
+    return this.findOwnedZoneById("vendor", ownerId, zoneId);
+  }
+
+  async findPlatformByName(
+    name: string
+  ): Promise<ShippingZoneDetailRecord | null> {
+    return this.findOwnedZoneByName("platform", null, name);
+  }
+
+  async findVendorByName(
+    ownerId: string,
+    name: string
+  ): Promise<ShippingZoneDetailRecord | null> {
+    return this.findOwnedZoneByName("vendor", ownerId, name);
+  }
+
+  async updatePlatform(
+    input: UpdatePlatformShippingZoneInput
+  ): Promise<ShippingZoneDetailRecord | null> {
+    return this.updateOwnedZone("platform", null, input);
+  }
+
+  async updateVendor(
+    input: UpdateVendorShippingZoneInput
+  ): Promise<ShippingZoneDetailRecord | null> {
+    return this.updateOwnedZone("vendor", input.ownerId, input);
+  }
+
+  async updatePlatformStatus(
+    input: UpdatePlatformShippingZoneStatusInput
+  ): Promise<ShippingZoneDetailRecord | null> {
+    return this.updateOwnedZoneStatus("platform", null, input.zoneId, input.status);
+  }
+
+  async updateVendorStatus(
+    input: UpdateVendorShippingZoneStatusInput
+  ): Promise<ShippingZoneDetailRecord | null> {
+    return this.updateOwnedZoneStatus(
+      "vendor",
+      input.ownerId,
+      input.zoneId,
+      input.status
+    );
+  }
+
+  private async createOwnedZone(input: {
+    ownerType: ShippingOwnerType;
+    ownerId: string | null;
+    name: string;
+    states: ShippingZoneStateInput[];
+  }): Promise<ShippingZoneDetailRecord> {
     const client = await this.pool.connect();
 
     try {
@@ -50,10 +142,10 @@ export class PostgresShippingZoneRepository implements ShippingZoneRepository {
             "name",
             "status"
           )
-          VALUES ('platform', NULL, $1, 'active')
+          VALUES ($1, $2, $3, 'active')
           RETURNING "id"
         `,
-        [input.name]
+        [input.ownerType, input.ownerId, input.name]
       );
 
       const zoneId = zoneResult.rows[0].id;
@@ -62,10 +154,14 @@ export class PostgresShippingZoneRepository implements ShippingZoneRepository {
 
       await client.query("COMMIT");
 
-      const zone = await this.findPlatformById(zoneId);
+      const zone = await this.findOwnedZoneById(
+        input.ownerType,
+        input.ownerId,
+        zoneId
+      );
 
       if (!zone) {
-        throw new Error("Platform shipping zone was created but could not be loaded.");
+        throw new Error("Shipping zone was created but could not be loaded.");
       }
 
       return zone;
@@ -77,7 +173,10 @@ export class PostgresShippingZoneRepository implements ShippingZoneRepository {
     }
   }
 
-  async findAllPlatform(): Promise<ShippingZoneDetailRecord[]> {
+  private async findAllOwnedZones(
+    ownerType: ShippingOwnerType,
+    ownerId: string | null
+  ): Promise<ShippingZoneDetailRecord[]> {
     const result = await this.pool.query<ShippingZoneRow>(
       `
         SELECT
@@ -97,19 +196,25 @@ export class PostgresShippingZoneRepository implements ShippingZoneRepository {
           ON zone_state."zoneId" = zone."id"
         LEFT JOIN "ShippingZoneCity" zone_city
           ON zone_city."zoneStateId" = zone_state."id"
-        WHERE zone."ownerType" = 'platform'
-          AND zone."ownerId" IS NULL
+        WHERE zone."ownerType" = $1
+          AND (
+            ($2::text IS NULL AND zone."ownerId" IS NULL)
+            OR zone."ownerId" = $2
+          )
         ORDER BY
           zone."name" ASC,
           zone_state."stateName" ASC NULLS LAST,
           zone_city."cityName" ASC NULLS LAST
-      `
+      `,
+      [ownerType, ownerId]
     );
 
     return this.mapZoneRows(result.rows);
   }
 
-  async findPlatformById(
+  private async findOwnedZoneById(
+    ownerType: ShippingOwnerType,
+    ownerId: string | null,
     zoneId: string
   ): Promise<ShippingZoneDetailRecord | null> {
     const result = await this.pool.query<ShippingZoneRow>(
@@ -131,32 +236,40 @@ export class PostgresShippingZoneRepository implements ShippingZoneRepository {
           ON zone_state."zoneId" = zone."id"
         LEFT JOIN "ShippingZoneCity" zone_city
           ON zone_city."zoneStateId" = zone_state."id"
-        WHERE zone."id" = $1
-          AND zone."ownerType" = 'platform'
-          AND zone."ownerId" IS NULL
+        WHERE zone."id" = $3
+          AND zone."ownerType" = $1
+          AND (
+            ($2::text IS NULL AND zone."ownerId" IS NULL)
+            OR zone."ownerId" = $2
+          )
         ORDER BY
           zone_state."stateName" ASC NULLS LAST,
           zone_city."cityName" ASC NULLS LAST
       `,
-      [zoneId]
+      [ownerType, ownerId, zoneId]
     );
 
     return this.mapZoneRows(result.rows)[0] ?? null;
   }
 
-  async findPlatformByName(
+  private async findOwnedZoneByName(
+    ownerType: ShippingOwnerType,
+    ownerId: string | null,
     name: string
   ): Promise<ShippingZoneDetailRecord | null> {
     const identityResult = await this.pool.query<ShippingZoneIdentityRow>(
       `
         SELECT "id"
         FROM "ShippingZone"
-        WHERE LOWER("name") = LOWER($1)
-          AND "ownerType" = 'platform'
-          AND "ownerId" IS NULL
+        WHERE LOWER("name") = LOWER($3)
+          AND "ownerType" = $1
+          AND (
+            ($2::text IS NULL AND "ownerId" IS NULL)
+            OR "ownerId" = $2
+          )
         LIMIT 1
       `,
-      [name]
+      [ownerType, ownerId, name]
     );
 
     const zoneId = identityResult.rows[0]?.id;
@@ -165,11 +278,15 @@ export class PostgresShippingZoneRepository implements ShippingZoneRepository {
       return null;
     }
 
-    return this.findPlatformById(zoneId);
+    return this.findOwnedZoneById(ownerType, ownerId, zoneId);
   }
 
-  async updatePlatform(
-    input: UpdatePlatformShippingZoneInput
+  private async updateOwnedZone(
+    ownerType: ShippingOwnerType,
+    ownerId: string | null,
+    input:
+      | UpdatePlatformShippingZoneInput
+      | UpdateVendorShippingZoneInput
   ): Promise<ShippingZoneDetailRecord | null> {
     const client = await this.pool.connect();
 
@@ -180,14 +297,17 @@ export class PostgresShippingZoneRepository implements ShippingZoneRepository {
         `
           UPDATE "ShippingZone"
           SET
-            "name" = COALESCE($2, "name"),
+            "name" = COALESCE($4, "name"),
             "updatedAt" = CURRENT_TIMESTAMP
-          WHERE "id" = $1
-            AND "ownerType" = 'platform'
-            AND "ownerId" IS NULL
+          WHERE "id" = $3
+            AND "ownerType" = $1
+            AND (
+              ($2::text IS NULL AND "ownerId" IS NULL)
+              OR "ownerId" = $2
+            )
           RETURNING "id"
         `,
-        [input.zoneId, input.name]
+        [ownerType, ownerId, input.zoneId, input.name]
       );
 
       const zoneId = updateResult.rows[0]?.id;
@@ -211,7 +331,7 @@ export class PostgresShippingZoneRepository implements ShippingZoneRepository {
 
       await client.query("COMMIT");
 
-      return this.findPlatformById(zoneId);
+      return this.findOwnedZoneById(ownerType, ownerId, zoneId);
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
@@ -220,30 +340,36 @@ export class PostgresShippingZoneRepository implements ShippingZoneRepository {
     }
   }
 
-  async updatePlatformStatus(
-    input: UpdatePlatformShippingZoneStatusInput
+  private async updateOwnedZoneStatus(
+    ownerType: ShippingOwnerType,
+    ownerId: string | null,
+    zoneId: string,
+    status: ShippingZoneStatus
   ): Promise<ShippingZoneDetailRecord | null> {
     const result = await this.pool.query<ShippingZoneIdentityRow>(
       `
         UPDATE "ShippingZone"
         SET
-          "status" = $2,
+          "status" = $4,
           "updatedAt" = CURRENT_TIMESTAMP
-        WHERE "id" = $1
-          AND "ownerType" = 'platform'
-          AND "ownerId" IS NULL
+        WHERE "id" = $3
+          AND "ownerType" = $1
+          AND (
+            ($2::text IS NULL AND "ownerId" IS NULL)
+            OR "ownerId" = $2
+          )
         RETURNING "id"
       `,
-      [input.zoneId, input.status]
+      [ownerType, ownerId, zoneId, status]
     );
 
-    const zoneId = result.rows[0]?.id;
+    const updatedZoneId = result.rows[0]?.id;
 
-    if (!zoneId) {
+    if (!updatedZoneId) {
       return null;
     }
 
-    return this.findPlatformById(zoneId);
+    return this.findOwnedZoneById(ownerType, ownerId, updatedZoneId);
   }
 
   private async replaceZoneCoverage(
