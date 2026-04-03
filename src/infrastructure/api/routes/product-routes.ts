@@ -10,6 +10,10 @@ import type { ListApprovedProductsByCategoryUseCase } from "../../../application
 import { ListApprovedProductsByCategoryError } from "../../../application/product/list-approved-products-by-category";
 import type { SearchApprovedProductSuggestionsUseCase } from "../../../application/product/search-approved-product-suggestions";
 import { SearchApprovedProductSuggestionsError } from "../../../application/product/search-approved-product-suggestions";
+import {
+  toPrimaryProductImageResponse,
+  toProductImageResponse
+} from "../responses/product-image-response";
 import { listCategoryProductsSchema } from "../validation/list-category-products-schema";
 import { listProductsSchema } from "../validation/list-products-schema";
 import { searchProductsSchema } from "../validation/search-products-schema";
@@ -74,13 +78,7 @@ export default function createProductRouter({
           condition: product.condition,
           weight_kg: product.weightKg,
           status: product.status,
-          images: product.images.map((image) => ({
-            id: image.id,
-            storage_path: image.storagePath,
-            mime_type: image.mimeType,
-            original_file_name: image.originalFileName,
-            position: image.position
-          }))
+          images: product.images.map((image) => toProductImageResponse(image))
         })),
         meta: {
           page: result.page,
@@ -142,13 +140,7 @@ export default function createProductRouter({
           condition: product.condition,
           weight_kg: product.weightKg,
           status: product.status,
-          images: product.images.map((image) => ({
-            id: image.id,
-            storage_path: image.storagePath,
-            mime_type: image.mimeType,
-            original_file_name: image.originalFileName,
-            position: image.position
-          }))
+          images: product.images.map((image) => toProductImageResponse(image))
         })),
         meta: {
           page: result.page,
@@ -210,13 +202,7 @@ export default function createProductRouter({
           condition: product.condition,
           weight_kg: product.weightKg,
           status: product.status,
-          images: product.images.map((image) => ({
-            id: image.id,
-            storage_path: image.storagePath,
-            mime_type: image.mimeType,
-            original_file_name: image.originalFileName,
-            position: image.position
-          }))
+          images: product.images.map((image) => toProductImageResponse(image))
         })),
         meta: {
           page: result.page,
@@ -265,6 +251,7 @@ export default function createProductRouter({
       return res.status(200).json({
         message: "Product suggestions fetched successfully.",
         data: products.map((product) => ({
+          ...toPrimaryProductImageResponse(product.images),
           id: product.id,
           category_id: product.categoryId,
           brand_id: product.brandId,
@@ -272,11 +259,7 @@ export default function createProductRouter({
           name: product.name,
           price: product.price,
           currency: product.currency,
-          condition: product.condition,
-          primary_image:
-            product.images.find((image) => image.position === 0)?.storagePath ??
-            product.images[0]?.storagePath ??
-            null
+          condition: product.condition
         }))
       });
     } catch (caughtError) {
@@ -316,13 +299,7 @@ export default function createProductRouter({
           condition: product.condition,
           weight_kg: product.weightKg,
           status: product.status,
-          images: product.images.map((image) => ({
-            id: image.id,
-            storage_path: image.storagePath,
-            mime_type: image.mimeType,
-            original_file_name: image.originalFileName,
-            position: image.position
-          })),
+          images: product.images.map((image) => toProductImageResponse(image)),
           created_at: product.createdAt.toISOString(),
           updated_at: product.updatedAt.toISOString()
         }

@@ -26,6 +26,7 @@ import type { RemoveProductFromWishlistUseCase } from "../../../application/buye
 import { RemoveProductFromWishlistError } from "../../../application/buyer/remove-product-from-wishlist";
 import type { RegisterBuyerUseCase } from "../../../application/buyer/register-buyer";
 import { RegisterBuyerError } from "../../../application/buyer/register-buyer";
+import { toProductImageResponse } from "../responses/product-image-response";
 import { addProductToCartSchema } from "../validation/add-product-to-cart-schema";
 import type { AuthenticatedUser } from "../middleware/create-auth-middleware";
 import { addBillingAddressSchema } from "../validation/add-billing-address-schema";
@@ -159,13 +160,9 @@ export function createProtectedBuyerWishlistRouter({
               weight_kg: item.product.weightKg,
               status: item.product.status,
               available_quantity: item.product.availableQuantity,
-              images: item.product.images.map((image) => ({
-                id: image.id,
-                storage_path: image.storagePath,
-                mime_type: image.mimeType,
-                original_file_name: image.originalFileName,
-                position: image.position
-              }))
+              images: item.product.images.map((image) =>
+                toProductImageResponse(image)
+              )
             },
             created_at: item.createdAt.toISOString(),
             updated_at: item.updatedAt.toISOString()
@@ -442,13 +439,9 @@ export function createProtectedBuyerCartRouter({
               weight_kg: item.product.weightKg,
               status: item.product.status,
               available_quantity: item.product.availableQuantity,
-              images: item.product.images.map((image) => ({
-                id: image.id,
-                storage_path: image.storagePath,
-                mime_type: image.mimeType,
-                original_file_name: image.originalFileName,
-                position: image.position
-              }))
+              images: item.product.images.map((image) =>
+                toProductImageResponse(image)
+              )
             },
             created_at: item.createdAt.toISOString(),
             updated_at: item.updatedAt.toISOString()

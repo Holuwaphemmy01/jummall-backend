@@ -2351,6 +2351,7 @@
                       {
                         "id": "image-id",
                         "storage_path": "products/seller-id/front.jpg",
+                        "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/front.jpg",
                         "mime_type": "image/jpeg",
                         "original_file_name": "front.jpg",
                         "position": 0,
@@ -2828,6 +2829,7 @@
                             {
                               "id": "image-id",
                               "storage_path": "products/seller-id/product-id/front.jpg",
+                              "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/product-id/front.jpg",
                               "mime_type": "image/jpeg",
                               "original_file_name": "front.jpg",
                               "position": 0
@@ -3200,6 +3202,7 @@
                             {
                               "id": "image-id",
                               "storage_path": "products/seller-id/product-id/front.jpg",
+                              "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/product-id/front.jpg",
                               "mime_type": "image/jpeg",
                               "original_file_name": "front.jpg",
                               "position": 0
@@ -3562,6 +3565,7 @@
                         {
                           "id": "image-id",
                           "storage_path": "products/seller-id/front.jpg",
+                          "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/front.jpg",
                           "mime_type": "image/jpeg",
                           "original_file_name": "front.jpg",
                           "position": 0
@@ -3648,6 +3652,7 @@
                         {
                           "id": "image-id",
                           "storage_path": "products/seller-id/front.jpg",
+                          "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/front.jpg",
                           "mime_type": "image/jpeg",
                           "original_file_name": "front.jpg",
                           "position": 0
@@ -3736,6 +3741,7 @@
                         {
                           "id": "image-id",
                           "storage_path": "products/seller-id/front.jpg",
+                          "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/front.jpg",
                           "mime_type": "image/jpeg",
                           "original_file_name": "front.jpg",
                           "position": 0
@@ -3804,12 +3810,13 @@
                     "weight_kg": 0.4,
                     "status": "approved",
                     "images": [
-                      {
-                        "id": "image-id",
-                        "storage_path": "products/seller-id/front.jpg",
-                        "mime_type": "image/jpeg",
-                        "original_file_name": "front.jpg",
-                        "position": 0
+                        {
+                          "id": "image-id",
+                          "storage_path": "products/seller-id/front.jpg",
+                          "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/front.jpg",
+                          "mime_type": "image/jpeg",
+                          "original_file_name": "front.jpg",
+                          "position": 0
                       }
                     ],
                     "created_at": "2026-03-29T00:00:00.000Z",
@@ -3873,7 +3880,8 @@
                       "price": 850000,
                       "currency": "NGN",
                       "condition": "new",
-                      "primary_image": "products/seller-id/front.jpg"
+                      "primary_image": "products/seller-id/front.jpg",
+                      "primary_image_public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/front.jpg"
                     },
                     {
                       "id": "product-id-2",
@@ -3884,7 +3892,8 @@
                       "price": 15000,
                       "currency": "NGN",
                       "condition": "new",
-                      "primary_image": "products/seller-id/charger.jpg"
+                      "primary_image": "products/seller-id/charger.jpg",
+                      "primary_image_public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/charger.jpg"
                     }
                   ]
                 }
@@ -4040,6 +4049,7 @@
                       {
                         "id": "image-id",
                         "storage_path": "products/seller-id/front.jpg",
+                        "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/front.jpg",
                         "mime_type": "image/jpeg",
                         "original_file_name": "front.jpg",
                         "position": 0,

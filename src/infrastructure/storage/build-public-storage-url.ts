@@ -28,3 +28,10 @@ export function buildProductBrandImagePublicUrl(storagePath: string) {
     storagePath
   );
 }
+
+export function buildProductImagePublicUrl(storagePath: string) {
+  return buildSupabasePublicObjectUrl(
+    process.env.SUPABASE_PRODUCT_IMAGE_BUCKET ?? "product-images",
+    storagePath
+  );
+}
