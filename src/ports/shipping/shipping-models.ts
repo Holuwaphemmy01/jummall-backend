@@ -25,6 +25,14 @@ export interface ShippingZoneCityRecord {
   cityName: string;
 }
 
+export interface ShippingZoneStateDetailRecord extends ShippingZoneStateRecord {
+  cities: ShippingZoneCityRecord[];
+}
+
+export interface ShippingZoneDetailRecord extends ShippingZoneRecord {
+  states: ShippingZoneStateDetailRecord[];
+}
+
 export interface ShippingZoneRuleRecord {
   id: string;
   zoneId: string;
@@ -37,6 +45,10 @@ export interface ShippingZoneRuleRecord {
   updatedAt: Date;
 }
 
+export interface ShippingZoneRuleDetailRecord extends ShippingZoneRuleRecord {
+  zoneName: string;
+}
+
 export interface CategoryShippingRuleRecord {
   id: string;
   categoryId: string;
@@ -47,4 +59,10 @@ export interface CategoryShippingRuleRecord {
   status: ShippingRuleStatus;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface CategoryShippingRuleDetailRecord
+  extends CategoryShippingRuleRecord
+{
+  categoryName: string;
 }
