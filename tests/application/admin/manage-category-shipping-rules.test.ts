@@ -29,6 +29,7 @@ class ProductCategoryRepositoryDouble implements ProductCategoryRepository {
       name: "Electronics",
       description: "Devices and gadgets",
       deductionPercentage: 12.5,
+      image: null,
       createdAt: new Date("2026-04-02T00:00:00.000Z"),
       updatedAt: new Date("2026-04-02T00:00:00.000Z")
     },
@@ -37,6 +38,7 @@ class ProductCategoryRepositoryDouble implements ProductCategoryRepository {
       name: "Furniture",
       description: "Home and office furniture",
       deductionPercentage: 10,
+      image: null,
       createdAt: new Date("2026-04-02T00:00:00.000Z"),
       updatedAt: new Date("2026-04-02T00:00:00.000Z")
     }

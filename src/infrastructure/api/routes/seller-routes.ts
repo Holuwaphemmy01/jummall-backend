@@ -351,6 +351,13 @@ export function createProtectedSellerCategoryRouter({
           name: category.name,
           description: category.description,
           deduction_percentage: category.deductionPercentage,
+          image: category.image
+            ? {
+                storage_path: category.image.storagePath,
+                mime_type: category.image.mimeType,
+                original_file_name: category.image.originalFileName
+              }
+            : null,
           created_at: category.createdAt.toISOString(),
           updated_at: category.updatedAt.toISOString()
         }))

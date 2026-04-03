@@ -1,5 +1,6 @@
 import type {
   DocumentStorage,
+  UploadProductCategoryImageInput,
   UploadProductImageInput,
   UploadSellerKycDocumentInput,
   UploadedDocument
@@ -13,7 +14,10 @@ export class SupabaseDocumentStorage implements DocumentStorage {
     private readonly sellerKycBucketName: string =
       process.env.SUPABASE_STORAGE_BUCKET ?? "seller-kyc-documents",
     private readonly productImageBucketName: string =
-      process.env.SUPABASE_PRODUCT_IMAGE_BUCKET ?? "product-images"
+      process.env.SUPABASE_PRODUCT_IMAGE_BUCKET ?? "product-images",
+    private readonly productCategoryImageBucketName: string =
+      process.env.SUPABASE_PRODUCT_CATEGORY_IMAGE_BUCKET ??
+      "product-category-images"
   ) {}
 
   async uploadSellerKycDocument(
@@ -90,6 +94,43 @@ export class SupabaseDocumentStorage implements DocumentStorage {
     };
   }
 
+  async uploadProductCategoryImage(
+    input: UploadProductCategoryImageInput
+  ): Promise<UploadedDocument> {
+    if (!this.supabaseUrl) {
+      throw new Error("SUPABASE_URL is not set.");
+    }
+
+    if (!this.serviceRoleKey) {
+      throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set.");
+    }
+
+    const storagePath = this.buildProductCategoryImageStoragePath(input);
+    const uploadUrl = `${this.supabaseUrl.replace(/\/$/, "")}/storage/v1/object/${this.productCategoryImageBucketName}/${storagePath}`;
+
+    const response = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {
+        apikey: this.serviceRoleKey,
+        Authorization: `Bearer ${this.serviceRoleKey}`,
+        "Content-Type": input.mimeType,
+        "x-upsert": "true"
+      },
+      body: new Uint8Array(input.fileContents)
+    });
+
+    if (!response.ok) {
+      const errorResponse = await response.text();
+      throw new Error(
+        `Unable to upload product category image to storage. ${errorResponse}`.trim()
+      );
+    }
+
+    return {
+      storagePath
+    };
+  }
+
   private buildStoragePath(input: UploadSellerKycDocumentInput): string {
     const sanitizedFileName = input.fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
 
@@ -107,6 +148,23 @@ export class SupabaseDocumentStorage implements DocumentStorage {
     return [
       "products",
       input.sellerId,
+      `${Date.now()}-${sanitizedFileName}`
+    ].join("/");
+  }
+
+  private buildProductCategoryImageStoragePath(
+    input: UploadProductCategoryImageInput
+  ): string {
+    const sanitizedCategoryName = input.categoryName
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "category";
+    const sanitizedFileName = input.fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
+
+    return [
+      "product-categories",
+      sanitizedCategoryName,
       `${Date.now()}-${sanitizedFileName}`
     ].join("/");
   }

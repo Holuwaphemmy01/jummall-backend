@@ -63,6 +63,7 @@ import { createShippingZoneRuleSchema } from "../validation/create-shipping-zone
 import { createShippingZoneSchema } from "../validation/create-shipping-zone-schema";
 import { ProductCategoryError } from "../../../application/admin/product-category-errors";
 import { approveSellerKycSchema } from "../validation/approve-seller-kyc-schema";
+import { parseBase64File } from "../files/parse-base64-file";
 import { createProductCategorySchema } from "../validation/create-product-category-schema";
 import { rejectProductPendingReviewSchema } from "../validation/reject-product-pending-review-schema";
 import { updateCategoryShippingRuleSchema } from "../validation/update-category-shipping-rule-schema";
@@ -1069,7 +1070,8 @@ export default function createAdminRouter({
       const category = await createProductCategory.execute({
         name: value.name,
         description: value.description,
-        deductionPercentage: value.deduction_percentage
+        deductionPercentage: value.deduction_percentage,
+        image: parseProductCategoryImageInput(value.image)
       });
 
       return res.status(201).json({
@@ -1149,7 +1151,8 @@ export default function createAdminRouter({
         categoryId: req.params.categoryId,
         name: value.name,
         description: value.description,
-        deductionPercentage: value.deduction_percentage
+        deductionPercentage: value.deduction_percentage,
+        image: value.image ? parseProductCategoryImageInput(value.image) : undefined
       });
 
       return res.status(200).json({
@@ -1441,6 +1444,11 @@ function thisCategoryResponse(category: {
   name: string;
   description: string;
   deductionPercentage: number;
+  image: {
+    storagePath: string;
+    mimeType: string;
+    originalFileName: string;
+  } | null;
   createdAt: Date;
   updatedAt: Date;
 }) {
@@ -1449,9 +1457,36 @@ function thisCategoryResponse(category: {
     name: category.name,
     description: category.description,
     deduction_percentage: category.deductionPercentage,
+    image: category.image
+      ? {
+          storage_path: category.image.storagePath,
+          mime_type: category.image.mimeType,
+          original_file_name: category.image.originalFileName
+        }
+      : null,
     created_at: category.createdAt.toISOString(),
     updated_at: category.updatedAt.toISOString()
   };
+}
+
+function parseProductCategoryImageInput(image: {
+  file_name: string;
+  mime_type: string;
+  file_base64: string;
+}) {
+  try {
+    return {
+      fileName: image.file_name,
+      mimeType: image.mime_type,
+      fileContents: parseBase64File(image.file_base64)
+    };
+  } catch {
+    throw new ProductCategoryError(
+      "Invalid product category image content.",
+      400,
+      "image.file_base64"
+    );
+  }
 }
 
 function thisBrandResponse(brand: {

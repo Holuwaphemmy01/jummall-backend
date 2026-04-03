@@ -1,8 +1,15 @@
+export interface ProductCategoryImageRecord {
+  storagePath: string;
+  mimeType: string;
+  originalFileName: string;
+}
+
 export interface ProductCategoryRecord {
   id: string;
   name: string;
   description: string;
   deductionPercentage: number;
+  image: ProductCategoryImageRecord | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -11,6 +18,7 @@ export interface CreateProductCategoryInput {
   name: string;
   description: string;
   deductionPercentage: number;
+  image?: ProductCategoryImageRecord | null;
 }
 
 export interface UpdateProductCategoryInput {
@@ -18,6 +26,7 @@ export interface UpdateProductCategoryInput {
   name?: string;
   description?: string;
   deductionPercentage?: number;
+  image?: ProductCategoryImageRecord;
 }
 
 export interface ProductCategoryRepository {

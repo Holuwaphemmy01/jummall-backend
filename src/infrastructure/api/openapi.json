@@ -392,6 +392,11 @@
                     "name": "Electronics",
                     "description": "Phones, gadgets, and accessories",
                     "deduction_percentage": 12.5,
+                    "image": {
+                      "storage_path": "product-categories/electronics/1712140800000-electronics.jpg",
+                      "mime_type": "image/jpeg",
+                      "original_file_name": "electronics.jpg"
+                    },
                     "created_at": "2026-03-29T00:00:00.000Z",
                     "updated_at": "2026-03-29T00:00:00.000Z"
                   }
@@ -434,6 +439,11 @@
                       "name": "Electronics",
                       "description": "Phones, gadgets, and accessories",
                       "deduction_percentage": 12.5,
+                      "image": {
+                        "storage_path": "product-categories/electronics/1712140800000-electronics.jpg",
+                        "mime_type": "image/jpeg",
+                        "original_file_name": "electronics.jpg"
+                      },
                       "created_at": "2026-03-29T00:00:00.000Z",
                       "updated_at": "2026-03-29T00:00:00.000Z"
                     }
@@ -2121,6 +2131,11 @@
                     "name": "Electronics",
                     "description": "Phones, gadgets, and accessories",
                     "deduction_percentage": 12.5,
+                    "image": {
+                      "storage_path": "product-categories/electronics/1712140800000-electronics.jpg",
+                      "mime_type": "image/jpeg",
+                      "original_file_name": "electronics.jpg"
+                    },
                     "created_at": "2026-03-29T00:00:00.000Z",
                     "updated_at": "2026-03-29T00:00:00.000Z"
                   }
@@ -2179,6 +2194,11 @@
                     "name": "Electronics",
                     "description": "Updated category description",
                     "deduction_percentage": 15,
+                    "image": {
+                      "storage_path": "product-categories/electronics/1712144400000-electronics-banner.png",
+                      "mime_type": "image/png",
+                      "original_file_name": "electronics-banner.png"
+                    },
                     "created_at": "2026-03-29T00:00:00.000Z",
                     "updated_at": "2026-03-29T01:00:00.000Z"
                   }
@@ -4139,6 +4159,11 @@
                       "name": "Electronics",
                       "description": "Phones, gadgets, and accessories",
                       "deduction_percentage": 12.5,
+                      "image": {
+                        "storage_path": "product-categories/electronics/1712140800000-electronics.jpg",
+                        "mime_type": "image/jpeg",
+                        "original_file_name": "electronics.jpg"
+                      },
                       "created_at": "2026-03-29T00:00:00.000Z",
                       "updated_at": "2026-03-29T00:00:00.000Z"
                     }
@@ -5635,7 +5660,7 @@
       },
       "CreateProductCategoryRequest": {
         "type": "object",
-        "required": ["name", "description", "deduction_percentage"],
+        "required": ["name", "description", "deduction_percentage", "image"],
         "properties": {
           "name": {
             "type": "string",
@@ -5648,6 +5673,9 @@
           "deduction_percentage": {
             "type": "number",
             "example": 12.5
+          },
+          "image": {
+            "$ref": "#/components/schemas/ProductCategoryImageUploadRequest"
           }
         }
       },
@@ -5679,6 +5707,46 @@
           "deduction_percentage": {
             "type": "number",
             "example": 15
+          },
+          "image": {
+            "$ref": "#/components/schemas/ProductCategoryImageUploadRequest"
+          }
+        }
+      },
+      "ProductCategoryImageUploadRequest": {
+        "type": "object",
+        "required": ["file_name", "mime_type", "file_base64"],
+        "properties": {
+          "file_name": {
+            "type": "string",
+            "example": "electronics.jpg"
+          },
+          "mime_type": {
+            "type": "string",
+            "enum": ["image/jpeg", "image/png", "image/webp"],
+            "example": "image/jpeg"
+          },
+          "file_base64": {
+            "type": "string",
+            "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."
+          }
+        }
+      },
+      "ProductCategoryImageResponse": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "storage_path": {
+            "type": "string",
+            "example": "product-categories/electronics/1712140800000-electronics.jpg"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "image/jpeg"
+          },
+          "original_file_name": {
+            "type": "string",
+            "example": "electronics.jpg"
           }
         }
       },

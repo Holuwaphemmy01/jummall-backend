@@ -24,7 +24,8 @@ describe("SupabaseDocumentStorage", () => {
       "https://example.supabase.co",
       "service-role-key",
       "seller-kyc-documents",
-      "product-images"
+      "product-images",
+      "product-category-images"
     );
 
     const result = await storage.uploadSellerKycDocument({
@@ -54,7 +55,8 @@ describe("SupabaseDocumentStorage", () => {
       "https://example.supabase.co",
       "service-role-key",
       "seller-kyc-documents",
-      "product-images"
+      "product-images",
+      "product-category-images"
     );
 
     const result = await storage.uploadProductImage({
@@ -77,5 +79,36 @@ describe("SupabaseDocumentStorage", () => {
     );
     expect(result.storagePath).toContain("products/seller-id/");
     expect(result.storagePath).toContain("front.jpg");
+  });
+
+  it("uploads product category images to the configured category image bucket", async () => {
+    const storage = new SupabaseDocumentStorage(
+      "https://example.supabase.co",
+      "service-role-key",
+      "seller-kyc-documents",
+      "product-images",
+      "product-category-images"
+    );
+
+    const result = await storage.uploadProductCategoryImage({
+      categoryName: "Electronics",
+      fileName: "electronics.jpg",
+      mimeType: "image/jpeg",
+      fileContents: Buffer.from("category-image")
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "/storage/v1/object/product-category-images/product-categories/electronics/"
+      ),
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          "Content-Type": "image/jpeg"
+        })
+      })
+    );
+    expect(result.storagePath).toContain("product-categories/electronics/");
+    expect(result.storagePath).toContain("electronics.jpg");
   });
 });
