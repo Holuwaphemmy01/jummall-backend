@@ -17,6 +17,8 @@ import type {
 import type {
   CreatePlatformShippingZoneInput,
   CreateVendorShippingZoneInput,
+  FindMatchingPlatformShippingZonesInput,
+  FindMatchingVendorShippingZonesInput,
   ShippingZoneRepository,
   UpdatePlatformShippingZoneInput,
   UpdatePlatformShippingZoneStatusInput,
@@ -84,6 +86,18 @@ class ShippingZoneRepositoryDouble implements ShippingZoneRepository {
 
   async findAllVendor(ownerId: string): Promise<ShippingZoneDetailRecord[]> {
     return this.zones.filter((zone) => zone.ownerId === ownerId);
+  }
+
+  async findMatchingActivePlatform(
+    _input: FindMatchingPlatformShippingZonesInput
+  ): Promise<ShippingZoneDetailRecord[]> {
+    return [];
+  }
+
+  async findMatchingActiveVendor(
+    input: FindMatchingVendorShippingZonesInput
+  ): Promise<ShippingZoneDetailRecord[]> {
+    return this.zones.filter((zone) => zone.ownerId === input.ownerId);
   }
 
   async findPlatformById(): Promise<ShippingZoneDetailRecord | null> {

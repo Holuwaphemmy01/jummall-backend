@@ -131,6 +131,32 @@ export class PostgresFreeShippingRuleRepository
     return row ? this.mapRow(row) : null;
   }
 
+  async findActiveByCouponCode(
+    couponCode: string
+  ): Promise<FreeShippingRuleRecord | null> {
+    const result = await this.pool.query<FreeShippingRuleRow>(
+      `
+        SELECT
+          "id",
+          "name",
+          "type",
+          "couponCode",
+          "minimumOrderSubtotal",
+          "status",
+          "createdAt",
+          "updatedAt"
+        FROM "FreeShippingRule"
+        WHERE LOWER("couponCode") = LOWER($1)
+          AND "status" = 'active'
+        LIMIT 1
+      `,
+      [couponCode]
+    );
+
+    const row = result.rows[0];
+    return row ? this.mapRow(row) : null;
+  }
+
   async findActiveThresholdRule(): Promise<FreeShippingRuleRecord | null> {
     const result = await this.pool.query<FreeShippingRuleRow>(
       `

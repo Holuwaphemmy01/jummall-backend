@@ -14,6 +14,10 @@ import type {
 } from "../../../src/ports/shipping/shipping-models";
 import type { ShippingZoneRepository } from "../../../src/ports/shipping/shipping-zone-repository";
 import type {
+  FindMatchingPlatformShippingZonesInput,
+  FindMatchingVendorShippingZonesInput
+} from "../../../src/ports/shipping/shipping-zone-repository";
+import type {
   CreatePlatformShippingZoneRuleInput,
   CreateVendorShippingZoneRuleInput,
   ShippingZoneRuleRepository,
@@ -39,6 +43,18 @@ class ShippingZoneRepositoryDouble implements ShippingZoneRepository {
   }
 
   findAllVendor(): Promise<ShippingZoneDetailRecord[]> {
+    return Promise.resolve([]);
+  }
+
+  findMatchingActivePlatform(
+    _input: FindMatchingPlatformShippingZonesInput
+  ): Promise<ShippingZoneDetailRecord[]> {
+    return Promise.resolve([]);
+  }
+
+  findMatchingActiveVendor(
+    _input: FindMatchingVendorShippingZonesInput
+  ): Promise<ShippingZoneDetailRecord[]> {
     return Promise.resolve([]);
   }
 
