@@ -10,6 +10,7 @@ import type {
 } from "../../../src/ports/authentication-repository";
 import type {
   DocumentStorage,
+  UploadProductBrandImageInput,
   UploadProductCategoryImageInput,
   UploadProductImageInput as StorageUploadProductImageInput,
   UploadSellerKycDocumentInput,
@@ -157,6 +158,7 @@ class ProductBrandRepositoryDouble implements ProductBrandRepository {
       id: "brand-id",
       name: "Apple",
       description: "Consumer electronics brand",
+      image: null,
       createdAt: new Date("2026-03-28T00:00:00.000Z"),
       updatedAt: new Date("2026-03-28T00:00:00.000Z")
     });
@@ -228,6 +230,9 @@ class DocumentStorageDouble implements DocumentStorage {
 
   uploadProductCategoryImage = jest
     .fn<(input: UploadProductCategoryImageInput) => Promise<UploadedDocument>>();
+
+  uploadProductBrandImage = jest
+    .fn<(input: UploadProductBrandImageInput) => Promise<UploadedDocument>>();
 }
 
 class ProductSkuGeneratorDouble implements ProductSkuGenerator {

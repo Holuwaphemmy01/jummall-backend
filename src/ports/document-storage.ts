@@ -22,6 +22,13 @@ export interface UploadProductCategoryImageInput {
   fileContents: Buffer;
 }
 
+export interface UploadProductBrandImageInput {
+  brandName: string;
+  fileName: string;
+  mimeType: string;
+  fileContents: Buffer;
+}
+
 export interface UploadedDocument {
   storagePath: string;
 }
@@ -33,5 +40,8 @@ export interface DocumentStorage {
   uploadProductImage(input: UploadProductImageInput): Promise<UploadedDocument>;
   uploadProductCategoryImage(
     input: UploadProductCategoryImageInput
+  ): Promise<UploadedDocument>;
+  uploadProductBrandImage(
+    input: UploadProductBrandImageInput
   ): Promise<UploadedDocument>;
 }
