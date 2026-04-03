@@ -2,6 +2,8 @@ export type ShippingOwnerType = "platform" | "vendor";
 export type ShippingZoneStatus = "active" | "inactive";
 export type ShippingRuleStatus = "active" | "inactive";
 export type ShippingMethodType = "fixed_rate" | "percentage_based";
+export type FreeShippingRuleType = "coupon" | "threshold";
+export type FreeShippingRuleStatus = "active" | "inactive";
 
 export interface ShippingSubtotalBandInput {
   minSubtotal: number;
@@ -80,4 +82,15 @@ export interface CategoryShippingRuleDetailRecord
 {
   categoryName: string;
   subtotalBands: ShippingSubtotalBandRecord[];
+}
+
+export interface FreeShippingRuleRecord {
+  id: string;
+  name: string;
+  type: FreeShippingRuleType;
+  couponCode: string | null;
+  minimumOrderSubtotal: number | null;
+  status: FreeShippingRuleStatus;
+  createdAt: Date;
+  updatedAt: Date;
 }

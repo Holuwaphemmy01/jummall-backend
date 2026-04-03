@@ -9,11 +9,13 @@ import {
   type ApproveSellerKycUseCase
 } from "../../../application/admin/approve-seller-kyc";
 import type { CreateCategoryShippingRuleUseCase } from "../../../application/admin/create-category-shipping-rule";
+import type { CreateFreeShippingRuleUseCase } from "../../../application/admin/create-free-shipping-rule";
 import type { CreateProductBrandUseCase } from "../../../application/admin/create-product-brand";
 import type { CreateProductCategoryUseCase } from "../../../application/admin/create-product-category";
 import type { CreateShippingZoneUseCase } from "../../../application/admin/create-shipping-zone";
 import type { CreateShippingZoneRuleUseCase } from "../../../application/admin/create-shipping-zone-rule";
 import type { GetCategoryShippingRuleUseCase } from "../../../application/admin/get-category-shipping-rule";
+import type { GetFreeShippingRuleUseCase } from "../../../application/admin/get-free-shipping-rule";
 import type { GetProductBrandUseCase } from "../../../application/admin/get-product-brand";
 import {
   GetProductPendingReviewDetailError,
@@ -29,6 +31,7 @@ import {
 } from "../../../application/admin/get-completed-seller-kyc";
 import type { ListCategoryShippingRulesUseCase } from "../../../application/admin/list-category-shipping-rules";
 import type { ListCompletedSellerKycUseCase } from "../../../application/admin/list-completed-seller-kyc";
+import type { ListFreeShippingRulesUseCase } from "../../../application/admin/list-free-shipping-rules";
 import type { ListProductBrandsUseCase } from "../../../application/admin/list-product-brands";
 import type { ListProductsPendingReviewUseCase } from "../../../application/admin/list-products-pending-review";
 import type { ListProductCategoriesUseCase } from "../../../application/admin/list-product-categories";
@@ -42,9 +45,11 @@ import { ShippingConfigurationError } from "../../../application/admin/shipping-
 import { ShippingSettingsError } from "../../../application/admin/shipping-settings-error";
 import { ProductBrandError } from "../../../application/admin/product-brand-errors";
 import type { SetCategoryShippingRuleStatusUseCase } from "../../../application/admin/set-category-shipping-rule-status";
+import type { SetFreeShippingRuleStatusUseCase } from "../../../application/admin/set-free-shipping-rule-status";
 import type { SetShippingZoneRuleStatusUseCase } from "../../../application/admin/set-shipping-zone-rule-status";
 import type { SetShippingZoneStatusUseCase } from "../../../application/admin/set-shipping-zone-status";
 import type { UpdateCategoryShippingRuleUseCase } from "../../../application/admin/update-category-shipping-rule";
+import type { UpdateFreeShippingRuleUseCase } from "../../../application/admin/update-free-shipping-rule";
 import type { UpdateProductBrandUseCase } from "../../../application/admin/update-product-brand";
 import type { UpdateProductCategoryUseCase } from "../../../application/admin/update-product-category";
 import type { UpdateShippingZoneUseCase } from "../../../application/admin/update-shipping-zone";
@@ -52,6 +57,7 @@ import type { UpdateShippingZoneRuleUseCase } from "../../../application/admin/u
 import type { UpdateShippingSettingsUseCase } from "../../../application/admin/update-shipping-settings";
 import { approveProductPendingReviewSchema } from "../validation/approve-product-pending-review-schema";
 import { createCategoryShippingRuleSchema } from "../validation/create-category-shipping-rule-schema";
+import { createFreeShippingRuleSchema } from "../validation/create-free-shipping-rule-schema";
 import { createProductBrandSchema } from "../validation/create-product-brand-schema";
 import { createShippingZoneRuleSchema } from "../validation/create-shipping-zone-rule-schema";
 import { createShippingZoneSchema } from "../validation/create-shipping-zone-schema";
@@ -60,6 +66,7 @@ import { approveSellerKycSchema } from "../validation/approve-seller-kyc-schema"
 import { createProductCategorySchema } from "../validation/create-product-category-schema";
 import { rejectProductPendingReviewSchema } from "../validation/reject-product-pending-review-schema";
 import { updateCategoryShippingRuleSchema } from "../validation/update-category-shipping-rule-schema";
+import { updateFreeShippingRuleSchema } from "../validation/update-free-shipping-rule-schema";
 import { updateShippingSettingsSchema } from "../validation/update-shipping-settings-schema";
 import { updateProductBrandSchema } from "../validation/update-product-brand-schema";
 import { updateProductCategorySchema } from "../validation/update-product-category-schema";
@@ -70,16 +77,19 @@ interface AdminRouterDependencies {
   approveProductPendingReview: ApproveProductPendingReviewUseCase;
   approveSellerKyc: ApproveSellerKycUseCase;
   createCategoryShippingRule: CreateCategoryShippingRuleUseCase;
+  createFreeShippingRule: CreateFreeShippingRuleUseCase;
   createProductBrand: CreateProductBrandUseCase;
   createProductCategory: CreateProductCategoryUseCase;
   createShippingZone: CreateShippingZoneUseCase;
   createShippingZoneRule: CreateShippingZoneRuleUseCase;
   getCategoryShippingRule: GetCategoryShippingRuleUseCase;
+  getFreeShippingRule: GetFreeShippingRuleUseCase;
   getProductBrand: GetProductBrandUseCase;
   getProductPendingReviewDetail: GetProductPendingReviewDetailUseCase;
   getShippingZone: GetShippingZoneUseCase;
   getShippingZoneRule: GetShippingZoneRuleUseCase;
   listCompletedSellerKyc: ListCompletedSellerKycUseCase;
+  listFreeShippingRules: ListFreeShippingRulesUseCase;
   listCategoryShippingRules: ListCategoryShippingRulesUseCase;
   listProductBrands: ListProductBrandsUseCase;
   listProductsPendingReview: ListProductsPendingReviewUseCase;
@@ -88,9 +98,11 @@ interface AdminRouterDependencies {
   listShippingZones: ListShippingZonesUseCase;
   rejectProductPendingReview: RejectProductPendingReviewUseCase;
   setCategoryShippingRuleStatus: SetCategoryShippingRuleStatusUseCase;
+  setFreeShippingRuleStatus: SetFreeShippingRuleStatusUseCase;
   setShippingZoneRuleStatus: SetShippingZoneRuleStatusUseCase;
   setShippingZoneStatus: SetShippingZoneStatusUseCase;
   updateCategoryShippingRule: UpdateCategoryShippingRuleUseCase;
+  updateFreeShippingRule: UpdateFreeShippingRuleUseCase;
   getCompletedSellerKyc: GetCompletedSellerKycUseCase;
   getProductCategory: GetProductCategoryUseCase;
   getShippingSettings: GetShippingSettingsUseCase;
@@ -105,16 +117,19 @@ export default function createAdminRouter({
   approveProductPendingReview,
   approveSellerKyc,
   createCategoryShippingRule,
+  createFreeShippingRule,
   createProductBrand,
   createProductCategory,
   createShippingZone,
   createShippingZoneRule,
   getCategoryShippingRule,
+  getFreeShippingRule,
   getProductBrand,
   getProductPendingReviewDetail,
   getShippingZone,
   getShippingZoneRule,
   listCompletedSellerKyc,
+  listFreeShippingRules,
   listCategoryShippingRules,
   listProductBrands,
   listProductsPendingReview,
@@ -123,9 +138,11 @@ export default function createAdminRouter({
   listShippingZones,
   rejectProductPendingReview,
   setCategoryShippingRuleStatus,
+  setFreeShippingRuleStatus,
   setShippingZoneRuleStatus,
   setShippingZoneStatus,
   updateCategoryShippingRule,
+  updateFreeShippingRule,
   getCompletedSellerKyc,
   getProductCategory,
   getShippingSettings,
@@ -199,6 +216,173 @@ export default function createAdminRouter({
       });
     }
   });
+
+  adminRouter.post("/shipping/free-shipping-rules", async (req, res) => {
+    const { error, value } = createFreeShippingRuleSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return validationFailure(res, error);
+    }
+
+    try {
+      const rule = await createFreeShippingRule.execute({
+        name: value.name,
+        type: value.type,
+        couponCode: value.coupon_code,
+        minimumOrderSubtotal: value.minimum_order_subtotal
+      });
+
+      return res.status(201).json({
+        message: "Free shipping rule created successfully.",
+        data: thisFreeShippingRuleResponse(rule)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ShippingConfigurationError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to create free shipping rule."
+      });
+    }
+  });
+
+  adminRouter.get("/shipping/free-shipping-rules", async (_req, res) => {
+    try {
+      const rules = await listFreeShippingRules.execute();
+
+      return res.status(200).json({
+        message: "Free shipping rules fetched successfully.",
+        data: rules.map((rule) => thisFreeShippingRuleResponse(rule))
+      });
+    } catch {
+      return res.status(500).json({
+        message: "Unable to fetch free shipping rules."
+      });
+    }
+  });
+
+  adminRouter.get("/shipping/free-shipping-rules/:ruleId", async (req, res) => {
+    try {
+      const rule = await getFreeShippingRule.execute({
+        ruleId: req.params.ruleId
+      });
+
+      return res.status(200).json({
+        message: "Free shipping rule fetched successfully.",
+        data: thisFreeShippingRuleResponse(rule)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ShippingConfigurationError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch free shipping rule."
+      });
+    }
+  });
+
+  adminRouter.patch("/shipping/free-shipping-rules/:ruleId", async (req, res) => {
+    const { error, value } = updateFreeShippingRuleSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return validationFailure(res, error);
+    }
+
+    try {
+      const rule = await updateFreeShippingRule.execute({
+        ruleId: req.params.ruleId,
+        name: value.name,
+        type: value.type,
+        couponCode: value.coupon_code,
+        minimumOrderSubtotal: value.minimum_order_subtotal
+      });
+
+      return res.status(200).json({
+        message: "Free shipping rule updated successfully.",
+        data: thisFreeShippingRuleResponse(rule)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ShippingConfigurationError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to update free shipping rule."
+      });
+    }
+  });
+
+  adminRouter.post(
+    "/shipping/free-shipping-rules/:ruleId/activate",
+    async (req, res) => {
+      try {
+        const rule = await setFreeShippingRuleStatus.execute({
+          ruleId: req.params.ruleId,
+          status: "active"
+        });
+
+        return res.status(200).json({
+          message: "Free shipping rule activated successfully.",
+          data: thisFreeShippingRuleResponse(rule)
+        });
+      } catch (caughtError) {
+        if (caughtError instanceof ShippingConfigurationError) {
+          return res.status(caughtError.statusCode).json({
+            message: caughtError.message,
+            field: caughtError.field
+          });
+        }
+
+        return res.status(500).json({
+          message: "Unable to activate free shipping rule."
+        });
+      }
+    }
+  );
+
+  adminRouter.post(
+    "/shipping/free-shipping-rules/:ruleId/deactivate",
+    async (req, res) => {
+      try {
+        const rule = await setFreeShippingRuleStatus.execute({
+          ruleId: req.params.ruleId,
+          status: "inactive"
+        });
+
+        return res.status(200).json({
+          message: "Free shipping rule deactivated successfully.",
+          data: thisFreeShippingRuleResponse(rule)
+        });
+      } catch (caughtError) {
+        if (caughtError instanceof ShippingConfigurationError) {
+          return res.status(caughtError.statusCode).json({
+            message: caughtError.message,
+            field: caughtError.field
+          });
+        }
+
+        return res.status(500).json({
+          message: "Unable to deactivate free shipping rule."
+        });
+      }
+    }
+  );
 
   adminRouter.post("/shipping/zones", async (req, res) => {
     const { error, value } = createShippingZoneSchema.validate(req.body, {
@@ -1301,6 +1485,28 @@ function thisShippingSettingsResponse(settings: {
     vendor_fallback_policy: settings.vendorFallbackPolicy,
     created_at: settings.createdAt.toISOString(),
     updated_at: settings.updatedAt.toISOString()
+  };
+}
+
+function thisFreeShippingRuleResponse(rule: {
+  id: string;
+  name: string;
+  type: string;
+  couponCode: string | null;
+  minimumOrderSubtotal: number | null;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: rule.id,
+    name: rule.name,
+    type: rule.type,
+    coupon_code: rule.couponCode,
+    minimum_order_subtotal: rule.minimumOrderSubtotal,
+    status: rule.status,
+    created_at: rule.createdAt.toISOString(),
+    updated_at: rule.updatedAt.toISOString()
   };
 }
 
