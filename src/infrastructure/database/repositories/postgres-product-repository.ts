@@ -14,6 +14,7 @@ interface ProductRow {
   id: string;
   sellerId: string;
   categoryId: string;
+  categoryName: string | null;
   brandId: string | null;
   brandName: string | null;
   name: string;
@@ -80,6 +81,7 @@ export class PostgresProductRepository implements ProductRepository {
           p."id",
           p."sellerId",
           p."categoryId",
+          pc."name" AS "categoryName",
           p."brandId",
           pb."name" AS "brandName",
           p."name",
@@ -96,6 +98,7 @@ export class PostgresProductRepository implements ProductRepository {
           p."createdAt",
           p."updatedAt"
         FROM "Product" p
+        INNER JOIN "ProductCategory" pc ON pc."id" = p."categoryId"
         LEFT JOIN "ProductBrand" pb ON pb."id" = p."brandId"
         WHERE p."id" = $1
         LIMIT 1
@@ -121,6 +124,7 @@ export class PostgresProductRepository implements ProductRepository {
           p."id",
           p."sellerId",
           p."categoryId",
+          pc."name" AS "categoryName",
           p."brandId",
           pb."name" AS "brandName",
           p."name",
@@ -137,6 +141,7 @@ export class PostgresProductRepository implements ProductRepository {
           p."createdAt",
           p."updatedAt"
         FROM "Product" p
+        INNER JOIN "ProductCategory" pc ON pc."id" = p."categoryId"
         LEFT JOIN "ProductBrand" pb ON pb."id" = p."brandId"
         WHERE p."sellerId" = $1
         ORDER BY p."createdAt" DESC
@@ -158,6 +163,7 @@ export class PostgresProductRepository implements ProductRepository {
           p."id",
           p."sellerId",
           p."categoryId",
+          pc."name" AS "categoryName",
           p."brandId",
           pb."name" AS "brandName",
           p."name",
@@ -174,6 +180,7 @@ export class PostgresProductRepository implements ProductRepository {
           p."createdAt",
           p."updatedAt"
         FROM "Product" p
+        INNER JOIN "ProductCategory" pc ON pc."id" = p."categoryId"
         LEFT JOIN "ProductBrand" pb ON pb."id" = p."brandId"
         WHERE p."status" = 'pending_review'
         ORDER BY p."createdAt" ASC
@@ -203,6 +210,7 @@ export class PostgresProductRepository implements ProductRepository {
           "id",
           "sellerId",
           "categoryId",
+          NULL::TEXT AS "categoryName",
           "brandId",
           NULL::TEXT AS "brandName",
           "name",
@@ -368,6 +376,7 @@ export class PostgresProductRepository implements ProductRepository {
       id: product.id,
       sellerId: product.sellerId,
       categoryId: product.categoryId,
+      categoryName: product.categoryName,
       brandId: product.brandId,
       brandName: product.brandName,
       name: product.name,

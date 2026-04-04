@@ -2273,6 +2273,7 @@
                       "id": "product-id",
                       "seller_id": "seller-id",
                       "category_id": "category-id",
+                      "category_name": "Electronics",
                       "brand_id": "brand-id",
                       "brand_name": "Apple",
                       "name": "iPhone 13",
