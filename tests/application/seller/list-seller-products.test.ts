@@ -20,6 +20,7 @@ function makeProduct(overrides: Partial<ProductRecord> = {}): ProductRecord {
     id: "product-id",
     sellerId: "seller-id",
     categoryId: "category-id",
+    categoryName: "Electronics",
     brandId: "brand-id",
     brandName: "Apple",
     name: "iPhone 13",

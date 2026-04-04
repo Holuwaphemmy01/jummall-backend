@@ -15,6 +15,7 @@ export interface ProductRecord {
   id: string;
   sellerId: string;
   categoryId: string;
+  categoryName?: string | null;
   brandId: string | null;
   brandName: string | null;
   name: string;

@@ -262,6 +262,7 @@ export function createProtectedSellerProductListRouter({
           id: product.id,
           seller_id: product.sellerId,
           category_id: product.categoryId,
+          category_name: product.categoryName,
           brand_id: product.brandId,
           brand_name: product.brandName,
           name: product.name,
