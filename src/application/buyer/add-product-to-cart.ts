@@ -4,7 +4,9 @@ import type {
   CartRecord,
   CartRepository
 } from "../../ports/cart-repository";
+import type { CheckoutSessionRepository } from "../../ports/checkout-session-repository";
 import type { ProductRepository } from "../../ports/product-repository";
+import { ensureNoOpenCheckoutSession } from "../checkout/ensure-no-open-checkout-session";
 
 export interface AddProductToCartInput {
   buyerId: string;
@@ -39,7 +41,8 @@ export class AddProductToCart implements AddProductToCartUseCase {
   constructor(
     private readonly authenticationRepository: AuthenticationRepository,
     private readonly productRepository: ProductRepository,
-    private readonly cartRepository: CartRepository
+    private readonly cartRepository: CartRepository,
+    private readonly checkoutSessionRepository?: CheckoutSessionRepository
   ) {}
 
   async execute(input: AddProductToCartInput): Promise<AddProductToCartResult> {
@@ -54,6 +57,14 @@ export class AddProductToCart implements AddProductToCartUseCase {
         "Only buyers can add products to cart.",
         403,
         "buyer_id"
+      );
+    }
+
+    if (this.checkoutSessionRepository) {
+      await ensureNoOpenCheckoutSession(
+        this.checkoutSessionRepository,
+        input.buyerId,
+        (message, field) => new AddProductToCartError(message, 409, field)
       );
     }
 

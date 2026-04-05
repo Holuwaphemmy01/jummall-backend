@@ -3012,6 +3012,273 @@
         }
       }
     },
+    "/buyers/cart/order-summary": {
+      "post": {
+        "tags": ["buyer-cart"],
+        "summary": "Generate buyer order summary",
+        "description": "Builds the checkout review payload for the authenticated buyer using the active cart, a saved billing address, and the current shipping rules. This endpoint is review-only: it does not initialize payment, lock the cart, or create an order.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CalculateCartShippingPreviewRequest"
+              },
+              "example": {
+                "billing_address_id": "billing-address-id",
+                "discounted_subtotal": 58000,
+                "free_shipping_coupon_code": "FREESHIP"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order summary generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuyerOrderSummaryResponse"
+                },
+                "example": {
+                  "message": "Order summary generated successfully.",
+                  "data": {
+                    "cart_id": "cart-id",
+                    "billing_address": {
+                      "id": "billing-address-id",
+                      "full_name": "Buyer One",
+                      "phone_number": "08000000000",
+                      "address_line_1": "12 Allen Avenue",
+                      "address_line_2": null,
+                      "city": "Ikeja",
+                      "state": "Lagos",
+                      "country": "Nigeria",
+                      "postal_code": null
+                    },
+                    "items": [
+                      {
+                        "cart_item_id": "cart-item-id",
+                        "product_id": "product-id",
+                        "seller_id": "seller-id",
+                        "category_id": "category-id",
+                        "category_name": "Electronics",
+                        "brand_id": "brand-id",
+                        "brand_name": "Apple",
+                        "name": "Wireless Headset",
+                        "description": "Noise-cancelling wireless headset",
+                        "sku": "HEADSET-001",
+                        "quantity": 2,
+                        "unit_price": 30000,
+                        "line_subtotal": 60000,
+                        "currency": "NGN",
+                        "condition": "new",
+                        "weight_kg": 0.4,
+                        "images": [
+                          {
+                            "id": "image-id",
+                            "storage_path": "products/seller-id/product-id/front.jpg",
+                            "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/product-id/front.jpg",
+                            "mime_type": "image/jpeg",
+                            "original_file_name": "front.jpg",
+                            "position": 0
+                          }
+                        ]
+                      }
+                    ],
+                    "currency": "NGN",
+                    "total_items": 2,
+                    "raw_subtotal": 60000,
+                    "discounted_subtotal": 58000,
+                    "shipping_mode": "VENDOR",
+                    "category_shipping_mode": "ADDITIVE",
+                    "base_shipping_fee": 4500,
+                    "final_shipping_fee": 0,
+                    "total_payable": 58000,
+                    "free_shipping": {
+                      "applied": true,
+                      "rule_id": "free-shipping-rule-id",
+                      "rule_type": "coupon",
+                      "coupon_code": "FREESHIP"
+                    },
+                    "shipping_breakdown": [
+                      {
+                        "seller_id": "seller-id",
+                        "rule_owner_type": "vendor",
+                        "final_shipping_owner_type": "platform",
+                        "used_fallback": false,
+                        "matched_zone": {
+                          "id": "zone-id",
+                          "name": "Lagos Urban",
+                          "match_type": "city"
+                        },
+                        "zone_fee": 2500,
+                        "category_fee": 1500,
+                        "base_shipping_fee": 2500,
+                        "final_shipping_fee": 0
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or free-shipping coupon is invalid"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer account, billing address, active cart, or product not found"
+          },
+          "409": {
+            "description": "Cart is empty, product stock is insufficient, or currencies are mixed"
+          }
+        }
+      }
+    },
+    "/buyers/cart/checkout/initialize": {
+      "post": {
+        "tags": ["buyer-cart"],
+        "summary": "Initialize buyer checkout payment",
+        "description": "Creates a checkout session for the authenticated buyer, locks later cart mutations, initializes Paystack payment, and returns the payment authorization payload plus the full order summary snapshot.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CalculateCartShippingPreviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Checkout initialized successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InitializeCheckoutResponse"
+                },
+                "example": {
+                  "message": "Checkout initialized successfully.",
+                  "data": {
+                    "checkout_reference": "chk_1743859023000_abcdef123456",
+                    "authorization_url": "https://checkout.paystack.com/abc123",
+                    "access_code": "access-code",
+                    "cart_id": "cart-id",
+                    "billing_address": {
+                      "id": "billing-address-id",
+                      "full_name": "Buyer One",
+                      "phone_number": "08000000000",
+                      "address_line_1": "12 Allen Avenue",
+                      "address_line_2": null,
+                      "city": "Ikeja",
+                      "state": "Lagos",
+                      "country": "Nigeria",
+                      "postal_code": null
+                    },
+                    "items": [],
+                    "currency": "NGN",
+                    "total_items": 2,
+                    "raw_subtotal": 60000,
+                    "discounted_subtotal": 58000,
+                    "shipping_mode": "VENDOR",
+                    "category_shipping_mode": "ADDITIVE",
+                    "base_shipping_fee": 4500,
+                    "final_shipping_fee": 0,
+                    "total_payable": 58000,
+                    "free_shipping": {
+                      "applied": true,
+                      "rule_id": "free-shipping-rule-id",
+                      "rule_type": "coupon",
+                      "coupon_code": "FREESHIP"
+                    },
+                    "shipping_breakdown": []
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or free-shipping coupon is invalid"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer account, billing address, active cart, or product not found"
+          },
+          "409": {
+            "description": "Checkout session is already open, cart is empty, product stock is insufficient, or currencies are mixed"
+          },
+          "502": {
+            "description": "Payment initialization failed"
+          }
+        }
+      }
+    },
+    "/buyers/cart/checkout/{reference}": {
+      "get": {
+        "tags": ["buyer-cart"],
+        "summary": "Get buyer checkout status",
+        "description": "Returns the status of a checkout session for the authenticated buyer. If payment already succeeded but webhook processing is delayed, the backend may verify and finalize the checkout before returning the response.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "reference",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Checkout status fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCheckoutStatusResponse"
+                },
+                "example": {
+                  "message": "Checkout status fetched successfully.",
+                  "data": {
+                    "checkout_reference": "chk_1743859023000_abcdef123456",
+                    "status": "completed",
+                    "payment_provider": "paystack",
+                    "payment_reference": "chk_1743859023000_abcdef123456",
+                    "order_id": "order-id",
+                    "failure_reason": null
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Checkout session not found"
+          },
+          "409": {
+            "description": "Payment verification failed or checkout finalization failed"
+          }
+        }
+      }
+    },
     "/buyers/cart/clear-cart": {
       "delete": {
         "tags": ["buyer-cart"],
@@ -4178,6 +4445,37 @@
           },
           "403": {
             "description": "Seller access required"
+          }
+        }
+      }
+    },
+    "/payments/paystack/webhook": {
+      "post": {
+        "tags": ["payments"],
+        "summary": "Handle Paystack payment webhook",
+        "description": "Public webhook endpoint for Paystack charge success events. The backend validates the webhook signature, verifies the payment directly with Paystack, and finalizes checkout by creating the order once the payment is confirmed.",
+        "responses": {
+          "200": {
+            "description": "Webhook processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaystackWebhookResponse"
+                },
+                "example": {
+                  "message": "Webhook processed successfully.",
+                  "data": {
+                    "processed": true,
+                    "ignored": false,
+                    "checkout_reference": "chk_1743859023000_abcdef123456",
+                    "order_id": "order-id"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid webhook signature"
           }
         }
       }
@@ -5466,6 +5764,10 @@
       "description": "Buyer billing address endpoints for saving checkout addresses."
     },
     {
+      "name": "payments",
+      "description": "Payment provider webhook endpoints."
+    },
+    {
       "name": "product-catalog",
       "description": "Public marketplace product discovery endpoints."
     },
@@ -6468,6 +6770,103 @@
           "final_shipping_fee": {
             "type": "number",
             "example": 0
+          }
+        }
+      },
+      "BuyerOrderSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Order summary generated successfully."
+          },
+          "data": {
+            "type": "object"
+          }
+        }
+      },
+      "InitializeCheckoutResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Checkout initialized successfully."
+          },
+          "data": {
+            "type": "object"
+          }
+        }
+      },
+      "GetCheckoutStatusResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Checkout status fetched successfully."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "checkout_reference": {
+                "type": "string",
+                "example": "chk_1743859023000_abcdef123456"
+              },
+              "status": {
+                "type": "string",
+                "enum": ["initialized", "completed", "failed"],
+                "example": "completed"
+              },
+              "payment_provider": {
+                "type": "string",
+                "example": "paystack"
+              },
+              "payment_reference": {
+                "type": "string",
+                "example": "chk_1743859023000_abcdef123456"
+              },
+              "order_id": {
+                "type": "string",
+                "nullable": true,
+                "example": "order-id"
+              },
+              "failure_reason": {
+                "type": "string",
+                "nullable": true,
+                "example": null
+              }
+            }
+          }
+        }
+      },
+      "PaystackWebhookResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Webhook processed successfully."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "processed": {
+                "type": "boolean",
+                "example": true
+              },
+              "ignored": {
+                "type": "boolean",
+                "example": false
+              },
+              "checkout_reference": {
+                "type": "string",
+                "nullable": true,
+                "example": "chk_1743859023000_abcdef123456"
+              },
+              "order_id": {
+                "type": "string",
+                "nullable": true,
+                "example": "order-id"
+              }
+            }
           }
         }
       },

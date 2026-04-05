@@ -1,5 +1,7 @@
 import type { AuthenticationRepository } from "../../ports/authentication-repository";
 import type { CartItemRecord, CartRepository } from "../../ports/cart-repository";
+import type { CheckoutSessionRepository } from "../../ports/checkout-session-repository";
+import { ensureNoOpenCheckoutSession } from "../checkout/ensure-no-open-checkout-session";
 
 export interface RemoveProductFromCartInput {
   buyerId: string;
@@ -24,7 +26,8 @@ export class RemoveProductFromCartError extends Error {
 export class RemoveProductFromCart implements RemoveProductFromCartUseCase {
   constructor(
     private readonly authenticationRepository: AuthenticationRepository,
-    private readonly cartRepository: CartRepository
+    private readonly cartRepository: CartRepository,
+    private readonly checkoutSessionRepository?: CheckoutSessionRepository
   ) {}
 
   async execute(input: RemoveProductFromCartInput): Promise<CartItemRecord> {
@@ -43,6 +46,14 @@ export class RemoveProductFromCart implements RemoveProductFromCartUseCase {
         "Only buyers can remove products from cart.",
         403,
         "buyer_id"
+      );
+    }
+
+    if (this.checkoutSessionRepository) {
+      await ensureNoOpenCheckoutSession(
+        this.checkoutSessionRepository,
+        input.buyerId,
+        (message, field) => new RemoveProductFromCartError(message, 409, field)
       );
     }
 

@@ -16,6 +16,12 @@ import type { UpdateProductQuantityInCartUseCase } from "../../../application/bu
 import { UpdateProductQuantityInCartError } from "../../../application/buyer/update-product-quantity-in-cart";
 import type { AddProductToWishlistUseCase } from "../../../application/buyer/add-product-to-wishlist";
 import { AddProductToWishlistError } from "../../../application/buyer/add-product-to-wishlist";
+import type { GetCheckoutStatusUseCase } from "../../../application/checkout/get-checkout-status";
+import { GetCheckoutStatusError } from "../../../application/checkout/get-checkout-status";
+import type { GetOrderSummaryUseCase } from "../../../application/checkout/get-order-summary";
+import { GetOrderSummaryError } from "../../../application/checkout/get-order-summary";
+import type { InitializeCheckoutUseCase } from "../../../application/checkout/initialize-checkout";
+import { InitializeCheckoutError } from "../../../application/checkout/initialize-checkout";
 import type { DeleteBillingAddressUseCase } from "../../../application/buyer/delete-billing-address";
 import { DeleteBillingAddressError } from "../../../application/buyer/delete-billing-address";
 import type { GetBillingAddressesUseCase } from "../../../application/buyer/get-billing-addresses";
@@ -56,8 +62,79 @@ interface BuyerCartRouterDependencies {
   getActiveCart: GetActiveCartUseCase;
   addProductToCart: AddProductToCartUseCase;
   calculateCartShipping: CalculateCartShippingUseCase;
+  getOrderSummary?: GetOrderSummaryUseCase;
+  initializeCheckout?: InitializeCheckoutUseCase;
+  getCheckoutStatus?: GetCheckoutStatusUseCase;
   removeProductFromCart: RemoveProductFromCartUseCase;
   updateProductQuantityInCart: UpdateProductQuantityInCartUseCase;
+}
+
+function toCheckoutSummaryResponse(
+  summary: Awaited<ReturnType<GetOrderSummaryUseCase["execute"]>>["summary"]
+) {
+  return {
+    cart_id: summary.cartId,
+    billing_address: {
+      id: summary.billingAddress.id,
+      full_name: summary.billingAddress.fullName,
+      phone_number: summary.billingAddress.phoneNumber,
+      address_line_1: summary.billingAddress.addressLine1,
+      address_line_2: summary.billingAddress.addressLine2,
+      city: summary.billingAddress.city,
+      state: summary.billingAddress.state,
+      country: summary.billingAddress.country,
+      postal_code: summary.billingAddress.postalCode
+    },
+    items: summary.items.map((item) => ({
+      cart_item_id: item.cartItemId,
+      product_id: item.productId,
+      seller_id: item.sellerId,
+      category_id: item.categoryId,
+      category_name: item.categoryName,
+      brand_id: item.brandId,
+      brand_name: item.brandName,
+      name: item.name,
+      description: item.description,
+      sku: item.sku,
+      quantity: item.quantity,
+      unit_price: item.unitPrice,
+      line_subtotal: item.lineSubtotal,
+      currency: item.currency,
+      condition: item.condition,
+      weight_kg: item.weightKg,
+      images: item.images.map((image) => toProductImageResponse(image))
+    })),
+    currency: summary.currency,
+    total_items: summary.totalItems,
+    raw_subtotal: summary.rawSubtotal,
+    discounted_subtotal: summary.discountedSubtotal,
+    shipping_mode: summary.shippingMode,
+    category_shipping_mode: summary.categoryShippingMode,
+    base_shipping_fee: summary.baseShippingFee,
+    final_shipping_fee: summary.finalShippingFee,
+    total_payable: summary.totalPayable,
+    free_shipping: {
+      applied: summary.freeShipping.applied,
+      rule_id: summary.freeShipping.ruleId,
+      rule_type: summary.freeShipping.ruleType,
+      coupon_code: summary.freeShipping.couponCode
+    },
+    shipping_breakdown: summary.shippingBreakdown.map((segment) => ({
+      seller_id: segment.sellerId,
+      rule_owner_type: segment.ruleOwnerType,
+      final_shipping_owner_type: segment.finalShippingOwnerType,
+      used_fallback: segment.usedFallback,
+      matched_zone: {
+        id: segment.matchedZone.id,
+        name: segment.matchedZone.name,
+        match_type: segment.matchedZone.matchType
+      },
+      zone_fee: segment.zoneFee,
+      category_fee: segment.categoryFee,
+      base_shipping_fee: segment.baseShippingFee,
+      final_shipping_fee: segment.finalShippingFee
+    }))
+  };
 }
 
 export default function createBuyerRouter({
@@ -402,6 +479,9 @@ export function createProtectedBuyerCartRouter({
   getActiveCart,
   addProductToCart,
   calculateCartShipping,
+  getOrderSummary,
+  initializeCheckout,
+  getCheckoutStatus,
   removeProductFromCart,
   updateProductQuantityInCart
 }: BuyerCartRouterDependencies) {
@@ -596,6 +676,133 @@ export function createProtectedBuyerCartRouter({
 
       return res.status(500).json({
         message: "Unable to calculate shipping preview."
+      });
+    }
+  });
+
+  buyerCartRouter.post("/order-summary", async (req, res) => {
+    const { error, value } = calculateCartShippingSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      const result = await getOrderSummary!.execute({
+        buyerId: authUser.sub,
+        billingAddressId: value.billing_address_id,
+        discountedSubtotal: value.discounted_subtotal,
+        freeShippingCouponCode: value.free_shipping_coupon_code ?? undefined
+      });
+
+      return res.status(200).json({
+        message: "Order summary generated successfully.",
+        data: toCheckoutSummaryResponse(result.summary)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof GetOrderSummaryError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to generate order summary."
+      });
+    }
+  });
+
+  buyerCartRouter.post("/checkout/initialize", async (req, res) => {
+    const { error, value } = calculateCartShippingSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      const result = await initializeCheckout!.execute({
+        buyerId: authUser.sub,
+        billingAddressId: value.billing_address_id,
+        discountedSubtotal: value.discounted_subtotal,
+        freeShippingCouponCode: value.free_shipping_coupon_code ?? undefined
+      });
+
+      return res.status(200).json({
+        message: "Checkout initialized successfully.",
+        data: {
+          checkout_reference: result.checkoutReference,
+          authorization_url: result.authorizationUrl,
+          access_code: result.accessCode,
+          ...toCheckoutSummaryResponse(result.summary)
+        }
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof InitializeCheckoutError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to initialize checkout."
+      });
+    }
+  });
+
+  buyerCartRouter.get("/checkout/:reference", async (req, res) => {
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      const result = await getCheckoutStatus!.execute({
+        buyerId: authUser.sub,
+        reference: req.params.reference
+      });
+
+      return res.status(200).json({
+        message: "Checkout status fetched successfully.",
+        data: {
+          checkout_reference: result.checkoutReference,
+          status: result.status,
+          payment_provider: result.paymentProvider,
+          payment_reference: result.paymentReference,
+          order_id: result.orderId,
+          failure_reason: result.failureReason
+        }
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof GetCheckoutStatusError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch checkout status."
       });
     }
   });

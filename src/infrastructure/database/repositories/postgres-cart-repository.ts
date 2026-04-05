@@ -27,8 +27,10 @@ interface CartItemRow {
   updatedAt: Date;
 }
 
+type Queryable = Pick<Pool, "query">;
+
 export class PostgresCartRepository implements CartRepository {
-  constructor(private readonly pool: Pool = databasePool) {}
+  constructor(private readonly pool: Queryable = databasePool) {}
 
   async findActiveByBuyerId(buyerId: string): Promise<CartRecord | null> {
     const result = await this.pool.query<CartRow>(

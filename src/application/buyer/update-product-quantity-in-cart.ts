@@ -4,7 +4,9 @@ import type {
   CartRecord,
   CartRepository
 } from "../../ports/cart-repository";
+import type { CheckoutSessionRepository } from "../../ports/checkout-session-repository";
 import type { ProductRepository } from "../../ports/product-repository";
+import { ensureNoOpenCheckoutSession } from "../checkout/ensure-no-open-checkout-session";
 
 export interface UpdateProductQuantityInCartInput {
   buyerId: string;
@@ -43,7 +45,8 @@ export class UpdateProductQuantityInCart
   constructor(
     private readonly authenticationRepository: AuthenticationRepository,
     private readonly productRepository: ProductRepository,
-    private readonly cartRepository: CartRepository
+    private readonly cartRepository: CartRepository,
+    private readonly checkoutSessionRepository?: CheckoutSessionRepository
   ) {}
 
   async execute(
@@ -64,6 +67,15 @@ export class UpdateProductQuantityInCart
         "Only buyers can update cart quantities.",
         403,
         "buyer_id"
+      );
+    }
+
+    if (this.checkoutSessionRepository) {
+      await ensureNoOpenCheckoutSession(
+        this.checkoutSessionRepository,
+        input.buyerId,
+        (message, field) =>
+          new UpdateProductQuantityInCartError(message, 409, field)
       );
     }
 
