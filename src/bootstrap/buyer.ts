@@ -1,6 +1,11 @@
 import { AddProductToCart } from "../application/buyer/add-product-to-cart";
 import { AddBillingAddress } from "../application/buyer/add-billing-address";
 import { AddProductToWishlist } from "../application/buyer/add-product-to-wishlist";
+import { CompleteCheckoutAfterPayment } from "../application/checkout/complete-checkout-after-payment";
+import { GetCheckoutStatus } from "../application/checkout/get-checkout-status";
+import { GetOrderSummary } from "../application/checkout/get-order-summary";
+import { InitializeCheckout } from "../application/checkout/initialize-checkout";
+import { PrepareCheckoutData } from "../application/checkout/prepare-checkout-data";
 import { CalculateCartShipping } from "../application/shipping/calculate-cart-shipping";
 import { ClearBuyerCart } from "../application/buyer/clear-buyer-cart";
 import { DeleteBillingAddress } from "../application/buyer/delete-billing-address";
@@ -24,14 +29,18 @@ import { PostgresBillingAddressRepository } from "../infrastructure/database/rep
 import { PostgresCategoryShippingRuleRepository } from "../infrastructure/database/repositories/postgres-category-shipping-rule-repository";
 import { PostgresBuyerRepository } from "../infrastructure/database/repositories/postgres-buyer-repository";
 import { PostgresCartRepository } from "../infrastructure/database/repositories/postgres-cart-repository";
+import { PostgresCheckoutSessionRepository } from "../infrastructure/database/repositories/postgres-checkout-session-repository";
+import { PostgresCheckoutTransactionRunner } from "../infrastructure/database/repositories/postgres-checkout-transaction-runner";
 import { PostgresEmailVerificationRepository } from "../infrastructure/database/repositories/postgres-email-verification-repository";
 import { PostgresFreeShippingRuleRepository } from "../infrastructure/database/repositories/postgres-free-shipping-rule-repository";
+import { PostgresOrderRepository } from "../infrastructure/database/repositories/postgres-order-repository";
 import { PostgresProductRepository } from "../infrastructure/database/repositories/postgres-product-repository";
 import { PostgresShippingSettingsRepository } from "../infrastructure/database/repositories/postgres-shipping-settings-repository";
 import { PostgresShippingZoneRepository } from "../infrastructure/database/repositories/postgres-shipping-zone-repository";
 import { PostgresShippingZoneRuleRepository } from "../infrastructure/database/repositories/postgres-shipping-zone-rule-repository";
 import { PostgresWishlistRepository } from "../infrastructure/database/repositories/postgres-wishlist-repository";
 import { createMailProvider } from "../infrastructure/notification/create-mail-provider";
+import { PaystackPaymentProvider } from "../infrastructure/payment/paystack-payment-provider";
 import { JwtTokenVerifier } from "../infrastructure/security/jwt-token-verifier";
 import { NumericVerificationCodeGenerator } from "../infrastructure/security/numeric-verification-code-generator";
 import { ScryptPasswordHasher } from "../infrastructure/security/scrypt-password-hasher";
@@ -43,6 +52,8 @@ export function createBuyerModule() {
   const billingAddressRepository = new PostgresBillingAddressRepository();
   const buyerRepository = new PostgresBuyerRepository();
   const cartRepository = new PostgresCartRepository();
+  const checkoutSessionRepository = new PostgresCheckoutSessionRepository();
+  const checkoutTransactionRunner = new PostgresCheckoutTransactionRunner();
   const categoryShippingRuleRepository = new PostgresCategoryShippingRuleRepository();
   const emailVerificationRepository = new PostgresEmailVerificationRepository();
   const freeShippingRuleRepository = new PostgresFreeShippingRuleRepository();
@@ -54,6 +65,7 @@ export function createBuyerModule() {
   const passwordHasher = new ScryptPasswordHasher();
   const verificationCodeGenerator = new NumericVerificationCodeGenerator();
   const mailProvider = createMailProvider();
+  const paymentProvider = new PaystackPaymentProvider();
   const tokenVerifier = new JwtTokenVerifier();
   const sendWelcomeEmail = new SendWelcomeEmail(mailProvider);
   const initiateEmailVerification = new InitiateEmailVerification(
@@ -93,11 +105,13 @@ export function createBuyerModule() {
   const addProductToCart = new AddProductToCart(
     authenticationRepository,
     productRepository,
-    cartRepository
+    cartRepository,
+    checkoutSessionRepository
   );
   const clearBuyerCart = new ClearBuyerCart(
     authenticationRepository,
-    cartRepository
+    cartRepository,
+    checkoutSessionRepository
   );
   const getActiveCart = new GetActiveCart(
     authenticationRepository,
@@ -117,12 +131,37 @@ export function createBuyerModule() {
   );
   const removeProductFromCart = new RemoveProductFromCart(
     authenticationRepository,
-    cartRepository
+    cartRepository,
+    checkoutSessionRepository
   );
   const updateProductQuantityInCart = new UpdateProductQuantityInCart(
     authenticationRepository,
     productRepository,
-    cartRepository
+    cartRepository,
+    checkoutSessionRepository
+  );
+  const prepareCheckoutData = new PrepareCheckoutData(
+    authenticationRepository,
+    billingAddressRepository,
+    cartRepository,
+    productRepository,
+    calculateCartShipping
+  );
+  const getOrderSummary = new GetOrderSummary(prepareCheckoutData);
+  const initializeCheckout = new InitializeCheckout(
+    prepareCheckoutData,
+    checkoutSessionRepository,
+    paymentProvider
+  );
+  const completeCheckoutAfterPayment = new CompleteCheckoutAfterPayment(
+    checkoutSessionRepository,
+    checkoutTransactionRunner
+  );
+  const getCheckoutStatus = new GetCheckoutStatus(
+    authenticationRepository,
+    checkoutSessionRepository,
+    paymentProvider,
+    completeCheckoutAfterPayment
   );
   const removeProductFromWishlist = new RemoveProductFromWishlist(
     authenticationRepository,
@@ -148,6 +187,9 @@ export function createBuyerModule() {
       getActiveCart,
       addProductToCart,
       calculateCartShipping,
+      getOrderSummary,
+      initializeCheckout,
+      getCheckoutStatus,
       removeProductFromCart,
       updateProductQuantityInCart
     })

@@ -4,6 +4,7 @@ import openapi from "../infrastructure/api/openapi.json";
 import { createAdminModule } from "./admin";
 import { createAuthModule } from "./auth";
 import { createBuyerModule } from "./buyer";
+import { createPaymentModule } from "./payment";
 import { createProductModule } from "./product";
 import { createSellerModule } from "./seller";
 import { createUserModule } from "./user";
@@ -11,7 +12,13 @@ import { createUserModule } from "./user";
 const app = express();
 
 app.set("trust proxy", true);
-app.use(express.json());
+app.use(
+  express.json({
+    verify: (req, _res, buffer) => {
+      (req as typeof req & { rawBody?: string }).rawBody = buffer.toString();
+    }
+  })
+);
 
 app.get("/openapi.json", (req, res) => {
   const serverUrl = `${req.protocol}://${req.get("host")}`;
@@ -34,6 +41,7 @@ app.get("/health", (_req, res) => {
 app.use("/admin", createAdminModule());
 app.use("/auth", createAuthModule());
 app.use("/buyers", createBuyerModule());
+app.use("/payments", createPaymentModule());
 app.use("/products", createProductModule());
 app.use("/sellers", createSellerModule());
 app.use("/users", createUserModule());

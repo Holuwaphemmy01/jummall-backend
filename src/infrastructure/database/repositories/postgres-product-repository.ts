@@ -43,10 +43,16 @@ interface ProductImageRow {
   updatedAt: Date;
 }
 
+type Queryable = Pool | Pick<Pool, "query">;
+
 export class PostgresProductRepository implements ProductRepository {
-  constructor(private readonly pool: Pool = databasePool) {}
+  constructor(private readonly pool: Queryable = databasePool) {}
 
   async create(input: CreateProductInput): Promise<ProductRecord> {
+    if (!("connect" in this.pool)) {
+      throw new Error("Product creation requires a connection pool.");
+    }
+
     const client = await this.pool.connect();
 
     try {

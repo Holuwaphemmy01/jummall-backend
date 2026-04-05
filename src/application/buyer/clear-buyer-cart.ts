@@ -1,5 +1,7 @@
 import type { AuthenticationRepository } from "../../ports/authentication-repository";
 import type { CartRepository, CartStatus } from "../../ports/cart-repository";
+import type { CheckoutSessionRepository } from "../../ports/checkout-session-repository";
+import { ensureNoOpenCheckoutSession } from "../checkout/ensure-no-open-checkout-session";
 
 export interface ClearBuyerCartInput {
   buyerId: string;
@@ -29,7 +31,8 @@ export class ClearBuyerCartError extends Error {
 export class ClearBuyerCart implements ClearBuyerCartUseCase {
   constructor(
     private readonly authenticationRepository: AuthenticationRepository,
-    private readonly cartRepository: CartRepository
+    private readonly cartRepository: CartRepository,
+    private readonly checkoutSessionRepository?: CheckoutSessionRepository
   ) {}
 
   async execute(input: ClearBuyerCartInput): Promise<ClearBuyerCartResult> {
@@ -44,6 +47,14 @@ export class ClearBuyerCart implements ClearBuyerCartUseCase {
         "Only buyers can clear cart.",
         403,
         "buyer_id"
+      );
+    }
+
+    if (this.checkoutSessionRepository) {
+      await ensureNoOpenCheckoutSession(
+        this.checkoutSessionRepository,
+        input.buyerId,
+        (message, field) => new ClearBuyerCartError(message, 409, field)
       );
     }
 
