@@ -129,9 +129,7 @@ describe("buyer cart shipping preview route", () => {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        discounted_subtotal: -1
-      })
+      body: JSON.stringify({})
     });
     const body = await response.json();
 
@@ -141,9 +139,6 @@ describe("buyer cart shipping preview route", () => {
       errors: expect.arrayContaining([
         expect.objectContaining({
           field: "billing_address_id"
-        }),
-        expect.objectContaining({
-          field: "discounted_subtotal"
         })
       ])
     });
@@ -166,7 +161,6 @@ describe("buyer cart shipping preview route", () => {
       },
       body: JSON.stringify({
         billing_address_id: "billing-address-id",
-        discounted_subtotal: 58000,
         free_shipping_coupon_code: "FREESHIP"
       })
     });
@@ -176,7 +170,6 @@ describe("buyer cart shipping preview route", () => {
     expect(calculateCartShipping.execute).toHaveBeenCalledWith({
       buyerId: "buyer-id",
       billingAddressId: "billing-address-id",
-      discountedSubtotal: 58000,
       freeShippingCouponCode: "FREESHIP"
     });
     expect(body).toEqual({
@@ -239,7 +232,6 @@ describe("buyer cart shipping preview route", () => {
       },
       body: JSON.stringify({
         billing_address_id: "billing-address-id",
-        discounted_subtotal: 58000,
         free_shipping_coupon_code: "BADCODE"
       })
     });

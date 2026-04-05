@@ -14,7 +14,9 @@
   "paths": {
     "/health": {
       "get": {
-        "tags": ["system"],
+        "tags": [
+          "system"
+        ],
         "summary": "Health check",
         "responses": {
           "200": {
@@ -40,7 +42,9 @@
     },
     "/auth/login": {
       "post": {
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "summary": "Login any user role",
         "description": "Authenticates a buyer, seller, or admin and returns an access token plus a revocable refresh token. If the credentials are valid but the account is still not verified, the request is rejected and a verification code is re-sent to the user's email.",
         "requestBody": {
@@ -100,7 +104,9 @@
     },
     "/auth/refresh-token": {
       "post": {
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "summary": "Refresh an authenticated session",
         "description": "Exchanges a valid refresh token for a new access token and a rotated refresh token. Frontend should replace both tokens with the returned pair.",
         "requestBody": {
@@ -154,7 +160,9 @@
     },
     "/auth/forgot-password": {
       "post": {
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "summary": "Initiate password reset",
         "description": "Starts the forgot-password flow. This endpoint intentionally returns a generic success response even when the email does not exist, so frontend should not expect account-existence feedback here.",
         "requestBody": {
@@ -197,7 +205,9 @@
     },
     "/auth/verify-email": {
       "post": {
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "summary": "Verify a user's email with a code",
         "description": "Confirms the verification code sent to the user's email and updates the user account status to `verified`.",
         "requestBody": {
@@ -242,7 +252,9 @@
     },
     "/auth/resend-verification-email": {
       "post": {
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "summary": "Resend a verification email",
         "description": "Re-issues an email verification code when the resend cooldown has passed. Any previously active verification code is invalidated.",
         "requestBody": {
@@ -289,7 +301,9 @@
     },
     "/auth/reset-password": {
       "post": {
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "summary": "Reset password with a code",
         "description": "Completes the password reset flow using the reset code sent by email.",
         "requestBody": {
@@ -332,10 +346,16 @@
     },
     "/auth/logout": {
       "post": {
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "summary": "Logout the current session",
         "description": "Revokes the current authenticated session so the current refresh token can no longer be used. Frontend should still clear any locally stored tokens after this call.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Logout successful",
@@ -363,10 +383,16 @@
     },
     "/admin/product-categories": {
       "post": {
-        "tags": ["admin-product-categories"],
+        "tags": [
+          "admin-product-categories"
+        ],
         "summary": "Create product category",
         "description": "Creates a reusable product category for the marketplace. Sellers later fetch and reference these categories when creating products.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -420,10 +446,16 @@
         }
       },
       "get": {
-        "tags": ["admin-product-categories"],
+        "tags": [
+          "admin-product-categories"
+        ],
         "summary": "List product categories",
         "description": "Returns all product categories currently available in the admin-managed catalog.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Product categories fetched successfully",
@@ -465,10 +497,16 @@
     },
     "/admin/shipping/settings": {
       "get": {
-        "tags": ["admin-shipping-settings"],
+        "tags": [
+          "admin-shipping-settings"
+        ],
         "summary": "Get shipping settings",
         "description": "Returns the current global shipping settings that govern the marketplace shipping engine, including the active ownership mode, category shipping mode, and vendor fallback policy.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Shipping settings fetched successfully",
@@ -503,10 +541,16 @@
         }
       },
       "patch": {
-        "tags": ["admin-shipping-settings"],
+        "tags": [
+          "admin-shipping-settings"
+        ],
         "summary": "Update shipping settings",
         "description": "Updates one or more of the marketplace-wide shipping foundation settings. These values later determine whether platform or vendor shipping rules are used, how category fees are combined, and what happens when vendor shipping rules are missing.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -556,10 +600,16 @@
     },
     "/admin/shipping/free-shipping-rules": {
       "post": {
-        "tags": ["admin-free-shipping"],
+        "tags": [
+          "admin-free-shipping"
+        ],
         "summary": "Create free shipping rule",
         "description": "Creates an admin-managed free shipping rule. Use the coupon variant when free shipping should be unlocked by a code, or use the threshold variant when free shipping should apply automatically after a discounted order subtotal is reached. Threshold requests must send `minimum_order_subtotal` and must not send `coupon_code`. Only one active threshold rule can exist at a time.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -594,7 +644,9 @@
             "description": "Free shipping rule created successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Free shipping rule created successfully.",
                   "data": {
@@ -611,25 +663,39 @@
               }
             }
           },
-          "400": { "description": "Validation failed" },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
           "409": {
             "description": "Coupon code already exists or an active threshold rule already exists"
           }
         }
       },
       "get": {
-        "tags": ["admin-free-shipping"],
+        "tags": [
+          "admin-free-shipping"
+        ],
         "summary": "List free shipping rules",
         "description": "Returns all admin-managed free shipping rules, including both coupon and threshold rules.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Free shipping rules fetched successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Free shipping rules fetched successfully.",
                   "data": [
@@ -658,23 +724,36 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          }
         }
       }
     },
     "/admin/shipping/free-shipping-rules/{ruleId}": {
       "get": {
-        "tags": ["admin-free-shipping"],
+        "tags": [
+          "admin-free-shipping"
+        ],
         "summary": "Get free shipping rule",
         "description": "Returns one admin-managed free shipping rule by id.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -682,7 +761,9 @@
             "description": "Free shipping rule fetched successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Free shipping rule fetched successfully.",
                   "data": {
@@ -699,22 +780,37 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Free shipping rule not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Free shipping rule not found"
+          }
         }
       },
       "patch": {
-        "tags": ["admin-free-shipping"],
+        "tags": [
+          "admin-free-shipping"
+        ],
         "summary": "Update free shipping rule",
         "description": "Updates an existing free shipping rule. You can change its name, type, coupon code, or threshold amount. Active threshold uniqueness is still enforced.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "requestBody": {
@@ -732,7 +828,9 @@
             "description": "Free shipping rule updated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Free shipping rule updated successfully.",
                   "data": {
@@ -749,10 +847,18 @@
               }
             }
           },
-          "400": { "description": "Validation failed" },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Free shipping rule not found" },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Free shipping rule not found"
+          },
           "409": {
             "description": "Coupon code already exists or an active threshold rule already exists"
           }
@@ -761,16 +867,25 @@
     },
     "/admin/shipping/free-shipping-rules/{ruleId}/activate": {
       "post": {
-        "tags": ["admin-free-shipping"],
+        "tags": [
+          "admin-free-shipping"
+        ],
         "summary": "Activate free shipping rule",
         "description": "Activates a free shipping rule. Only one threshold free shipping rule can be active at a time.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -778,7 +893,9 @@
             "description": "Free shipping rule activated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Free shipping rule activated successfully.",
                   "data": {
@@ -795,9 +912,15 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Free shipping rule not found" },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Free shipping rule not found"
+          },
           "409": {
             "description": "Another active threshold free shipping rule already exists"
           }
@@ -806,16 +929,25 @@
     },
     "/admin/shipping/free-shipping-rules/{ruleId}/deactivate": {
       "post": {
-        "tags": ["admin-free-shipping"],
+        "tags": [
+          "admin-free-shipping"
+        ],
         "summary": "Deactivate free shipping rule",
         "description": "Deactivates a free shipping rule without deleting it.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -823,7 +955,9 @@
             "description": "Free shipping rule deactivated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Free shipping rule deactivated successfully.",
                   "data": {
@@ -840,18 +974,30 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Free shipping rule not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Free shipping rule not found"
+          }
         }
       }
     },
     "/admin/shipping/zones": {
       "post": {
-        "tags": ["admin-shipping-zones"],
+        "tags": [
+          "admin-shipping-zones"
+        ],
         "summary": "Create shipping zone",
         "description": "Creates a platform-owned shipping zone with one or more covered states and optional city-level targeting.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -867,7 +1013,9 @@
             "description": "Shipping zone created successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Shipping zone created successfully.",
                   "data": {
@@ -897,23 +1045,39 @@
               }
             }
           },
-          "400": { "description": "Validation failed" },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "409": { "description": "Shipping zone name already exists" }
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "409": {
+            "description": "Shipping zone name already exists"
+          }
         }
       },
       "get": {
-        "tags": ["admin-shipping-zones"],
+        "tags": [
+          "admin-shipping-zones"
+        ],
         "summary": "List shipping zones",
         "description": "Returns all platform-owned shipping zones configured by admins.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Shipping zones fetched successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Shipping zones fetched successfully.",
                   "data": [
@@ -941,23 +1105,36 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          }
         }
       }
     },
     "/admin/shipping/zones/{zoneId}": {
       "get": {
-        "tags": ["admin-shipping-zones"],
+        "tags": [
+          "admin-shipping-zones"
+        ],
         "summary": "Get shipping zone",
         "description": "Returns a single platform-owned shipping zone with its state and city coverage.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "zoneId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -965,7 +1142,9 @@
             "description": "Shipping zone fetched successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Shipping zone fetched successfully.",
                   "data": {
@@ -991,22 +1170,37 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Shipping zone not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Shipping zone not found"
+          }
         }
       },
       "patch": {
-        "tags": ["admin-shipping-zones"],
+        "tags": [
+          "admin-shipping-zones"
+        ],
         "summary": "Update shipping zone",
         "description": "Updates a platform-owned shipping zone name and/or replaces its full state and city coverage.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "zoneId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "requestBody": {
@@ -1024,7 +1218,9 @@
             "description": "Shipping zone updated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Shipping zone updated successfully.",
                   "data": {
@@ -1050,26 +1246,45 @@
               }
             }
           },
-          "400": { "description": "Validation failed" },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Shipping zone not found" },
-          "409": { "description": "Shipping zone name already exists" }
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Shipping zone not found"
+          },
+          "409": {
+            "description": "Shipping zone name already exists"
+          }
         }
       }
     },
     "/admin/shipping/zones/{zoneId}/activate": {
       "post": {
-        "tags": ["admin-shipping-zones"],
+        "tags": [
+          "admin-shipping-zones"
+        ],
         "summary": "Activate shipping zone",
         "description": "Marks a platform-owned shipping zone as active so it can be used by the shipping engine.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "zoneId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -1077,7 +1292,9 @@
             "description": "Shipping zone activated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Shipping zone activated successfully.",
                   "data": {
@@ -1098,24 +1315,39 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Shipping zone not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Shipping zone not found"
+          }
         }
       }
     },
     "/admin/shipping/zones/{zoneId}/deactivate": {
       "post": {
-        "tags": ["admin-shipping-zones"],
+        "tags": [
+          "admin-shipping-zones"
+        ],
         "summary": "Deactivate shipping zone",
         "description": "Marks a platform-owned shipping zone as inactive without deleting it.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "zoneId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -1123,7 +1355,9 @@
             "description": "Shipping zone deactivated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Shipping zone deactivated successfully.",
                   "data": {
@@ -1144,18 +1378,30 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Shipping zone not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Shipping zone not found"
+          }
         }
       }
     },
     "/admin/shipping/zone-rules": {
       "post": {
-        "tags": ["admin-shipping-zone-rules"],
+        "tags": [
+          "admin-shipping-zone-rules"
+        ],
         "summary": "Create shipping zone rule",
         "description": "Creates the platform shipping rule for a platform-owned zone. Only one platform zone rule can exist per zone.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1171,7 +1417,9 @@
             "description": "Shipping zone rule created successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Shipping zone rule created successfully.",
                   "data": {
@@ -1208,24 +1456,42 @@
               }
             }
           },
-          "400": { "description": "Validation failed" },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Shipping zone not found" },
-          "409": { "description": "Platform shipping zone rule already exists for this zone" }
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Shipping zone not found"
+          },
+          "409": {
+            "description": "Platform shipping zone rule already exists for this zone"
+          }
         }
       },
       "get": {
-        "tags": ["admin-shipping-zone-rules"],
+        "tags": [
+          "admin-shipping-zone-rules"
+        ],
         "summary": "List shipping zone rules",
         "description": "Returns all platform-owned shipping zone rules.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Shipping zone rules fetched successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Shipping zone rules fetched successfully.",
                   "data": [
@@ -1264,23 +1530,36 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          }
         }
       }
     },
     "/admin/shipping/zone-rules/{ruleId}": {
       "get": {
-        "tags": ["admin-shipping-zone-rules"],
+        "tags": [
+          "admin-shipping-zone-rules"
+        ],
         "summary": "Get shipping zone rule",
         "description": "Returns a single platform-owned shipping zone rule.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -1288,7 +1567,9 @@
             "description": "Shipping zone rule fetched successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Shipping zone rule fetched successfully.",
                   "data": {
@@ -1325,22 +1606,37 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Shipping zone rule not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Shipping zone rule not found"
+          }
         }
       },
       "patch": {
-        "tags": ["admin-shipping-zone-rules"],
+        "tags": [
+          "admin-shipping-zone-rules"
+        ],
         "summary": "Update shipping zone rule",
         "description": "Updates a platform-owned shipping zone rule's target zone and/or pricing method.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "requestBody": {
@@ -1358,7 +1654,9 @@
             "description": "Shipping zone rule updated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Shipping zone rule updated successfully.",
                   "data": {
@@ -1395,26 +1693,45 @@
               }
             }
           },
-          "400": { "description": "Validation failed" },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Shipping zone rule not found" },
-          "409": { "description": "Platform shipping zone rule already exists for this zone" }
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Shipping zone rule not found"
+          },
+          "409": {
+            "description": "Platform shipping zone rule already exists for this zone"
+          }
         }
       }
     },
     "/admin/shipping/zone-rules/{ruleId}/activate": {
       "post": {
-        "tags": ["admin-shipping-zone-rules"],
+        "tags": [
+          "admin-shipping-zone-rules"
+        ],
         "summary": "Activate shipping zone rule",
         "description": "Marks a platform-owned shipping zone rule as active.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -1422,7 +1739,9 @@
             "description": "Shipping zone rule activated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Shipping zone rule activated successfully.",
                   "data": {
@@ -1459,24 +1778,39 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Shipping zone rule not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Shipping zone rule not found"
+          }
         }
       }
     },
     "/admin/shipping/zone-rules/{ruleId}/deactivate": {
       "post": {
-        "tags": ["admin-shipping-zone-rules"],
+        "tags": [
+          "admin-shipping-zone-rules"
+        ],
         "summary": "Deactivate shipping zone rule",
         "description": "Marks a platform-owned shipping zone rule as inactive without deleting it.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -1484,7 +1818,9 @@
             "description": "Shipping zone rule deactivated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Shipping zone rule deactivated successfully.",
                   "data": {
@@ -1521,18 +1857,30 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Shipping zone rule not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Shipping zone rule not found"
+          }
         }
       }
     },
     "/admin/shipping/category-rules": {
       "post": {
-        "tags": ["admin-shipping-category-rules"],
+        "tags": [
+          "admin-shipping-category-rules"
+        ],
         "summary": "Create category shipping rule",
         "description": "Creates the platform category-based shipping rule for a product category. Only one platform category shipping rule can exist per category.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1548,7 +1896,9 @@
             "description": "Category shipping rule created successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Category shipping rule created successfully.",
                   "data": {
@@ -1585,24 +1935,42 @@
               }
             }
           },
-          "400": { "description": "Validation failed" },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Product category not found" },
-          "409": { "description": "Platform category shipping rule already exists for this category" }
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Product category not found"
+          },
+          "409": {
+            "description": "Platform category shipping rule already exists for this category"
+          }
         }
       },
       "get": {
-        "tags": ["admin-shipping-category-rules"],
+        "tags": [
+          "admin-shipping-category-rules"
+        ],
         "summary": "List category shipping rules",
         "description": "Returns all platform-owned category shipping rules.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Category shipping rules fetched successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Category shipping rules fetched successfully.",
                   "data": [
@@ -1641,23 +2009,36 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          }
         }
       }
     },
     "/admin/shipping/category-rules/{ruleId}": {
       "get": {
-        "tags": ["admin-shipping-category-rules"],
+        "tags": [
+          "admin-shipping-category-rules"
+        ],
         "summary": "Get category shipping rule",
         "description": "Returns a single platform-owned category shipping rule.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -1665,7 +2046,9 @@
             "description": "Category shipping rule fetched successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Category shipping rule fetched successfully.",
                   "data": {
@@ -1702,22 +2085,37 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Category shipping rule not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Category shipping rule not found"
+          }
         }
       },
       "patch": {
-        "tags": ["admin-shipping-category-rules"],
+        "tags": [
+          "admin-shipping-category-rules"
+        ],
         "summary": "Update category shipping rule",
         "description": "Updates a platform-owned category shipping rule's target category and/or pricing method.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "requestBody": {
@@ -1735,7 +2133,9 @@
             "description": "Category shipping rule updated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Category shipping rule updated successfully.",
                   "data": {
@@ -1772,26 +2172,45 @@
               }
             }
           },
-          "400": { "description": "Validation failed" },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Category shipping rule not found" },
-          "409": { "description": "Platform category shipping rule already exists for this category" }
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Category shipping rule not found"
+          },
+          "409": {
+            "description": "Platform category shipping rule already exists for this category"
+          }
         }
       }
     },
     "/admin/shipping/category-rules/{ruleId}/activate": {
       "post": {
-        "tags": ["admin-shipping-category-rules"],
+        "tags": [
+          "admin-shipping-category-rules"
+        ],
         "summary": "Activate category shipping rule",
         "description": "Marks a platform-owned category shipping rule as active.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -1799,7 +2218,9 @@
             "description": "Category shipping rule activated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Category shipping rule activated successfully.",
                   "data": {
@@ -1836,24 +2257,39 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Category shipping rule not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Category shipping rule not found"
+          }
         }
       }
     },
     "/admin/shipping/category-rules/{ruleId}/deactivate": {
       "post": {
-        "tags": ["admin-shipping-category-rules"],
+        "tags": [
+          "admin-shipping-category-rules"
+        ],
         "summary": "Deactivate category shipping rule",
         "description": "Marks a platform-owned category shipping rule as inactive without deleting it.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -1861,7 +2297,9 @@
             "description": "Category shipping rule deactivated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Category shipping rule deactivated successfully.",
                   "data": {
@@ -1898,18 +2336,30 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Admin access required" },
-          "404": { "description": "Category shipping rule not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Category shipping rule not found"
+          }
         }
       }
     },
     "/admin/product-brands": {
       "post": {
-        "tags": ["admin-product-brands"],
+        "tags": [
+          "admin-product-brands"
+        ],
         "summary": "Create product brand",
         "description": "Creates a reusable product brand. Sellers can only reference brands created by admins.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1962,10 +2412,16 @@
         }
       },
       "get": {
-        "tags": ["admin-product-brands"],
+        "tags": [
+          "admin-product-brands"
+        ],
         "summary": "List product brands",
         "description": "Returns all admin-managed product brands available for seller product creation.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Product brands fetched successfully",
@@ -2006,9 +2462,15 @@
     },
     "/admin/product-brands/{brandId}": {
       "get": {
-        "tags": ["admin-product-brands"],
+        "tags": [
+          "admin-product-brands"
+        ],
         "summary": "Get product brand",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -2058,10 +2520,16 @@
         }
       },
       "patch": {
-        "tags": ["admin-product-brands"],
+        "tags": [
+          "admin-product-brands"
+        ],
         "summary": "Update product brand",
         "description": "Updates the name or description of an admin-managed product brand.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -2129,9 +2597,15 @@
     },
     "/admin/product-categories/{categoryId}": {
       "get": {
-        "tags": ["admin-product-categories"],
+        "tags": [
+          "admin-product-categories"
+        ],
         "summary": "Get product category",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -2182,10 +2656,16 @@
         }
       },
       "patch": {
-        "tags": ["admin-product-categories"],
+        "tags": [
+          "admin-product-categories"
+        ],
         "summary": "Update product category",
         "description": "Updates category metadata or deduction percentage used across the marketplace.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -2254,10 +2734,16 @@
     },
     "/admin/products/pending-review": {
       "get": {
-        "tags": ["admin-product-review"],
+        "tags": [
+          "admin-product-review"
+        ],
         "summary": "List products pending review",
         "description": "Returns all seller-submitted products that are still waiting for admin moderation.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Products pending review fetched successfully",
@@ -2307,10 +2793,16 @@
     },
     "/admin/products/pending-review/{productId}": {
       "get": {
-        "tags": ["admin-product-review"],
+        "tags": [
+          "admin-product-review"
+        ],
         "summary": "Get a product pending review",
         "description": "Returns the full product details for one pending-review product, including category, brand reference, and uploaded images.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -2381,10 +2873,16 @@
     },
     "/admin/products/{productId}/approve": {
       "post": {
-        "tags": ["admin-product-review"],
+        "tags": [
+          "admin-product-review"
+        ],
         "summary": "Approve a product pending review",
         "description": "Marks a product as `approved`. Approved products are the ones intended to become visible to buyers in later buyer-facing catalog endpoints.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -2460,10 +2958,16 @@
     },
     "/admin/products/{productId}/reject": {
       "post": {
-        "tags": ["admin-product-review"],
+        "tags": [
+          "admin-product-review"
+        ],
         "summary": "Reject a product pending review",
         "description": "Marks a product as `rejected`. Frontend should expect the rejection reason to come back through `review_note`.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -2539,9 +3043,15 @@
     },
     "/admin/kyc": {
       "get": {
-        "tags": ["admin-kyc"],
+        "tags": [
+          "admin-kyc"
+        ],
         "summary": "List completed seller KYC submissions",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Completed seller KYC submissions fetched successfully",
@@ -2586,9 +3096,15 @@
     },
     "/admin/kyc/{kycId}": {
       "get": {
-        "tags": ["admin-kyc"],
+        "tags": [
+          "admin-kyc"
+        ],
         "summary": "Get a completed seller KYC submission",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -2676,9 +3192,15 @@
     },
     "/admin/kyc/{kycId}/approve": {
       "post": {
-        "tags": ["admin-kyc"],
+        "tags": [
+          "admin-kyc"
+        ],
         "summary": "Approve a seller KYC submission",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -2739,7 +3261,9 @@
     },
     "/buyers/register": {
       "post": {
-        "tags": ["buyer-account"],
+        "tags": [
+          "buyer-account"
+        ],
         "summary": "Register a buyer account",
         "description": "Creates a buyer account in `not_verified` state and triggers email verification.",
         "requestBody": {
@@ -2789,10 +3313,16 @@
     },
     "/buyers/cart": {
       "get": {
-        "tags": ["buyer-cart"],
+        "tags": [
+          "buyer-cart"
+        ],
         "summary": "Get buyer active cart",
         "description": "Returns the authenticated buyer's current active cart with item details and computed totals. If the buyer does not yet have an active cart, the endpoint still succeeds and returns an empty cart state.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Buyer cart fetched successfully",
@@ -2863,10 +3393,16 @@
         }
       },
       "post": {
-        "tags": ["buyer-cart"],
+        "tags": [
+          "buyer-cart"
+        ],
         "summary": "Add a product to buyer cart",
         "description": "Adds an approved product to the authenticated buyer's active cart. If the product is already in the active cart, the quantity is increased instead of creating a duplicate cart item.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2927,10 +3463,16 @@
     },
     "/buyers/cart/shipping-preview": {
       "post": {
-        "tags": ["buyer-cart"],
+        "tags": [
+          "buyer-cart"
+        ],
         "summary": "Preview buyer cart shipping",
-        "description": "Calculates a shipping preview for the authenticated buyer's active cart using a saved billing address and a caller-supplied discounted subtotal. This endpoint does not create an order; it only returns the unified shipping total plus an internal per-segment breakdown from the shipping engine.",
-        "security": [{ "bearerAuth": [] }],
+        "description": "Calculates a shipping preview for the authenticated buyer's active cart using a saved billing address and the current cart subtotal from the backend. This endpoint does not create an order; it only returns the unified shipping total plus an internal per-segment breakdown from the shipping engine.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2940,7 +3482,6 @@
               },
               "example": {
                 "billing_address_id": "billing-address-id",
-                "discounted_subtotal": 58000,
                 "free_shipping_coupon_code": "FREESHIP"
               }
             }
@@ -2960,7 +3501,7 @@
                     "cart_id": "cart-id",
                     "currency": "NGN",
                     "raw_subtotal": 60000,
-                    "discounted_subtotal": 58000,
+                    "discounted_subtotal": 60000,
                     "total_items": 2,
                     "shipping_mode": "VENDOR",
                     "category_shipping_mode": "ADDITIVE",
@@ -3014,10 +3555,16 @@
     },
     "/buyers/cart/order-summary": {
       "post": {
-        "tags": ["buyer-cart"],
+        "tags": [
+          "buyer-cart"
+        ],
         "summary": "Generate buyer order summary",
         "description": "Builds the checkout review payload for the authenticated buyer using the active cart, a saved billing address, and the current shipping rules. This endpoint is review-only: it does not initialize payment, lock the cart, or create an order.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -3027,7 +3574,6 @@
               },
               "example": {
                 "billing_address_id": "billing-address-id",
-                "discounted_subtotal": 58000,
                 "free_shipping_coupon_code": "FREESHIP"
               }
             }
@@ -3089,12 +3635,12 @@
                     "currency": "NGN",
                     "total_items": 2,
                     "raw_subtotal": 60000,
-                    "discounted_subtotal": 58000,
+                    "discounted_subtotal": 60000,
                     "shipping_mode": "VENDOR",
                     "category_shipping_mode": "ADDITIVE",
                     "base_shipping_fee": 4500,
                     "final_shipping_fee": 0,
-                    "total_payable": 58000,
+                    "total_payable": 60000,
                     "free_shipping": {
                       "applied": true,
                       "rule_id": "free-shipping-rule-id",
@@ -3143,16 +3689,26 @@
     },
     "/buyers/cart/checkout/initialize": {
       "post": {
-        "tags": ["buyer-cart"],
+        "tags": [
+          "buyer-cart"
+        ],
         "summary": "Initialize buyer checkout payment",
         "description": "Creates a checkout session for the authenticated buyer, locks later cart mutations, initializes Paystack payment, and returns the payment authorization payload plus the full order summary snapshot.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CalculateCartShippingPreviewRequest"
+              },
+              "example": {
+                "billing_address_id": "billing-address-id",
+                "free_shipping_coupon_code": "FREESHIP"
               }
             }
           }
@@ -3187,12 +3743,12 @@
                     "currency": "NGN",
                     "total_items": 2,
                     "raw_subtotal": 60000,
-                    "discounted_subtotal": 58000,
+                    "discounted_subtotal": 60000,
                     "shipping_mode": "VENDOR",
                     "category_shipping_mode": "ADDITIVE",
                     "base_shipping_fee": 4500,
                     "final_shipping_fee": 0,
-                    "total_payable": 58000,
+                    "total_payable": 60000,
                     "free_shipping": {
                       "applied": true,
                       "rule_id": "free-shipping-rule-id",
@@ -3228,10 +3784,16 @@
     },
     "/buyers/cart/checkout/{reference}": {
       "get": {
-        "tags": ["buyer-cart"],
+        "tags": [
+          "buyer-cart"
+        ],
         "summary": "Get buyer checkout status",
         "description": "Returns the status of a checkout session for the authenticated buyer. If payment already succeeded but webhook processing is delayed, the backend may verify and finalize the checkout before returning the response.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "reference",
@@ -3281,10 +3843,16 @@
     },
     "/buyers/cart/clear-cart": {
       "delete": {
-        "tags": ["buyer-cart"],
+        "tags": [
+          "buyer-cart"
+        ],
         "summary": "Clear buyer cart",
         "description": "Removes all items from the authenticated buyer's active cart. This endpoint is idempotent, so it still succeeds when the buyer has no active cart or the cart is already empty.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Cart cleared successfully",
@@ -3318,10 +3886,16 @@
     },
     "/buyers/cart/{productId}": {
       "patch": {
-        "tags": ["buyer-cart"],
+        "tags": [
+          "buyer-cart"
+        ],
         "summary": "Update product quantity in buyer cart",
         "description": "Updates the quantity of a product already present in the authenticated buyer's active cart. The requested quantity must be greater than zero and cannot exceed the current approved product stock.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -3390,10 +3964,16 @@
         }
       },
       "delete": {
-        "tags": ["buyer-cart"],
+        "tags": [
+          "buyer-cart"
+        ],
         "summary": "Remove a product from buyer cart",
         "description": "Removes the specified product from the authenticated buyer's active cart. The removal is scoped to the current buyer and only affects the active cart.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -3432,10 +4012,16 @@
     },
     "/buyers/wishlist": {
       "get": {
-        "tags": ["buyer-wishlist"],
+        "tags": [
+          "buyer-wishlist"
+        ],
         "summary": "Get buyer wishlist",
         "description": "Returns the authenticated buyer's wishlist with product details for rendering the saved-products screen. Entries whose products no longer exist are skipped automatically.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Buyer wishlist fetched successfully",
@@ -3498,10 +4084,16 @@
         }
       },
       "post": {
-        "tags": ["buyer-wishlist"],
+        "tags": [
+          "buyer-wishlist"
+        ],
         "summary": "Add an approved product to buyer wishlist",
         "description": "Adds a product to the authenticated buyer's wishlist. The product must already be in `approved` status and duplicate wishlist entries are not allowed.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -3553,10 +4145,16 @@
     },
     "/buyers/wishlist/{productId}": {
       "delete": {
-        "tags": ["buyer-wishlist"],
+        "tags": [
+          "buyer-wishlist"
+        ],
         "summary": "Remove a product from buyer wishlist",
         "description": "Removes the specified product from the authenticated buyer's wishlist. The removal is scoped to the current buyer only.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -3595,10 +4193,16 @@
     },
     "/buyers/billing-addresses": {
       "get": {
-        "tags": ["buyer-billing-addresses"],
+        "tags": [
+          "buyer-billing-addresses"
+        ],
         "summary": "Get buyer billing addresses",
         "description": "Returns all saved billing addresses belonging to the authenticated buyer. If the buyer has not saved any billing addresses yet, the endpoint still succeeds and returns an empty list.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Billing addresses fetched successfully",
@@ -3641,10 +4245,16 @@
         }
       },
       "post": {
-        "tags": ["buyer-billing-addresses"],
+        "tags": [
+          "buyer-billing-addresses"
+        ],
         "summary": "Add buyer billing address",
         "description": "Creates a saved billing address for the authenticated buyer. Buyers can have multiple billing addresses and this endpoint does not assign a default address.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -3700,10 +4310,16 @@
     },
     "/buyers/billing-addresses/{billingAddressId}": {
       "delete": {
-        "tags": ["buyer-billing-addresses"],
+        "tags": [
+          "buyer-billing-addresses"
+        ],
         "summary": "Delete buyer billing address",
         "description": "Deletes a saved billing address belonging to the authenticated buyer. The address is identified by its billing address id and removal is scoped to the current buyer only.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -3742,7 +4358,9 @@
     },
     "/products": {
       "get": {
-        "tags": ["product-catalog"],
+        "tags": [
+          "product-catalog"
+        ],
         "summary": "List approved marketplace products",
         "description": "Returns approved and in-stock products only. Results are sorted newest first and support pagination plus optional category, brand, price, and search filters.",
         "parameters": [
@@ -3859,7 +4477,9 @@
     },
     "/products/categories/{categoryId}": {
       "get": {
-        "tags": ["product-catalog"],
+        "tags": [
+          "product-catalog"
+        ],
         "summary": "List approved products for a specific category",
         "description": "Returns approved and in-stock products for one category only. Results are sorted newest first and support pagination.",
         "parameters": [
@@ -3949,7 +4569,9 @@
     },
     "/products/brands/{brandName}": {
       "get": {
-        "tags": ["product-catalog"],
+        "tags": [
+          "product-catalog"
+        ],
         "summary": "List approved products for a specific brand name",
         "description": "Returns approved and in-stock products for one brand only using the brand name. Results are sorted newest first and support pagination.",
         "parameters": [
@@ -4038,7 +4660,9 @@
     },
     "/products/{productId}": {
       "get": {
-        "tags": ["product-catalog"],
+        "tags": [
+          "product-catalog"
+        ],
         "summary": "Get one approved product detail",
         "description": "Returns the full public detail for one approved product. Unlike the general listing endpoint, this can still return an approved product whose quantity is currently zero so the frontend can render an out-of-stock detail page.",
         "parameters": [
@@ -4078,13 +4702,13 @@
                     "weight_kg": 0.4,
                     "status": "approved",
                     "images": [
-                        {
-                          "id": "image-id",
-                          "storage_path": "products/seller-id/front.jpg",
-                          "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/front.jpg",
-                          "mime_type": "image/jpeg",
-                          "original_file_name": "front.jpg",
-                          "position": 0
+                      {
+                        "id": "image-id",
+                        "storage_path": "products/seller-id/front.jpg",
+                        "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/front.jpg",
+                        "mime_type": "image/jpeg",
+                        "original_file_name": "front.jpg",
+                        "position": 0
                       }
                     ],
                     "created_at": "2026-03-29T00:00:00.000Z",
@@ -4105,7 +4729,9 @@
     },
     "/products/search": {
       "get": {
-        "tags": ["product-catalog"],
+        "tags": [
+          "product-catalog"
+        ],
         "summary": "Search approved products with live suggestions",
         "description": "Returns lightweight approved product suggestions while the frontend user is typing. Only approved and in-stock products are considered.",
         "parameters": [
@@ -4176,10 +4802,16 @@
     },
     "/users/profile": {
       "get": {
-        "tags": ["user-account"],
+        "tags": [
+          "user-account"
+        ],
         "summary": "Get the authenticated buyer or seller profile",
         "description": "Returns the current authenticated user's profile. This endpoint is available only to buyer and seller accounts. Seller responses can include `account_type` and `kyc_status`.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "User profile fetched successfully",
@@ -4220,7 +4852,9 @@
     },
     "/sellers/register": {
       "post": {
-        "tags": ["seller-account"],
+        "tags": [
+          "seller-account"
+        ],
         "summary": "Register a seller account",
         "description": "Creates a seller account in `not_verified` state, initializes seller KYC as `not_started`, and triggers email verification.",
         "requestBody": {
@@ -4272,10 +4906,16 @@
     },
     "/sellers/create-product": {
       "post": {
-        "tags": ["seller-catalog"],
+        "tags": [
+          "seller-catalog"
+        ],
         "summary": "Upload a product as a verified seller",
         "description": "Creates a seller product in `pending_review` state. This endpoint requires a seller token, a verified seller account, and approved seller KYC. `brand_id` is optional, `category_id` is required, and `sku` can be omitted because the backend can generate it.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -4352,10 +4992,16 @@
     },
     "/sellers/get-all-products": {
       "get": {
-        "tags": ["seller-catalog"],
+        "tags": [
+          "seller-catalog"
+        ],
         "summary": "Get all products created by the authenticated seller",
         "description": "Returns all products created by the current seller, including review status and uploaded images. Frontend can use this for the seller dashboard, inventory view, and review feedback states.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Seller products retrieved successfully",
@@ -4407,10 +5053,16 @@
     },
     "/sellers/product-brands": {
       "get": {
-        "tags": ["seller-catalog"],
+        "tags": [
+          "seller-catalog"
+        ],
         "summary": "List available product brands for sellers",
         "description": "Returns the admin-managed brand list that sellers should use when populating optional `brand_id` in product creation.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Product brands fetched successfully",
@@ -4451,7 +5103,9 @@
     },
     "/payments/paystack/webhook": {
       "post": {
-        "tags": ["payments"],
+        "tags": [
+          "payments"
+        ],
         "summary": "Handle Paystack payment webhook",
         "description": "Public webhook endpoint for Paystack charge success events. The backend validates the webhook signature, verifies the payment directly with Paystack, and finalizes checkout by creating the order once the payment is confirmed.",
         "responses": {
@@ -4482,10 +5136,16 @@
     },
     "/sellers/product-categories": {
       "get": {
-        "tags": ["seller-catalog"],
+        "tags": [
+          "seller-catalog"
+        ],
         "summary": "List available product categories for sellers",
         "description": "Returns the admin-managed category list that sellers should use when populating required `category_id` in product creation.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Product categories fetched successfully",
@@ -4527,10 +5187,16 @@
     },
     "/sellers/shipping/zones": {
       "post": {
-        "tags": ["seller-shipping-zones"],
+        "tags": [
+          "seller-shipping-zones"
+        ],
         "summary": "Create seller shipping zone",
         "description": "Creates a seller-owned shipping zone. This endpoint is only available when the admin has switched marketplace shipping mode to `VENDOR`.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -4546,7 +5212,9 @@
             "description": "Seller shipping zone created successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller shipping zone created successfully.",
                   "data": {
@@ -4572,24 +5240,42 @@
               }
             }
           },
-          "400": { "description": "Validation failed" },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Seller account or shipping settings not found" },
-          "409": { "description": "Shipping zone name already exists for this seller" }
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Seller account or shipping settings not found"
+          },
+          "409": {
+            "description": "Shipping zone name already exists for this seller"
+          }
         }
       },
       "get": {
-        "tags": ["seller-shipping-zones"],
+        "tags": [
+          "seller-shipping-zones"
+        ],
         "summary": "List seller shipping zones",
         "description": "Returns all shipping zones owned by the authenticated seller.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Seller shipping zones fetched successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller shipping zones fetched successfully.",
                   "data": [
@@ -4617,24 +5303,39 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Seller account or shipping settings not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Seller account or shipping settings not found"
+          }
         }
       }
     },
     "/sellers/shipping/zones/{zoneId}": {
       "get": {
-        "tags": ["seller-shipping-zones"],
+        "tags": [
+          "seller-shipping-zones"
+        ],
         "summary": "Get seller shipping zone",
         "description": "Returns one seller-owned shipping zone belonging to the authenticated seller.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "zoneId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -4642,7 +5343,9 @@
             "description": "Seller shipping zone fetched successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller shipping zone fetched successfully.",
                   "data": {
@@ -4668,22 +5371,37 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Seller shipping zone, seller account, or shipping settings not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Seller shipping zone, seller account, or shipping settings not found"
+          }
         }
       },
       "patch": {
-        "tags": ["seller-shipping-zones"],
+        "tags": [
+          "seller-shipping-zones"
+        ],
         "summary": "Update seller shipping zone",
         "description": "Updates a seller-owned shipping zone name and/or replaces its coverage.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "zoneId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "requestBody": {
@@ -4701,7 +5419,9 @@
             "description": "Seller shipping zone updated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller shipping zone updated successfully.",
                   "data": {
@@ -4727,26 +5447,45 @@
               }
             }
           },
-          "400": { "description": "Validation failed" },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Seller shipping zone, seller account, or shipping settings not found" },
-          "409": { "description": "Shipping zone name already exists for this seller" }
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Seller shipping zone, seller account, or shipping settings not found"
+          },
+          "409": {
+            "description": "Shipping zone name already exists for this seller"
+          }
         }
       }
     },
     "/sellers/shipping/zones/{zoneId}/activate": {
       "post": {
-        "tags": ["seller-shipping-zones"],
+        "tags": [
+          "seller-shipping-zones"
+        ],
         "summary": "Activate seller shipping zone",
         "description": "Marks a seller-owned shipping zone as active.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "zoneId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -4754,7 +5493,9 @@
             "description": "Seller shipping zone activated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller shipping zone activated successfully.",
                   "data": {
@@ -4769,24 +5510,39 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Seller shipping zone, seller account, or shipping settings not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Seller shipping zone, seller account, or shipping settings not found"
+          }
         }
       }
     },
     "/sellers/shipping/zones/{zoneId}/deactivate": {
       "post": {
-        "tags": ["seller-shipping-zones"],
+        "tags": [
+          "seller-shipping-zones"
+        ],
         "summary": "Deactivate seller shipping zone",
         "description": "Marks a seller-owned shipping zone as inactive without deleting it.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "zoneId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -4794,7 +5550,9 @@
             "description": "Seller shipping zone deactivated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller shipping zone deactivated successfully.",
                   "data": {
@@ -4809,18 +5567,30 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Seller shipping zone, seller account, or shipping settings not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Seller shipping zone, seller account, or shipping settings not found"
+          }
         }
       }
     },
     "/sellers/shipping/zone-rules": {
       "post": {
-        "tags": ["seller-shipping-zone-rules"],
+        "tags": [
+          "seller-shipping-zone-rules"
+        ],
         "summary": "Create seller shipping zone rule",
         "description": "Creates a seller-owned shipping rule for one of the authenticated seller's shipping zones. This endpoint is only available when the admin has switched marketplace shipping mode to `VENDOR`.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -4836,7 +5606,9 @@
             "description": "Seller shipping zone rule created successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller shipping zone rule created successfully.",
                   "data": {
@@ -4873,24 +5645,42 @@
               }
             }
           },
-          "400": { "description": "Validation failed" },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Seller shipping zone, seller account, or shipping settings not found" },
-          "409": { "description": "Seller shipping zone rule already exists for this zone" }
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Seller shipping zone, seller account, or shipping settings not found"
+          },
+          "409": {
+            "description": "Seller shipping zone rule already exists for this zone"
+          }
         }
       },
       "get": {
-        "tags": ["seller-shipping-zone-rules"],
+        "tags": [
+          "seller-shipping-zone-rules"
+        ],
         "summary": "List seller shipping zone rules",
         "description": "Returns all shipping zone rules owned by the authenticated seller.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Seller shipping zone rules fetched successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller shipping zone rules fetched successfully.",
                   "data": [
@@ -4929,24 +5719,39 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Seller account or shipping settings not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Seller account or shipping settings not found"
+          }
         }
       }
     },
     "/sellers/shipping/zone-rules/{ruleId}": {
       "get": {
-        "tags": ["seller-shipping-zone-rules"],
+        "tags": [
+          "seller-shipping-zone-rules"
+        ],
         "summary": "Get seller shipping zone rule",
         "description": "Returns one seller-owned shipping zone rule belonging to the authenticated seller.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -4954,7 +5759,9 @@
             "description": "Seller shipping zone rule fetched successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller shipping zone rule fetched successfully.",
                   "data": {
@@ -4991,22 +5798,37 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Seller shipping zone rule, seller account, or shipping settings not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Seller shipping zone rule, seller account, or shipping settings not found"
+          }
         }
       },
       "patch": {
-        "tags": ["seller-shipping-zone-rules"],
+        "tags": [
+          "seller-shipping-zone-rules"
+        ],
         "summary": "Update seller shipping zone rule",
         "description": "Updates a seller-owned shipping zone rule's target zone and/or pricing method.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "requestBody": {
@@ -5024,7 +5846,9 @@
             "description": "Seller shipping zone rule updated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller shipping zone rule updated successfully.",
                   "data": {
@@ -5061,26 +5885,45 @@
               }
             }
           },
-          "400": { "description": "Validation failed" },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Seller shipping zone rule, seller account, or shipping settings not found" },
-          "409": { "description": "Seller shipping zone rule already exists for this zone" }
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Seller shipping zone rule, seller account, or shipping settings not found"
+          },
+          "409": {
+            "description": "Seller shipping zone rule already exists for this zone"
+          }
         }
       }
     },
     "/sellers/shipping/zone-rules/{ruleId}/activate": {
       "post": {
-        "tags": ["seller-shipping-zone-rules"],
+        "tags": [
+          "seller-shipping-zone-rules"
+        ],
         "summary": "Activate seller shipping zone rule",
         "description": "Marks a seller-owned shipping zone rule as active.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -5088,7 +5931,9 @@
             "description": "Seller shipping zone rule activated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller shipping zone rule activated successfully.",
                   "data": {
@@ -5125,24 +5970,39 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Seller shipping zone rule, seller account, or shipping settings not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Seller shipping zone rule, seller account, or shipping settings not found"
+          }
         }
       }
     },
     "/sellers/shipping/zone-rules/{ruleId}/deactivate": {
       "post": {
-        "tags": ["seller-shipping-zone-rules"],
+        "tags": [
+          "seller-shipping-zone-rules"
+        ],
         "summary": "Deactivate seller shipping zone rule",
         "description": "Marks a seller-owned shipping zone rule as inactive without deleting it.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -5150,7 +6010,9 @@
             "description": "Seller shipping zone rule deactivated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller shipping zone rule deactivated successfully.",
                   "data": {
@@ -5187,18 +6049,30 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Seller shipping zone rule, seller account, or shipping settings not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Seller shipping zone rule, seller account, or shipping settings not found"
+          }
         }
       }
     },
     "/sellers/shipping/category-rules": {
       "post": {
-        "tags": ["seller-shipping-category-rules"],
+        "tags": [
+          "seller-shipping-category-rules"
+        ],
         "summary": "Create seller category shipping rule",
         "description": "Creates a seller-owned category shipping rule for one product category. This endpoint is only available when the admin has switched marketplace shipping mode to `VENDOR`.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -5214,7 +6088,9 @@
             "description": "Seller category shipping rule created successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller category shipping rule created successfully.",
                   "data": {
@@ -5251,24 +6127,42 @@
               }
             }
           },
-          "400": { "description": "Validation failed" },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Product category, seller account, or shipping settings not found" },
-          "409": { "description": "Seller category shipping rule already exists for this category" }
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Product category, seller account, or shipping settings not found"
+          },
+          "409": {
+            "description": "Seller category shipping rule already exists for this category"
+          }
         }
       },
       "get": {
-        "tags": ["seller-shipping-category-rules"],
+        "tags": [
+          "seller-shipping-category-rules"
+        ],
         "summary": "List seller category shipping rules",
         "description": "Returns all category shipping rules owned by the authenticated seller.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Seller category shipping rules fetched successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller category shipping rules fetched successfully.",
                   "data": [
@@ -5307,24 +6201,39 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Seller account or shipping settings not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Seller account or shipping settings not found"
+          }
         }
       }
     },
     "/sellers/shipping/category-rules/{ruleId}": {
       "get": {
-        "tags": ["seller-shipping-category-rules"],
+        "tags": [
+          "seller-shipping-category-rules"
+        ],
         "summary": "Get seller category shipping rule",
         "description": "Returns one seller-owned category shipping rule belonging to the authenticated seller.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -5332,7 +6241,9 @@
             "description": "Seller category shipping rule fetched successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller category shipping rule fetched successfully.",
                   "data": {
@@ -5369,22 +6280,37 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Seller category shipping rule, seller account, or shipping settings not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Seller category shipping rule, seller account, or shipping settings not found"
+          }
         }
       },
       "patch": {
-        "tags": ["seller-shipping-category-rules"],
+        "tags": [
+          "seller-shipping-category-rules"
+        ],
         "summary": "Update seller category shipping rule",
         "description": "Updates a seller-owned category shipping rule's target category and/or pricing method.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "requestBody": {
@@ -5402,7 +6328,9 @@
             "description": "Seller category shipping rule updated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller category shipping rule updated successfully.",
                   "data": {
@@ -5439,26 +6367,45 @@
               }
             }
           },
-          "400": { "description": "Validation failed" },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Seller category shipping rule, seller account, or shipping settings not found" },
-          "409": { "description": "Seller category shipping rule already exists for this category" }
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Seller category shipping rule, seller account, or shipping settings not found"
+          },
+          "409": {
+            "description": "Seller category shipping rule already exists for this category"
+          }
         }
       }
     },
     "/sellers/shipping/category-rules/{ruleId}/activate": {
       "post": {
-        "tags": ["seller-shipping-category-rules"],
+        "tags": [
+          "seller-shipping-category-rules"
+        ],
         "summary": "Activate seller category shipping rule",
         "description": "Marks a seller-owned category shipping rule as active.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -5466,7 +6413,9 @@
             "description": "Seller category shipping rule activated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller category shipping rule activated successfully.",
                   "data": {
@@ -5503,24 +6452,39 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Seller category shipping rule, seller account, or shipping settings not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Seller category shipping rule, seller account, or shipping settings not found"
+          }
         }
       }
     },
     "/sellers/shipping/category-rules/{ruleId}/deactivate": {
       "post": {
-        "tags": ["seller-shipping-category-rules"],
+        "tags": [
+          "seller-shipping-category-rules"
+        ],
         "summary": "Deactivate seller category shipping rule",
         "description": "Marks a seller-owned category shipping rule as inactive without deleting it.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "ruleId",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -5528,7 +6492,9 @@
             "description": "Seller category shipping rule deactivated successfully",
             "content": {
               "application/json": {
-                "schema": { "type": "object" },
+                "schema": {
+                  "type": "object"
+                },
                 "example": {
                   "message": "Seller category shipping rule deactivated successfully.",
                   "data": {
@@ -5565,18 +6531,30 @@
               }
             }
           },
-          "401": { "description": "Authentication required" },
-          "403": { "description": "Seller access required or vendor shipping mode is disabled" },
-          "404": { "description": "Seller category shipping rule, seller account, or shipping settings not found" }
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or vendor shipping mode is disabled"
+          },
+          "404": {
+            "description": "Seller category shipping rule, seller account, or shipping settings not found"
+          }
         }
       }
     },
     "/sellers/kyc": {
       "put": {
-        "tags": ["seller-kyc"],
+        "tags": [
+          "seller-kyc"
+        ],
         "summary": "Save seller KYC draft",
         "description": "Saves or updates a seller KYC draft. Required fields differ depending on `account_type`.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -5641,10 +6619,16 @@
     },
     "/sellers/kyc/documents": {
       "post": {
-        "tags": ["seller-kyc"],
+        "tags": [
+          "seller-kyc"
+        ],
         "summary": "Upload a seller KYC document",
         "description": "Uploads one seller KYC document at a time. This endpoint is designed to be simpler for web and mobile clients than sending all documents in one large request.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -5692,10 +6676,16 @@
     },
     "/sellers/kyc/submit": {
       "post": {
-        "tags": ["seller-kyc"],
+        "tags": [
+          "seller-kyc"
+        ],
         "summary": "Submit seller KYC for review",
         "description": "Performs final validation on the seller KYC draft and uploaded documents, then moves the KYC record to `submitted`.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": false,
           "content": {
@@ -5815,7 +6805,10 @@
     "schemas": {
       "LoginRequest": {
         "type": "object",
-        "required": ["email", "password"],
+        "required": [
+          "email",
+          "password"
+        ],
         "properties": {
           "email": {
             "type": "string",
@@ -5896,7 +6889,9 @@
       },
       "RefreshTokenRequest": {
         "type": "object",
-        "required": ["refresh_token"],
+        "required": [
+          "refresh_token"
+        ],
         "properties": {
           "refresh_token": {
             "type": "string",
@@ -5906,7 +6901,9 @@
       },
       "ForgotPasswordRequest": {
         "type": "object",
-        "required": ["email"],
+        "required": [
+          "email"
+        ],
         "properties": {
           "email": {
             "type": "string",
@@ -5917,7 +6914,10 @@
       },
       "VerifyEmailRequest": {
         "type": "object",
-        "required": ["email", "code"],
+        "required": [
+          "email",
+          "code"
+        ],
         "properties": {
           "email": {
             "type": "string",
@@ -5954,7 +6954,9 @@
       },
       "ResendVerificationEmailRequest": {
         "type": "object",
-        "required": ["email"],
+        "required": [
+          "email"
+        ],
         "properties": {
           "email": {
             "type": "string",
@@ -5983,7 +6985,12 @@
       },
       "ResetPasswordRequest": {
         "type": "object",
-        "required": ["email", "code", "password", "confirm_password"],
+        "required": [
+          "email",
+          "code",
+          "password",
+          "confirm_password"
+        ],
         "properties": {
           "email": {
             "type": "string",
@@ -6008,7 +7015,12 @@
       },
       "CreateProductCategoryRequest": {
         "type": "object",
-        "required": ["name", "description", "deduction_percentage", "image"],
+        "required": [
+          "name",
+          "description",
+          "deduction_percentage",
+          "image"
+        ],
         "properties": {
           "name": {
             "type": "string",
@@ -6029,7 +7041,11 @@
       },
       "CreateProductBrandRequest": {
         "type": "object",
-        "required": ["name", "description", "image"],
+        "required": [
+          "name",
+          "description",
+          "image"
+        ],
         "properties": {
           "name": {
             "type": "string",
@@ -6066,7 +7082,11 @@
       },
       "ProductCategoryImageUploadRequest": {
         "type": "object",
-        "required": ["file_name", "mime_type", "file_base64"],
+        "required": [
+          "file_name",
+          "mime_type",
+          "file_base64"
+        ],
         "properties": {
           "file_name": {
             "type": "string",
@@ -6074,7 +7094,11 @@
           },
           "mime_type": {
             "type": "string",
-            "enum": ["image/jpeg", "image/png", "image/webp"],
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ],
             "example": "image/jpeg"
           },
           "file_base64": {
@@ -6108,7 +7132,11 @@
       },
       "ProductBrandImageUploadRequest": {
         "type": "object",
-        "required": ["file_name", "mime_type", "file_base64"],
+        "required": [
+          "file_name",
+          "mime_type",
+          "file_base64"
+        ],
         "properties": {
           "file_name": {
             "type": "string",
@@ -6116,7 +7144,11 @@
           },
           "mime_type": {
             "type": "string",
-            "enum": ["image/jpeg", "image/png", "image/webp"],
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ],
             "example": "image/jpeg"
           },
           "file_base64": {
@@ -6169,17 +7201,26 @@
         "properties": {
           "shipping_mode": {
             "type": "string",
-            "enum": ["PLATFORM", "VENDOR"],
+            "enum": [
+              "PLATFORM",
+              "VENDOR"
+            ],
             "example": "PLATFORM"
           },
           "category_shipping_mode": {
             "type": "string",
-            "enum": ["HIGHEST", "ADDITIVE"],
+            "enum": [
+              "HIGHEST",
+              "ADDITIVE"
+            ],
             "example": "HIGHEST"
           },
           "vendor_fallback_policy": {
             "type": "string",
-            "enum": ["USE_PLATFORM_RULES", "BLOCK_CHECKOUT"],
+            "enum": [
+              "USE_PLATFORM_RULES",
+              "BLOCK_CHECKOUT"
+            ],
             "example": "BLOCK_CHECKOUT"
           }
         }
@@ -6197,7 +7238,11 @@
       },
       "CreateCouponFreeShippingRuleRequest": {
         "type": "object",
-        "required": ["name", "type", "coupon_code"],
+        "required": [
+          "name",
+          "type",
+          "coupon_code"
+        ],
         "properties": {
           "name": {
             "type": "string",
@@ -6206,7 +7251,9 @@
           },
           "type": {
             "type": "string",
-            "enum": ["coupon"],
+            "enum": [
+              "coupon"
+            ],
             "example": "coupon"
           },
           "coupon_code": {
@@ -6218,7 +7265,11 @@
       },
       "CreateThresholdFreeShippingRuleRequest": {
         "type": "object",
-        "required": ["name", "type", "minimum_order_subtotal"],
+        "required": [
+          "name",
+          "type",
+          "minimum_order_subtotal"
+        ],
         "properties": {
           "name": {
             "type": "string",
@@ -6227,7 +7278,9 @@
           },
           "type": {
             "type": "string",
-            "enum": ["threshold"],
+            "enum": [
+              "threshold"
+            ],
             "example": "threshold"
           },
           "minimum_order_subtotal": {
@@ -6246,7 +7299,10 @@
           },
           "type": {
             "type": "string",
-            "enum": ["coupon", "threshold"],
+            "enum": [
+              "coupon",
+              "threshold"
+            ],
             "example": "threshold"
           },
           "coupon_code": {
@@ -6261,7 +7317,10 @@
       },
       "CreateShippingZoneRequest": {
         "type": "object",
-        "required": ["name", "states"],
+        "required": [
+          "name",
+          "states"
+        ],
         "properties": {
           "name": {
             "type": "string",
@@ -6272,7 +7331,9 @@
             "minItems": 1,
             "items": {
               "type": "object",
-              "required": ["state_name"],
+              "required": [
+                "state_name"
+              ],
               "properties": {
                 "state_name": {
                   "type": "string",
@@ -6302,7 +7363,9 @@
             "minItems": 1,
             "items": {
               "type": "object",
-              "required": ["state_name"],
+              "required": [
+                "state_name"
+              ],
               "properties": {
                 "state_name": {
                   "type": "string",
@@ -6322,7 +7385,11 @@
       },
       "CreateShippingZoneRuleRequest": {
         "type": "object",
-        "required": ["zone_id", "method_type", "value"],
+        "required": [
+          "zone_id",
+          "method_type",
+          "value"
+        ],
         "properties": {
           "zone_id": {
             "type": "string",
@@ -6330,7 +7397,10 @@
           },
           "method_type": {
             "type": "string",
-            "enum": ["fixed_rate", "percentage_based"],
+            "enum": [
+              "fixed_rate",
+              "percentage_based"
+            ],
             "example": "fixed_rate"
           },
           "value": {
@@ -6354,7 +7424,10 @@
           },
           "method_type": {
             "type": "string",
-            "enum": ["fixed_rate", "percentage_based"],
+            "enum": [
+              "fixed_rate",
+              "percentage_based"
+            ],
             "example": "percentage_based"
           },
           "value": {
@@ -6371,7 +7444,11 @@
       },
       "CreateCategoryShippingRuleRequest": {
         "type": "object",
-        "required": ["category_id", "method_type", "value"],
+        "required": [
+          "category_id",
+          "method_type",
+          "value"
+        ],
         "properties": {
           "category_id": {
             "type": "string",
@@ -6379,7 +7456,10 @@
           },
           "method_type": {
             "type": "string",
-            "enum": ["fixed_rate", "percentage_based"],
+            "enum": [
+              "fixed_rate",
+              "percentage_based"
+            ],
             "example": "fixed_rate"
           },
           "value": {
@@ -6403,7 +7483,10 @@
           },
           "method_type": {
             "type": "string",
-            "enum": ["fixed_rate", "percentage_based"],
+            "enum": [
+              "fixed_rate",
+              "percentage_based"
+            ],
             "example": "percentage_based"
           },
           "value": {
@@ -6420,7 +7503,11 @@
       },
       "ShippingSubtotalBandRequest": {
         "type": "object",
-        "required": ["min_subtotal", "method_type", "value"],
+        "required": [
+          "min_subtotal",
+          "method_type",
+          "value"
+        ],
         "properties": {
           "min_subtotal": {
             "type": "number",
@@ -6434,7 +7521,10 @@
           },
           "method_type": {
             "type": "string",
-            "enum": ["fixed_rate", "percentage_based"],
+            "enum": [
+              "fixed_rate",
+              "percentage_based"
+            ],
             "example": "fixed_rate"
           },
           "value": {
@@ -6541,7 +7631,9 @@
       },
       "AddProductToWishlistRequest": {
         "type": "object",
-        "required": ["product_id"],
+        "required": [
+          "product_id"
+        ],
         "properties": {
           "product_id": {
             "type": "string",
@@ -6596,7 +7688,10 @@
       },
       "AddProductToCartRequest": {
         "type": "object",
-        "required": ["product_id", "quantity"],
+        "required": [
+          "product_id",
+          "quantity"
+        ],
         "properties": {
           "product_id": {
             "type": "string",
@@ -6611,18 +7706,14 @@
       },
       "CalculateCartShippingPreviewRequest": {
         "type": "object",
-        "required": ["billing_address_id", "discounted_subtotal"],
+        "required": [
+          "billing_address_id"
+        ],
         "properties": {
           "billing_address_id": {
             "type": "string",
             "format": "uuid",
             "example": "billing-address-id"
-          },
-          "discounted_subtotal": {
-            "type": "number",
-            "minimum": 0,
-            "example": 58000,
-            "description": "Discounted cart subtotal supplied by the caller before shipping is added."
           },
           "free_shipping_coupon_code": {
             "type": "string",
@@ -6655,7 +7746,8 @@
               },
               "discounted_subtotal": {
                 "type": "number",
-                "example": 58000
+                "example": 60000,
+                "description": "Subtotal used for checkout calculations. Until a full discount system is introduced, this matches the raw cart subtotal."
               },
               "total_items": {
                 "type": "integer",
@@ -6663,12 +7755,18 @@
               },
               "shipping_mode": {
                 "type": "string",
-                "enum": ["PLATFORM", "VENDOR"],
+                "enum": [
+                  "PLATFORM",
+                  "VENDOR"
+                ],
                 "example": "VENDOR"
               },
               "category_shipping_mode": {
                 "type": "string",
-                "enum": ["HIGHEST", "ADDITIVE"],
+                "enum": [
+                  "HIGHEST",
+                  "ADDITIVE"
+                ],
                 "example": "ADDITIVE"
               },
               "base_shipping_fee": {
@@ -6694,7 +7792,10 @@
                   "rule_type": {
                     "type": "string",
                     "nullable": true,
-                    "enum": ["coupon", "threshold"],
+                    "enum": [
+                      "coupon",
+                      "threshold"
+                    ],
                     "example": "coupon"
                   },
                   "coupon_code": {
@@ -6725,12 +7826,18 @@
           },
           "rule_owner_type": {
             "type": "string",
-            "enum": ["platform", "vendor"],
+            "enum": [
+              "platform",
+              "vendor"
+            ],
             "example": "vendor"
           },
           "final_shipping_owner_type": {
             "type": "string",
-            "enum": ["platform", "vendor"],
+            "enum": [
+              "platform",
+              "vendor"
+            ],
             "example": "platform"
           },
           "used_fallback": {
@@ -6750,7 +7857,10 @@
               },
               "match_type": {
                 "type": "string",
-                "enum": ["city", "state"],
+                "enum": [
+                  "city",
+                  "state"
+                ],
                 "example": "city"
               }
             }
@@ -6813,7 +7923,11 @@
               },
               "status": {
                 "type": "string",
-                "enum": ["initialized", "completed", "failed"],
+                "enum": [
+                  "initialized",
+                  "completed",
+                  "failed"
+                ],
                 "example": "completed"
               },
               "payment_provider": {
@@ -6872,7 +7986,9 @@
       },
       "UpdateProductQuantityInCartRequest": {
         "type": "object",
-        "required": ["quantity"],
+        "required": [
+          "quantity"
+        ],
         "properties": {
           "quantity": {
             "type": "integer",
@@ -6927,7 +8043,10 @@
           },
           "account_type": {
             "type": "string",
-            "enum": ["individual", "business"],
+            "enum": [
+              "individual",
+              "business"
+            ],
             "example": "individual"
           }
         }
@@ -7049,7 +8168,11 @@
             "minItems": 1,
             "items": {
               "type": "object",
-              "required": ["file_name", "mime_type", "file_base64"],
+              "required": [
+                "file_name",
+                "mime_type",
+                "file_base64"
+              ],
               "properties": {
                 "file_name": {
                   "type": "string",
@@ -7057,7 +8180,11 @@
                 },
                 "mime_type": {
                   "type": "string",
-                  "enum": ["image/jpeg", "image/png", "image/webp"]
+                  "enum": [
+                    "image/jpeg",
+                    "image/png",
+                    "image/webp"
+                  ]
                 },
                 "file_base64": {
                   "type": "string",
@@ -7070,11 +8197,16 @@
       },
       "SaveSellerKycDraftRequest": {
         "type": "object",
-        "required": ["account_type"],
+        "required": [
+          "account_type"
+        ],
         "properties": {
           "account_type": {
             "type": "string",
-            "enum": ["individual", "business"]
+            "enum": [
+              "individual",
+              "business"
+            ]
           },
           "email": {
             "type": "string",
@@ -7150,7 +8282,12 @@
       },
       "UploadSellerKycDocumentRequest": {
         "type": "object",
-        "required": ["document_type", "file_name", "mime_type", "file_base64"],
+        "required": [
+          "document_type",
+          "file_name",
+          "mime_type",
+          "file_base64"
+        ],
         "properties": {
           "document_type": {
             "type": "string",
@@ -7167,7 +8304,11 @@
           },
           "mime_type": {
             "type": "string",
-            "enum": ["image/jpeg", "image/png", "application/pdf"]
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "application/pdf"
+            ]
           },
           "file_base64": {
             "type": "string",
@@ -7204,7 +8345,9 @@
       },
       "RejectProductPendingReviewRequest": {
         "type": "object",
-        "required": ["review_note"],
+        "required": [
+          "review_note"
+        ],
         "properties": {
           "review_note": {
             "type": "string",

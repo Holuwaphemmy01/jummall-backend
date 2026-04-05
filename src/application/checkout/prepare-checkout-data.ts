@@ -18,7 +18,6 @@ import type {
 export interface PrepareCheckoutDataInput {
   buyerId: string;
   billingAddressId: string;
-  discountedSubtotal: number;
   freeShippingCouponCode?: string;
 }
 
@@ -180,7 +179,6 @@ export class PrepareCheckoutData {
     const shipping = await this.calculateCartShipping.execute({
       buyerId: input.buyerId,
       billingAddressId: input.billingAddressId,
-      discountedSubtotal: input.discountedSubtotal,
       freeShippingCouponCode: input.freeShippingCouponCode
     });
 
@@ -240,4 +238,3 @@ export class PrepareCheckoutData {
     };
   }
 }
-

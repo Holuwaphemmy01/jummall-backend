@@ -38,7 +38,6 @@ describe("initialize checkout", () => {
     const result = await useCase.execute({
       buyerId: "buyer-1",
       billingAddressId: "address-1",
-      discountedSubtotal: 9500,
       freeShippingCouponCode: "SAVE"
     });
 
@@ -63,8 +62,7 @@ describe("initialize checkout", () => {
     await expect(
       useCase.execute({
         buyerId: "buyer-1",
-        billingAddressId: "address-1",
-        discountedSubtotal: 9500
+        billingAddressId: "address-1"
       })
     ).rejects.toEqual(
       expect.objectContaining({
