@@ -77,7 +77,7 @@ interface CategoryFeeResolution {
 export interface CalculateCartShippingInput {
   buyerId: string;
   billingAddressId: string;
-  discountedSubtotal: number;
+  discountedSubtotal?: number;
   freeShippingCouponCode?: string;
 }
 
@@ -212,11 +212,13 @@ export class CalculateCartShipping implements CalculateCartShippingUseCase {
     const rawSubtotal = rawLines.reduce((sum, line) => sum + line.rawSubtotal, 0);
     const totalItems = rawLines.reduce((sum, line) => sum + line.quantity, 0);
     const currency = this.resolveSingleCurrency(rawLines);
+    const effectiveDiscountedSubtotal =
+      input.discountedSubtotal ?? rawSubtotal;
 
     if (
-      !Number.isFinite(input.discountedSubtotal) ||
-      input.discountedSubtotal < 0 ||
-      input.discountedSubtotal > rawSubtotal
+      !Number.isFinite(effectiveDiscountedSubtotal) ||
+      effectiveDiscountedSubtotal < 0 ||
+      effectiveDiscountedSubtotal > rawSubtotal
     ) {
       throw new CalculateCartShippingError(
         "Discounted subtotal must be between 0 and the raw cart subtotal.",
@@ -230,7 +232,7 @@ export class CalculateCartShipping implements CalculateCartShippingUseCase {
         id: line.id,
         rawSubtotal: line.rawSubtotal
       })),
-      input.discountedSubtotal
+      effectiveDiscountedSubtotal
     );
 
     const discountedSubtotalByLineId = new Map(
@@ -270,7 +272,7 @@ export class CalculateCartShipping implements CalculateCartShippingUseCase {
       0
     );
     const freeShipping = await this.resolveFreeShipping({
-      discountedSubtotal: input.discountedSubtotal,
+      discountedSubtotal: effectiveDiscountedSubtotal,
       freeShippingCouponCode: input.freeShippingCouponCode
     });
     const finalShippingFee = freeShipping.applied ? 0 : baseShippingFee;
@@ -279,7 +281,7 @@ export class CalculateCartShipping implements CalculateCartShippingUseCase {
       cartId: cart.id,
       currency,
       rawSubtotal,
-      discountedSubtotal: input.discountedSubtotal,
+      discountedSubtotal: effectiveDiscountedSubtotal,
       totalItems,
       shippingMode: shippingSettings.shippingMode,
       categoryShippingMode: shippingSettings.categoryShippingMode,

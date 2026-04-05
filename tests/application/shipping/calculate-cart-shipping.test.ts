@@ -1098,4 +1098,20 @@ describe("calculate cart shipping additional scenarios", () => {
       })
     ).rejects.toBeInstanceOf(CalculateCartShippingError);
   });
+
+  it("defaults the discounted subtotal to the raw cart subtotal when none is supplied", async () => {
+    const useCase = createUseCase({
+      platformZones: [makeZone({ id: "zone-1", states: [{ stateName: "Lagos" }] })],
+      platformZoneRules: [makeZoneRule({ zoneId: "zone-1", value: 1500 })]
+    });
+
+    const result = await useCase.execute({
+      buyerId: "buyer-1",
+      billingAddressId: "address-1"
+    });
+
+    expect(result.rawSubtotal).toBe(20000);
+    expect(result.discountedSubtotal).toBe(20000);
+    expect(result.finalShippingFee).toBe(1500);
+  });
 });

@@ -157,8 +157,7 @@ describe("prepare checkout data", () => {
 
     const result = await useCase.execute({
       buyerId: "buyer-1",
-      billingAddressId: "address-1",
-      discountedSubtotal: 9500
+      billingAddressId: "address-1"
     });
 
     expect(result.buyer.email).toBe("buyer@example.com");
@@ -183,8 +182,7 @@ describe("prepare checkout data", () => {
     await expect(
       useCase.execute({
         buyerId: "buyer-1",
-        billingAddressId: "missing-address",
-        discountedSubtotal: 9500
+        billingAddressId: "missing-address"
       })
     ).rejects.toEqual(
       expect.objectContaining({
@@ -207,8 +205,7 @@ describe("prepare checkout data", () => {
     await expect(
       useCase.execute({
         buyerId: "buyer-1",
-        billingAddressId: "address-1",
-        discountedSubtotal: 0
+        billingAddressId: "address-1"
       })
     ).rejects.toEqual(
       expect.objectContaining({

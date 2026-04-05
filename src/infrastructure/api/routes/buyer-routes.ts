@@ -627,7 +627,6 @@ export function createProtectedBuyerCartRouter({
       const result = await calculateCartShipping.execute({
         buyerId: authUser.sub,
         billingAddressId: value.billing_address_id,
-        discountedSubtotal: value.discounted_subtotal,
         freeShippingCouponCode: value.free_shipping_coupon_code ?? undefined
       });
 
@@ -702,7 +701,6 @@ export function createProtectedBuyerCartRouter({
       const result = await getOrderSummary!.execute({
         buyerId: authUser.sub,
         billingAddressId: value.billing_address_id,
-        discountedSubtotal: value.discounted_subtotal,
         freeShippingCouponCode: value.free_shipping_coupon_code ?? undefined
       });
 
@@ -746,7 +744,6 @@ export function createProtectedBuyerCartRouter({
       const result = await initializeCheckout!.execute({
         buyerId: authUser.sub,
         billingAddressId: value.billing_address_id,
-        discountedSubtotal: value.discounted_subtotal,
         freeShippingCouponCode: value.free_shipping_coupon_code ?? undefined
       });
 
