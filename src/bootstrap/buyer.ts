@@ -1,6 +1,8 @@
 import { AddProductToCart } from "../application/buyer/add-product-to-cart";
 import { AddBillingAddress } from "../application/buyer/add-billing-address";
 import { AddProductToWishlist } from "../application/buyer/add-product-to-wishlist";
+import { GetBuyerOrderDetail } from "../application/buyer/get-buyer-order-detail";
+import { ListBuyerOrders } from "../application/buyer/list-buyer-orders";
 import { CompleteCheckoutAfterPayment } from "../application/checkout/complete-checkout-after-payment";
 import { GetCheckoutStatus } from "../application/checkout/get-checkout-status";
 import { GetOrderSummary } from "../application/checkout/get-order-summary";
@@ -22,6 +24,7 @@ import { createAuthMiddleware } from "../infrastructure/api/middleware/create-au
 import createBuyerRouter, {
   createProtectedBuyerBillingAddressRouter,
   createProtectedBuyerCartRouter,
+  createProtectedBuyerOrderRouter,
   createProtectedBuyerWishlistRouter
 } from "../infrastructure/api/routes/buyer-routes";
 import { PostgresAuthenticationRepository } from "../infrastructure/database/repositories/postgres-authentication-repository";
@@ -57,6 +60,7 @@ export function createBuyerModule() {
   const categoryShippingRuleRepository = new PostgresCategoryShippingRuleRepository();
   const emailVerificationRepository = new PostgresEmailVerificationRepository();
   const freeShippingRuleRepository = new PostgresFreeShippingRuleRepository();
+  const orderRepository = new PostgresOrderRepository();
   const productRepository = new PostgresProductRepository();
   const shippingSettingsRepository = new PostgresShippingSettingsRepository();
   const shippingZoneRepository = new PostgresShippingZoneRepository();
@@ -101,6 +105,14 @@ export function createBuyerModule() {
     authenticationRepository,
     wishlistRepository,
     productRepository
+  );
+  const listBuyerOrders = new ListBuyerOrders(
+    authenticationRepository,
+    orderRepository
+  );
+  const getBuyerOrderDetail = new GetBuyerOrderDetail(
+    authenticationRepository,
+    orderRepository
   );
   const addProductToCart = new AddProductToCart(
     authenticationRepository,
@@ -201,6 +213,14 @@ export function createBuyerModule() {
       getBuyerWishlist,
       addProductToWishlist,
       removeProductFromWishlist
+    })
+  );
+  buyerRouter.use(
+    "/orders",
+    authenticateBuyer,
+    createProtectedBuyerOrderRouter({
+      listBuyerOrders,
+      getBuyerOrderDetail
     })
   );
 

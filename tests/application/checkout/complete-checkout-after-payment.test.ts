@@ -39,6 +39,21 @@ describe("complete checkout after payment", () => {
     });
     expect(context.inventoryRepository.decrementAvailableQuantities).toHaveBeenCalled();
     expect(context.orderRepository.create).toHaveBeenCalled();
+    expect(context.orderRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: [
+          expect.objectContaining({
+            productId: "product-1",
+            images: [
+              expect.objectContaining({
+                storagePath: "products/seller-1/product-1/front.jpg",
+                position: 0
+              })
+            ]
+          })
+        ]
+      })
+    );
     expect(context.cartRepository.clearItemsByCartId).toHaveBeenCalledWith("cart-1");
   });
 
@@ -159,7 +174,14 @@ function createTransactionContext(): CheckoutTransactionContext {
         items: [],
         shippingSegments: []
       })),
-      findById: jest.fn(async () => null)
+      findById: jest.fn(async () => null),
+      findDetailByIdAndBuyerId: jest.fn(async () => null),
+      findPageByBuyerId: jest.fn(async () => ({
+        items: [],
+        total: 0,
+        page: 1,
+        limit: 20
+      }))
     },
     productRepository: {
       create: jest.fn(async () => {
@@ -183,7 +205,18 @@ function createTransactionContext(): CheckoutTransactionContext {
         status: "approved" as const,
         reviewNote: null,
         reviewedAt: null,
-        images: [],
+        images: [
+          {
+            id: "product-image-1",
+            productId: "product-1",
+            storagePath: "products/seller-1/product-1/front.jpg",
+            mimeType: "image/jpeg",
+            originalFileName: "front.jpg",
+            position: 0,
+            createdAt: new Date("2026-04-05T00:00:00.000Z"),
+            updatedAt: new Date("2026-04-05T00:00:00.000Z")
+          }
+        ],
         createdAt: new Date("2026-04-05T00:00:00.000Z"),
         updatedAt: new Date("2026-04-05T00:00:00.000Z")
       })),
@@ -191,7 +224,7 @@ function createTransactionContext(): CheckoutTransactionContext {
       findPendingReview: jest.fn(async () => []),
       updateStatus: jest.fn(async () => null)
     }
-  } as CheckoutTransactionContext;
+  } as unknown as CheckoutTransactionContext;
 }
 
 function makeSession(): CheckoutSessionDetailRecord {
