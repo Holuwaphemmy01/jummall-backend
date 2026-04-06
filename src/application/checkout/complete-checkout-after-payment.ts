@@ -155,6 +155,12 @@ export class CompleteCheckoutAfterPayment
           );
         }
 
+        const validatedProductsById = new Map<string, Awaited<
+          ReturnType<typeof context.productRepository.findById>
+        > extends infer T
+          ? Exclude<T, null>
+          : never>();
+
         for (const item of session.items) {
           const product = await context.productRepository.findById(item.productId);
 
@@ -177,6 +183,8 @@ export class CompleteCheckoutAfterPayment
               "quantity"
             );
           }
+
+          validatedProductsById.set(item.productId, product);
         }
 
         await context.inventoryRepository.decrementAvailableQuantities(
@@ -206,23 +214,34 @@ export class CompleteCheckoutAfterPayment
           freeShippingCouponCode: session.freeShippingCouponCode,
           paidAt: input.verification.paidAt,
           billingAddress: session.billingAddress,
-          items: session.items.map((item) => ({
-            productId: item.productId,
-            sellerId: item.sellerId,
-            categoryId: item.categoryId,
-            categoryName: item.categoryName,
-            brandId: item.brandId,
-            brandName: item.brandName,
-            productName: item.productName,
-            productDescription: item.productDescription,
-            sku: item.sku,
-            unitPrice: item.unitPrice,
-            quantity: item.quantity,
-            lineSubtotal: item.lineSubtotal,
-            currency: item.currency,
-            condition: item.condition,
-            weightKg: item.weightKg
-          })),
+          items: session.items.map((item) => {
+            const product = validatedProductsById.get(item.productId);
+
+            return {
+              productId: item.productId,
+              sellerId: item.sellerId,
+              categoryId: item.categoryId,
+              categoryName: item.categoryName,
+              brandId: item.brandId,
+              brandName: item.brandName,
+              productName: item.productName,
+              productDescription: item.productDescription,
+              sku: item.sku,
+              unitPrice: item.unitPrice,
+              quantity: item.quantity,
+              lineSubtotal: item.lineSubtotal,
+              currency: item.currency,
+              condition: item.condition,
+              weightKg: item.weightKg,
+              images:
+                product?.images.map((image) => ({
+                  storagePath: image.storagePath,
+                  mimeType: image.mimeType,
+                  originalFileName: image.originalFileName,
+                  position: image.position
+                })) ?? []
+            };
+          }),
           shippingSegments: session.shippingBreakdown.map((segment) => ({
             sellerId: segment.sellerId,
             ruleOwnerType: segment.ruleOwnerType,

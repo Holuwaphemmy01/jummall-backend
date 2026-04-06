@@ -9,6 +9,17 @@ import type {
 
 export type OrderStatus = "pending_fulfillment";
 
+export interface OrderItemImageRecord {
+  id: string;
+  orderItemId: string;
+  storagePath: string;
+  mimeType: string;
+  originalFileName: string;
+  position: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface OrderBillingAddressSnapshot {
   fullName: string;
   phoneNumber: string;
@@ -56,6 +67,7 @@ export interface OrderItemRecord {
   currency: string;
   condition: string;
   weightKg: number;
+  images: OrderItemImageRecord[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -107,6 +119,14 @@ export interface CreateOrderItemInput {
   currency: string;
   condition: string;
   weightKg: number;
+  images: CreateOrderItemImageInput[];
+}
+
+export interface CreateOrderItemImageInput {
+  storagePath: string;
+  mimeType: string;
+  originalFileName: string;
+  position: number;
 }
 
 export interface CreateOrderShippingSegmentInput {
@@ -147,8 +167,48 @@ export interface CreateOrderInput {
   shippingSegments: CreateOrderShippingSegmentInput[];
 }
 
+export interface OrderHistoryItemPreviewRecord {
+  orderItemId: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  images: OrderItemImageRecord[];
+}
+
+export interface OrderHistoryRecord {
+  id: string;
+  status: OrderStatus;
+  currency: string;
+  totalItems: number;
+  rawSubtotal: number;
+  discountedSubtotal: number;
+  finalShippingFee: number;
+  totalPaid: number;
+  freeShippingApplied: boolean;
+  paidAt: Date | null;
+  createdAt: Date;
+  itemsPreview: OrderHistoryItemPreviewRecord[];
+}
+
+export interface FindOrdersPageByBuyerIdInput {
+  buyerId: string;
+  page: number;
+  limit: number;
+}
+
+export interface OrderHistoryPage {
+  items: OrderHistoryRecord[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export interface OrderRepository {
   create(input: CreateOrderInput): Promise<OrderDetailRecord>;
   findById(orderId: string): Promise<OrderDetailRecord | null>;
+  findDetailByIdAndBuyerId(
+    orderId: string,
+    buyerId: string
+  ): Promise<OrderDetailRecord | null>;
+  findPageByBuyerId(input: FindOrdersPageByBuyerIdInput): Promise<OrderHistoryPage>;
 }
-

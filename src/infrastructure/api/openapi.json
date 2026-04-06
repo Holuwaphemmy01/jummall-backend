@@ -6726,6 +6726,298 @@
           }
         }
       }
+    },
+    "/buyers/orders": {
+      "get": {
+        "tags": [
+          "buyer-orders"
+        ],
+        "summary": "List buyer orders",
+        "description": "Returns paginated buyer-owned orders only. Results are sorted newest first and include a small items preview for history screens. Checkout sessions are not included here.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "Page number to fetch."
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Number of orders to return per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Buyer orders fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuyerOrderHistoryResponse"
+                },
+                "example": {
+                  "message": "Buyer orders fetched successfully.",
+                  "data": {
+                    "orders": [
+                      {
+                        "id": "order-id",
+                        "status": "pending_fulfillment",
+                        "currency": "NGN",
+                        "total_items": 2,
+                        "raw_subtotal": 60000,
+                        "discounted_subtotal": 60000,
+                        "final_shipping_fee": 0,
+                        "total_paid": 60000,
+                        "free_shipping_applied": true,
+                        "paid_at": "2026-04-06T10:00:00.000Z",
+                        "created_at": "2026-04-06T10:00:00.000Z",
+                        "items_preview": [
+                          {
+                            "order_item_id": "order-item-id",
+                            "product_id": "product-id",
+                            "product_name": "Wireless Headset",
+                            "quantity": 2,
+                            "primary_image": "products/seller-id/product-id/front.jpg",
+                            "primary_image_public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/product-id/front.jpg"
+                          }
+                        ]
+                      }
+                    ],
+                    "pagination": {
+                      "page": 1,
+                      "limit": 20,
+                      "total": 1,
+                      "total_pages": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer account not found"
+          }
+        }
+      }
+    },
+    "/buyers/orders/{orderId}": {
+      "get": {
+        "tags": [
+          "buyer-orders"
+        ],
+        "summary": "Get buyer order detail",
+        "description": "Returns the full saved snapshot for one buyer-owned order. Order item images are immutable snapshots captured at order creation. Older orders created before image snapshot support may return empty image arrays.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "orderId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Order id to fetch."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Buyer order fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuyerOrderDetailResponse"
+                },
+                "examples": {
+                  "standard_order": {
+                    "value": {
+                      "message": "Buyer order fetched successfully.",
+                      "data": {
+                        "id": "order-id",
+                        "status": "pending_fulfillment",
+                        "payment_provider": "paystack",
+                        "currency": "NGN",
+                        "total_items": 2,
+                        "raw_subtotal": 60000,
+                        "discounted_subtotal": 60000,
+                        "base_shipping_fee": 4500,
+                        "final_shipping_fee": 0,
+                        "total_paid": 60000,
+                        "shipping_mode": "VENDOR",
+                        "category_shipping_mode": "ADDITIVE",
+                        "free_shipping": {
+                          "applied": true,
+                          "rule_id": "free-shipping-rule-id",
+                          "rule_type": "coupon",
+                          "coupon_code": "FREESHIP"
+                        },
+                        "paid_at": "2026-04-06T10:00:00.000Z",
+                        "created_at": "2026-04-06T10:00:00.000Z",
+                        "updated_at": "2026-04-06T10:00:00.000Z",
+                        "billing_address": {
+                          "full_name": "Buyer One",
+                          "phone_number": "08000000000",
+                          "address_line_1": "12 Allen Avenue",
+                          "address_line_2": null,
+                          "city": "Ikeja",
+                          "state": "Lagos",
+                          "country": "Nigeria",
+                          "postal_code": null
+                        },
+                        "items": [
+                          {
+                            "id": "order-item-id",
+                            "product_id": "product-id",
+                            "seller_id": "seller-id",
+                            "category_id": "category-id",
+                            "category_name": "Electronics",
+                            "brand_id": "brand-id",
+                            "brand_name": "Apple",
+                            "product_name": "Wireless Headset",
+                            "product_description": "Noise-cancelling wireless headset",
+                            "sku": "HEADSET-001",
+                            "unit_price": 30000,
+                            "quantity": 2,
+                            "line_subtotal": 60000,
+                            "currency": "NGN",
+                            "condition": "new",
+                            "weight_kg": 0.4,
+                            "images": [
+                              {
+                                "id": "order-item-image-id",
+                                "storage_path": "products/seller-id/product-id/front.jpg",
+                                "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/product-id/front.jpg",
+                                "mime_type": "image/jpeg",
+                                "original_file_name": "front.jpg",
+                                "position": 0
+                              }
+                            ]
+                          }
+                        ],
+                        "shipping_segments": [
+                          {
+                            "id": "segment-id",
+                            "seller_id": "seller-id",
+                            "rule_owner_type": "vendor",
+                            "final_shipping_owner_type": "platform",
+                            "used_fallback": false,
+                            "matched_zone": {
+                              "id": "zone-id",
+                              "name": "Lagos Urban",
+                              "match_type": "city"
+                            },
+                            "zone_fee": 2500,
+                            "category_fee": 1500,
+                            "base_shipping_fee": 2500,
+                            "final_shipping_fee": 0
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "legacy_order_without_images": {
+                    "value": {
+                      "message": "Buyer order fetched successfully.",
+                      "data": {
+                        "id": "legacy-order-id",
+                        "status": "pending_fulfillment",
+                        "payment_provider": "paystack",
+                        "currency": "NGN",
+                        "total_items": 1,
+                        "raw_subtotal": 10000,
+                        "discounted_subtotal": 10000,
+                        "base_shipping_fee": 500,
+                        "final_shipping_fee": 500,
+                        "total_paid": 10500,
+                        "shipping_mode": "PLATFORM",
+                        "category_shipping_mode": "HIGHEST",
+                        "free_shipping": {
+                          "applied": false,
+                          "rule_id": null,
+                          "rule_type": null,
+                          "coupon_code": null
+                        },
+                        "paid_at": "2026-04-06T10:00:00.000Z",
+                        "created_at": "2026-04-06T10:00:00.000Z",
+                        "updated_at": "2026-04-06T10:00:00.000Z",
+                        "billing_address": {
+                          "full_name": "Buyer One",
+                          "phone_number": "08000000000",
+                          "address_line_1": "1 Buyer St",
+                          "address_line_2": null,
+                          "city": "Ikeja",
+                          "state": "Lagos",
+                          "country": "Nigeria",
+                          "postal_code": null
+                        },
+                        "items": [
+                          {
+                            "id": "legacy-order-item-id",
+                            "product_id": "legacy-product-id",
+                            "seller_id": "seller-id",
+                            "category_id": "category-id",
+                            "category_name": "Electronics",
+                            "brand_id": null,
+                            "brand_name": null,
+                            "product_name": "Phone",
+                            "product_description": "Phone",
+                            "sku": "PHONE-001",
+                            "unit_price": 10000,
+                            "quantity": 1,
+                            "line_subtotal": 10000,
+                            "currency": "NGN",
+                            "condition": "new",
+                            "weight_kg": 1,
+                            "images": []
+                          }
+                        ],
+                        "shipping_segments": []
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer account or order not found"
+          }
+        }
+      }
     }
   },
   "tags": [
@@ -8352,6 +8644,506 @@
           "review_note": {
             "type": "string",
             "example": "Product images are too blurry."
+          }
+        }
+      },
+      "BuyerOrderItemImage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "storage_path": {
+            "type": "string",
+            "example": "products/seller-id/product-id/front.jpg"
+          },
+          "public_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/product-id/front.jpg"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "image/jpeg"
+          },
+          "original_file_name": {
+            "type": "string",
+            "example": "front.jpg"
+          },
+          "position": {
+            "type": "integer",
+            "example": 0
+          }
+        }
+      },
+      "BuyerOrderHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Buyer orders fetched successfully."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "orders": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending_fulfillment"
+                      ],
+                      "example": "pending_fulfillment"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "example": "NGN"
+                    },
+                    "total_items": {
+                      "type": "integer",
+                      "example": 2
+                    },
+                    "raw_subtotal": {
+                      "type": "number",
+                      "example": 60000
+                    },
+                    "discounted_subtotal": {
+                      "type": "number",
+                      "example": 60000
+                    },
+                    "final_shipping_fee": {
+                      "type": "number",
+                      "example": 0
+                    },
+                    "total_paid": {
+                      "type": "number",
+                      "example": 60000
+                    },
+                    "free_shipping_applied": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "paid_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "example": "2026-04-06T10:00:00.000Z"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-04-06T10:00:00.000Z"
+                    },
+                    "items_preview": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "order_item_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "product_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "product_name": {
+                            "type": "string",
+                            "example": "Wireless Headset"
+                          },
+                          "quantity": {
+                            "type": "integer",
+                            "example": 2
+                          },
+                          "primary_image": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "example": "products/seller-id/product-id/front.jpg"
+                          },
+                          "primary_image_public_url": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "example": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/product-id/front.jpg"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "pagination": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "example": 20
+                  },
+                  "total": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "total_pages": {
+                    "type": "integer",
+                    "example": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "BuyerOrderDetailResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Buyer order fetched successfully."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pending_fulfillment"
+                ],
+                "example": "pending_fulfillment"
+              },
+              "payment_provider": {
+                "type": "string",
+                "example": "paystack"
+              },
+              "currency": {
+                "type": "string",
+                "example": "NGN"
+              },
+              "total_items": {
+                "type": "integer",
+                "example": 2
+              },
+              "raw_subtotal": {
+                "type": "number",
+                "example": 60000
+              },
+              "discounted_subtotal": {
+                "type": "number",
+                "example": 60000
+              },
+              "base_shipping_fee": {
+                "type": "number",
+                "example": 4500
+              },
+              "final_shipping_fee": {
+                "type": "number",
+                "example": 0
+              },
+              "total_paid": {
+                "type": "number",
+                "example": 60000
+              },
+              "shipping_mode": {
+                "type": "string",
+                "enum": [
+                  "PLATFORM",
+                  "VENDOR"
+                ],
+                "example": "VENDOR"
+              },
+              "category_shipping_mode": {
+                "type": "string",
+                "enum": [
+                  "HIGHEST",
+                  "ADDITIVE"
+                ],
+                "example": "ADDITIVE"
+              },
+              "free_shipping": {
+                "type": "object",
+                "properties": {
+                  "applied": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "rule_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid"
+                  },
+                  "rule_type": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "coupon",
+                      "threshold",
+                      null
+                    ],
+                    "example": "coupon"
+                  },
+                  "coupon_code": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "example": "FREESHIP"
+                  }
+                }
+              },
+              "paid_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time",
+                "example": "2026-04-06T10:00:00.000Z"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2026-04-06T10:00:00.000Z"
+              },
+              "updated_at": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2026-04-06T10:00:00.000Z"
+              },
+              "billing_address": {
+                "type": "object",
+                "properties": {
+                  "full_name": {
+                    "type": "string",
+                    "example": "Buyer One"
+                  },
+                  "phone_number": {
+                    "type": "string",
+                    "example": "08000000000"
+                  },
+                  "address_line_1": {
+                    "type": "string",
+                    "example": "12 Allen Avenue"
+                  },
+                  "address_line_2": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "example": null
+                  },
+                  "city": {
+                    "type": "string",
+                    "example": "Ikeja"
+                  },
+                  "state": {
+                    "type": "string",
+                    "example": "Lagos"
+                  },
+                  "country": {
+                    "type": "string",
+                    "example": "Nigeria"
+                  },
+                  "postal_code": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "example": null
+                  }
+                }
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "product_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "seller_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "category_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "category_name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "example": "Electronics"
+                    },
+                    "brand_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
+                    },
+                    "brand_name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "example": "Apple"
+                    },
+                    "product_name": {
+                      "type": "string",
+                      "example": "Wireless Headset"
+                    },
+                    "product_description": {
+                      "type": "string",
+                      "example": "Noise-cancelling wireless headset"
+                    },
+                    "sku": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "example": "HEADSET-001"
+                    },
+                    "unit_price": {
+                      "type": "number",
+                      "example": 30000
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "example": 2
+                    },
+                    "line_subtotal": {
+                      "type": "number",
+                      "example": 60000
+                    },
+                    "currency": {
+                      "type": "string",
+                      "example": "NGN"
+                    },
+                    "condition": {
+                      "type": "string",
+                      "example": "new"
+                    },
+                    "weight_kg": {
+                      "type": "number",
+                      "example": 0.4
+                    },
+                    "images": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BuyerOrderItemImage"
+                      }
+                    }
+                  }
+                }
+              },
+              "shipping_segments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "seller_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
+                    },
+                    "rule_owner_type": {
+                      "type": "string",
+                      "enum": [
+                        "platform",
+                        "vendor"
+                      ],
+                      "example": "vendor"
+                    },
+                    "final_shipping_owner_type": {
+                      "type": "string",
+                      "enum": [
+                        "platform",
+                        "vendor"
+                      ],
+                      "example": "platform"
+                    },
+                    "used_fallback": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "matched_zone": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Lagos Urban"
+                        },
+                        "match_type": {
+                          "type": "string",
+                          "enum": [
+                            "state",
+                            "city"
+                          ],
+                          "example": "city"
+                        }
+                      }
+                    },
+                    "zone_fee": {
+                      "type": "number",
+                      "example": 2500
+                    },
+                    "category_fee": {
+                      "type": "number",
+                      "example": 1500
+                    },
+                    "base_shipping_fee": {
+                      "type": "number",
+                      "example": 2500
+                    },
+                    "final_shipping_fee": {
+                      "type": "number",
+                      "example": 0
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }

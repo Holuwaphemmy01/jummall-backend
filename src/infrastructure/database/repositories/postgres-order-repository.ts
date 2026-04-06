@@ -3,7 +3,11 @@ import type { Pool } from "pg";
 import databasePool from "../client";
 import type {
   CreateOrderInput,
+  FindOrdersPageByBuyerIdInput,
   OrderDetailRecord,
+  OrderHistoryPage,
+  OrderHistoryRecord,
+  OrderItemImageRecord,
   OrderItemRecord,
   OrderRecord,
   OrderRepository,
@@ -61,6 +65,17 @@ interface OrderItemRow {
   currency: string;
   condition: string;
   weightKg: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface OrderItemImageRow {
+  id: string;
+  orderItemId: string;
+  storagePath: string;
+  mimeType: string;
+  originalFileName: string;
+  position: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -166,7 +181,7 @@ export class PostgresOrderRepository implements OrderRepository {
     const order = orderResult.rows[0];
 
     for (const item of input.items) {
-      await this.executor.query(
+      const orderItemResult = await this.executor.query<OrderItemRow>(
         `
           INSERT INTO "OrderItem" (
             "orderId",
@@ -190,6 +205,26 @@ export class PostgresOrderRepository implements OrderRepository {
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
             $16
           )
+          RETURNING
+            "id",
+            "orderId",
+            "productId",
+            "sellerId",
+            "categoryId",
+            "categoryName",
+            "brandId",
+            "brandName",
+            "productName",
+            "productDescription",
+            "sku",
+            "unitPrice",
+            "quantity",
+            "lineSubtotal",
+            "currency",
+            "condition",
+            "weightKg",
+            "createdAt",
+            "updatedAt"
         `,
         [
           order.id,
@@ -210,6 +245,30 @@ export class PostgresOrderRepository implements OrderRepository {
           item.weightKg
         ]
       );
+
+      const orderItem = orderItemResult.rows[0];
+
+      for (const image of item.images) {
+        await this.executor.query(
+          `
+            INSERT INTO "OrderItemImage" (
+              "orderItemId",
+              "storagePath",
+              "mimeType",
+              "originalFileName",
+              "position"
+            )
+            VALUES ($1, $2, $3, $4, $5)
+          `,
+          [
+            orderItem.id,
+            image.storagePath,
+            image.mimeType,
+            image.originalFileName,
+            image.position
+          ]
+        );
+      }
     }
 
     for (const segment of input.shippingSegments) {
@@ -254,6 +313,30 @@ export class PostgresOrderRepository implements OrderRepository {
   }
 
   async findById(orderId: string): Promise<OrderDetailRecord | null> {
+    return this.findDetail({ orderId });
+  }
+
+  async findDetailByIdAndBuyerId(
+    orderId: string,
+    buyerId: string
+  ): Promise<OrderDetailRecord | null> {
+    return this.findDetail({ orderId, buyerId });
+  }
+
+  async findPageByBuyerId(
+    input: FindOrdersPageByBuyerIdInput
+  ): Promise<OrderHistoryPage> {
+    const totalResult = await this.executor.query<{ count: string }>(
+      `
+        SELECT COUNT(*)::text AS "count"
+        FROM "Order"
+        WHERE "buyerId" = $1
+      `,
+      [input.buyerId]
+    );
+    const total = Number(totalResult.rows[0]?.count ?? 0);
+    const offset = (input.page - 1) * input.limit;
+
     const result = await this.executor.query<OrderRow>(
       `
         SELECT
@@ -281,10 +364,89 @@ export class PostgresOrderRepository implements OrderRepository {
           "createdAt",
           "updatedAt"
         FROM "Order"
-        WHERE "id" = $1
+        WHERE "buyerId" = $1
+        ORDER BY "createdAt" DESC
+        LIMIT $2 OFFSET $3
+      `,
+      [input.buyerId, input.limit, offset]
+    );
+
+    if (result.rows.length === 0) {
+      return {
+        items: [],
+        total,
+        page: input.page,
+        limit: input.limit
+      };
+    }
+
+    const orderIds = result.rows.map((row) => row.id);
+    const itemsPreviewByOrderId = await this.findItemsPreviewByOrderIds(orderIds);
+
+    return {
+      items: result.rows.map((row) => ({
+        id: row.id,
+        status: row.status,
+        currency: row.currency,
+        totalItems: row.totalItems,
+        rawSubtotal: Number(row.rawSubtotal),
+        discountedSubtotal: Number(row.discountedSubtotal),
+        finalShippingFee: Number(row.finalShippingFee),
+        totalPaid: Number(row.totalPaid),
+        freeShippingApplied: row.freeShippingApplied,
+        paidAt: row.paidAt,
+        createdAt: row.createdAt,
+        itemsPreview: itemsPreviewByOrderId.get(row.id) ?? []
+      })),
+      total,
+      page: input.page,
+      limit: input.limit
+    };
+  }
+
+  private async findDetail(input: {
+    orderId: string;
+    buyerId?: string;
+  }): Promise<OrderDetailRecord | null> {
+    const values = [input.orderId];
+    let buyerIdFilter = "";
+
+    if (input.buyerId) {
+      values.push(input.buyerId);
+      buyerIdFilter = ` AND "buyerId" = $2`;
+    }
+
+    const result = await this.executor.query<OrderRow>(
+      `
+        SELECT
+          "id",
+          "checkoutSessionId",
+          "buyerId",
+          "paymentProvider",
+          "paymentReference",
+          "status",
+          "currency",
+          "totalItems",
+          "rawSubtotal",
+          "discountedSubtotal",
+          "baseShippingFee",
+          "finalShippingFee",
+          "totalPaid",
+          "shippingMode",
+          "categoryShippingMode",
+          "freeShippingApplied",
+          "freeShippingRuleId",
+          "freeShippingRuleType",
+          "freeShippingCouponCode",
+          "paidAt",
+          "billingAddressSnapshot",
+          "createdAt",
+          "updatedAt"
+        FROM "Order"
+        WHERE "id" = $1${buyerIdFilter}
         LIMIT 1
       `,
-      [orderId]
+      values
     );
 
     const row = result.rows[0];
@@ -293,8 +455,8 @@ export class PostgresOrderRepository implements OrderRepository {
       return null;
     }
 
-    const items = await this.findItemsByOrderId(orderId);
-    const shippingSegments = await this.findShippingSegmentsByOrderId(orderId);
+    const items = await this.findItemsByOrderId(row.id);
+    const shippingSegments = await this.findShippingSegmentsByOrderId(row.id);
 
     return {
       ...this.mapOrderRow(row),
@@ -333,6 +495,10 @@ export class PostgresOrderRepository implements OrderRepository {
       [orderId]
     );
 
+    const imagesByOrderItemId = await this.findImagesByOrderItemIds(
+      result.rows.map((row) => row.id)
+    );
+
     return result.rows.map((row) => ({
       id: row.id,
       orderId: row.orderId,
@@ -351,9 +517,117 @@ export class PostgresOrderRepository implements OrderRepository {
       currency: row.currency,
       condition: row.condition,
       weightKg: Number(row.weightKg),
+      images: imagesByOrderItemId.get(row.id) ?? [],
       createdAt: row.createdAt,
       updatedAt: row.updatedAt
     }));
+  }
+
+  private async findImagesByOrderItemIds(
+    orderItemIds: string[]
+  ): Promise<Map<string, OrderItemImageRecord[]>> {
+    const imagesByOrderItemId = new Map<string, OrderItemImageRecord[]>();
+
+    if (orderItemIds.length === 0) {
+      return imagesByOrderItemId;
+    }
+
+    const result = await this.executor.query<OrderItemImageRow>(
+      `
+        SELECT
+          "id",
+          "orderItemId",
+          "storagePath",
+          "mimeType",
+          "originalFileName",
+          "position",
+          "createdAt",
+          "updatedAt"
+        FROM "OrderItemImage"
+        WHERE "orderItemId" = ANY($1::text[])
+        ORDER BY "orderItemId" ASC, "position" ASC, "createdAt" ASC
+      `,
+      [orderItemIds]
+    );
+
+    for (const row of result.rows) {
+      const existing = imagesByOrderItemId.get(row.orderItemId) ?? [];
+      existing.push(this.mapOrderItemImageRow(row));
+      imagesByOrderItemId.set(row.orderItemId, existing);
+    }
+
+    return imagesByOrderItemId;
+  }
+
+  private async findItemsPreviewByOrderIds(
+    orderIds: string[]
+  ): Promise<Map<string, OrderHistoryRecord["itemsPreview"]>> {
+    const itemsPreviewByOrderId = new Map<string, OrderHistoryRecord["itemsPreview"]>();
+
+    if (orderIds.length === 0) {
+      return itemsPreviewByOrderId;
+    }
+
+    const result = await this.executor.query<OrderItemRow>(
+      `
+        SELECT
+          "id",
+          "orderId",
+          "productId",
+          "sellerId",
+          "categoryId",
+          "categoryName",
+          "brandId",
+          "brandName",
+          "productName",
+          "productDescription",
+          "sku",
+          "unitPrice",
+          "quantity",
+          "lineSubtotal",
+          "currency",
+          "condition",
+          "weightKg",
+          "createdAt",
+          "updatedAt"
+        FROM "OrderItem"
+        WHERE "orderId" = ANY($1::text[])
+        ORDER BY "orderId" ASC, "createdAt" ASC
+      `,
+      [orderIds]
+    );
+
+    const limitedRows: OrderItemRow[] = [];
+    const countsByOrderId = new Map<string, number>();
+
+    for (const row of result.rows) {
+      const currentCount = countsByOrderId.get(row.orderId) ?? 0;
+
+      if (currentCount >= 3) {
+        continue;
+      }
+
+      countsByOrderId.set(row.orderId, currentCount + 1);
+      limitedRows.push(row);
+    }
+
+    const imagesByOrderItemId = await this.findImagesByOrderItemIds(
+      limitedRows.map((row) => row.id)
+    );
+
+    for (const row of limitedRows) {
+      const existing = itemsPreviewByOrderId.get(row.orderId) ?? [];
+      existing.push({
+        orderItemId: row.id,
+        productId: row.productId,
+        productName: row.productName,
+        quantity: row.quantity,
+        images: imagesByOrderItemId.get(row.id) ?? []
+      });
+      itemsPreviewByOrderId.set(row.orderId, existing);
+    }
+
+    return itemsPreviewByOrderId;
   }
 
   private async findShippingSegmentsByOrderId(
@@ -430,5 +704,17 @@ export class PostgresOrderRepository implements OrderRepository {
       updatedAt: row.updatedAt
     };
   }
-}
 
+  private mapOrderItemImageRow(row: OrderItemImageRow): OrderItemImageRecord {
+    return {
+      id: row.id,
+      orderItemId: row.orderItemId,
+      storagePath: row.storagePath,
+      mimeType: row.mimeType,
+      originalFileName: row.originalFileName,
+      position: row.position,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
+    };
+  }
+}
