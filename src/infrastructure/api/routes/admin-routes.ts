@@ -12,12 +12,14 @@ import type { GetOrderDetailUseCase } from "../../../application/admin/get-order
 import { GetOrderDetailError } from "../../../application/admin/get-order-detail";
 import type { CreateCategoryShippingRuleUseCase } from "../../../application/admin/create-category-shipping-rule";
 import type { CreateFreeShippingRuleUseCase } from "../../../application/admin/create-free-shipping-rule";
+import type { CreateSliderUseCase } from "../../../application/admin/create-slider";
 import type { CreateProductBrandUseCase } from "../../../application/admin/create-product-brand";
 import type { CreateProductCategoryUseCase } from "../../../application/admin/create-product-category";
 import type { CreateShippingZoneUseCase } from "../../../application/admin/create-shipping-zone";
 import type { CreateShippingZoneRuleUseCase } from "../../../application/admin/create-shipping-zone-rule";
 import type { GetCategoryShippingRuleUseCase } from "../../../application/admin/get-category-shipping-rule";
 import type { GetFreeShippingRuleUseCase } from "../../../application/admin/get-free-shipping-rule";
+import type { GetSliderUseCase } from "../../../application/admin/get-slider";
 import type { GetProductBrandUseCase } from "../../../application/admin/get-product-brand";
 import {
   GetProductPendingReviewDetailError,
@@ -35,6 +37,7 @@ import type { ListCategoryShippingRulesUseCase } from "../../../application/admi
 import type { ListCompletedSellerKycUseCase } from "../../../application/admin/list-completed-seller-kyc";
 import type { ListFreeShippingRulesUseCase } from "../../../application/admin/list-free-shipping-rules";
 import type { ListOrdersUseCase } from "../../../application/admin/list-orders";
+import type { ListSlidersUseCase } from "../../../application/admin/list-sliders";
 import { ListOrdersError } from "../../../application/admin/list-orders";
 import type { ListProductBrandsUseCase } from "../../../application/admin/list-product-brands";
 import type { ListProductsPendingReviewUseCase } from "../../../application/admin/list-products-pending-review";
@@ -50,6 +53,7 @@ import { ShippingSettingsError } from "../../../application/admin/shipping-setti
 import { ProductBrandError } from "../../../application/admin/product-brand-errors";
 import type { SetCategoryShippingRuleStatusUseCase } from "../../../application/admin/set-category-shipping-rule-status";
 import type { SetFreeShippingRuleStatusUseCase } from "../../../application/admin/set-free-shipping-rule-status";
+import type { SetSliderStatusUseCase } from "../../../application/admin/set-slider-status";
 import type { SetShippingZoneRuleStatusUseCase } from "../../../application/admin/set-shipping-zone-rule-status";
 import type { SetShippingZoneStatusUseCase } from "../../../application/admin/set-shipping-zone-status";
 import type { UpdateCategoryShippingRuleUseCase } from "../../../application/admin/update-category-shipping-rule";
@@ -57,6 +61,7 @@ import type { UpdateFreeShippingRuleUseCase } from "../../../application/admin/u
 import type { UpdateProductBrandUseCase } from "../../../application/admin/update-product-brand";
 import type { UpdateProductCategoryUseCase } from "../../../application/admin/update-product-category";
 import type { UpdateOrderItemDeliveryStatusUseCase } from "../../../application/admin/update-order-item-delivery-status";
+import type { UpdateSliderUseCase } from "../../../application/admin/update-slider";
 import { UpdateOrderItemDeliveryStatusError } from "../../../application/admin/update-order-item-delivery-status";
 import type { UpdateShippingZoneUseCase } from "../../../application/admin/update-shipping-zone";
 import type { UpdateShippingZoneRuleUseCase } from "../../../application/admin/update-shipping-zone-rule";
@@ -68,6 +73,7 @@ import { createProductBrandSchema } from "../validation/create-product-brand-sch
 import { createShippingZoneRuleSchema } from "../validation/create-shipping-zone-rule-schema";
 import { createShippingZoneSchema } from "../validation/create-shipping-zone-schema";
 import { ProductCategoryError } from "../../../application/admin/product-category-errors";
+import { SliderError } from "../../../application/admin/slider-errors";
 import { approveSellerKycSchema } from "../validation/approve-seller-kyc-schema";
 import { parseBase64File } from "../files/parse-base64-file";
 import {
@@ -78,8 +84,10 @@ import {
   toAdminOrderDetailResponse,
   toAdminOrderHistoryResponse
 } from "../responses/order-response";
+import { toSliderResponse } from "../responses/slider-response";
 import { toProductImageResponse } from "../responses/product-image-response";
 import { createProductCategorySchema } from "../validation/create-product-category-schema";
+import { createSliderSchema } from "../validation/create-slider-schema";
 import { listOrdersSchema } from "../validation/list-orders-schema";
 import { rejectProductPendingReviewSchema } from "../validation/reject-product-pending-review-schema";
 import { updateOrderItemDeliveryStatusSchema } from "../validation/update-order-item-delivery-status-schema";
@@ -88,6 +96,7 @@ import { updateFreeShippingRuleSchema } from "../validation/update-free-shipping
 import { updateShippingSettingsSchema } from "../validation/update-shipping-settings-schema";
 import { updateProductBrandSchema } from "../validation/update-product-brand-schema";
 import { updateProductCategorySchema } from "../validation/update-product-category-schema";
+import { updateSliderSchema } from "../validation/update-slider-schema";
 import { updateShippingZoneRuleSchema } from "../validation/update-shipping-zone-rule-schema";
 import { updateShippingZoneSchema } from "../validation/update-shipping-zone-schema";
 
@@ -96,18 +105,21 @@ interface AdminRouterDependencies {
   approveSellerKyc: ApproveSellerKycUseCase;
   createCategoryShippingRule: CreateCategoryShippingRuleUseCase;
   createFreeShippingRule: CreateFreeShippingRuleUseCase;
+  createSlider: CreateSliderUseCase;
   createProductBrand: CreateProductBrandUseCase;
   createProductCategory: CreateProductCategoryUseCase;
   createShippingZone: CreateShippingZoneUseCase;
   createShippingZoneRule: CreateShippingZoneRuleUseCase;
   getCategoryShippingRule: GetCategoryShippingRuleUseCase;
   getFreeShippingRule: GetFreeShippingRuleUseCase;
+  getSlider: GetSliderUseCase;
   getProductBrand: GetProductBrandUseCase;
   getProductPendingReviewDetail: GetProductPendingReviewDetailUseCase;
   getShippingZone: GetShippingZoneUseCase;
   getShippingZoneRule: GetShippingZoneRuleUseCase;
   listCompletedSellerKyc: ListCompletedSellerKycUseCase;
   listFreeShippingRules: ListFreeShippingRulesUseCase;
+  listSliders: ListSlidersUseCase;
   listCategoryShippingRules: ListCategoryShippingRulesUseCase;
   listProductBrands: ListProductBrandsUseCase;
   listProductsPendingReview: ListProductsPendingReviewUseCase;
@@ -117,6 +129,7 @@ interface AdminRouterDependencies {
   rejectProductPendingReview: RejectProductPendingReviewUseCase;
   setCategoryShippingRuleStatus: SetCategoryShippingRuleStatusUseCase;
   setFreeShippingRuleStatus: SetFreeShippingRuleStatusUseCase;
+  setSliderStatus: SetSliderStatusUseCase;
   setShippingZoneRuleStatus: SetShippingZoneRuleStatusUseCase;
   setShippingZoneStatus: SetShippingZoneStatusUseCase;
   updateCategoryShippingRule: UpdateCategoryShippingRuleUseCase;
@@ -130,6 +143,7 @@ interface AdminRouterDependencies {
   updateShippingZoneRule: UpdateShippingZoneRuleUseCase;
   updateShippingSettings: UpdateShippingSettingsUseCase;
   updateOrderItemDeliveryStatus: UpdateOrderItemDeliveryStatusUseCase;
+  updateSlider: UpdateSliderUseCase;
   updateProductBrand: UpdateProductBrandUseCase;
   updateProductCategory: UpdateProductCategoryUseCase;
 }
@@ -139,18 +153,21 @@ export default function createAdminRouter({
   approveSellerKyc,
   createCategoryShippingRule,
   createFreeShippingRule,
+  createSlider,
   createProductBrand,
   createProductCategory,
   createShippingZone,
   createShippingZoneRule,
   getCategoryShippingRule,
   getFreeShippingRule,
+  getSlider,
   getProductBrand,
   getProductPendingReviewDetail,
   getShippingZone,
   getShippingZoneRule,
   listCompletedSellerKyc,
   listFreeShippingRules,
+  listSliders,
   listCategoryShippingRules,
   listProductBrands,
   listProductsPendingReview,
@@ -160,6 +177,7 @@ export default function createAdminRouter({
   rejectProductPendingReview,
   setCategoryShippingRuleStatus,
   setFreeShippingRuleStatus,
+  setSliderStatus,
   setShippingZoneRuleStatus,
   setShippingZoneStatus,
   updateCategoryShippingRule,
@@ -173,6 +191,7 @@ export default function createAdminRouter({
   updateShippingZoneRule,
   updateShippingSettings,
   updateOrderItemDeliveryStatus,
+  updateSlider,
   updateProductBrand,
   updateProductCategory
 }: AdminRouterDependencies) {
@@ -954,6 +973,176 @@ export default function createAdminRouter({
     }
   );
 
+  adminRouter.post("/sliders", async (req, res) => {
+    const { error, value } = createSliderSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return validationFailure(res, error);
+    }
+
+    try {
+      const slider = await createSlider.execute({
+        title: value.title,
+        description: value.description,
+        subtitle: value.subtitle,
+        buttonLabel: value.button_label,
+        backgroundColor: value.background_color,
+        isLight: value.is_light,
+        displayOrder: value.display_order,
+        image: parseSliderImageInput(value.image)
+      });
+
+      return res.status(201).json({
+        message: "Slider created successfully.",
+        data: toSliderResponse(slider)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof SliderError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to create slider."
+      });
+    }
+  });
+
+  adminRouter.get("/sliders", async (_req, res) => {
+    try {
+      const sliders = await listSliders.execute();
+
+      return res.status(200).json({
+        message: "Sliders fetched successfully.",
+        data: sliders.map((slider) => toSliderResponse(slider))
+      });
+    } catch {
+      return res.status(500).json({
+        message: "Unable to fetch sliders."
+      });
+    }
+  });
+
+  adminRouter.get("/sliders/:sliderId", async (req, res) => {
+    try {
+      const slider = await getSlider.execute({
+        sliderId: req.params.sliderId
+      });
+
+      return res.status(200).json({
+        message: "Slider fetched successfully.",
+        data: toSliderResponse(slider)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof SliderError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch slider."
+      });
+    }
+  });
+
+  adminRouter.patch("/sliders/:sliderId", async (req, res) => {
+    const { error, value } = updateSliderSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return validationFailure(res, error);
+    }
+
+    try {
+      const slider = await updateSlider.execute({
+        sliderId: req.params.sliderId,
+        title: value.title,
+        description: value.description,
+        subtitle: value.subtitle,
+        buttonLabel: value.button_label,
+        backgroundColor: value.background_color,
+        isLight: value.is_light,
+        displayOrder: value.display_order,
+        image: value.image ? parseSliderImageInput(value.image) : undefined
+      });
+
+      return res.status(200).json({
+        message: "Slider updated successfully.",
+        data: toSliderResponse(slider)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof SliderError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to update slider."
+      });
+    }
+  });
+
+  adminRouter.post("/sliders/:sliderId/activate", async (req, res) => {
+    try {
+      const slider = await setSliderStatus.execute({
+        sliderId: req.params.sliderId,
+        status: "active"
+      });
+
+      return res.status(200).json({
+        message: "Slider activated successfully.",
+        data: toSliderResponse(slider)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof SliderError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to activate slider."
+      });
+    }
+  });
+
+  adminRouter.post("/sliders/:sliderId/deactivate", async (req, res) => {
+    try {
+      const slider = await setSliderStatus.execute({
+        sliderId: req.params.sliderId,
+        status: "inactive"
+      });
+
+      return res.status(200).json({
+        message: "Slider deactivated successfully.",
+        data: toSliderResponse(slider)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof SliderError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to deactivate slider."
+      });
+    }
+  });
+
   adminRouter.post("/product-brands", async (req, res) => {
     const { error, value } = createProductBrandSchema.validate(req.body, {
       abortEarly: false,
@@ -1674,6 +1863,22 @@ function parseProductBrandImageInput(image: {
       400,
       "image.file_base64"
     );
+  }
+}
+
+function parseSliderImageInput(image: {
+  file_name: string;
+  mime_type: string;
+  file_base64: string;
+}) {
+  try {
+    return {
+      fileName: image.file_name,
+      mimeType: image.mime_type,
+      fileContents: parseBase64File(image.file_base64)
+    };
+  } catch {
+    throw new SliderError("Invalid slider image content.", 400, "image.file_base64");
   }
 }
 

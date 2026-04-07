@@ -14,6 +14,7 @@ import type {
   UploadProductCategoryImageInput,
   UploadProductImageInput as StorageUploadProductImageInput,
   UploadSellerKycDocumentInput,
+  UploadSliderImageInput,
   UploadedDocument
 } from "../../../src/ports/document-storage";
 import type {
@@ -233,6 +234,9 @@ class DocumentStorageDouble implements DocumentStorage {
 
   uploadProductBrandImage = jest
     .fn<(input: UploadProductBrandImageInput) => Promise<UploadedDocument>>();
+
+  uploadSliderImage = jest
+    .fn<(input: UploadSliderImageInput) => Promise<UploadedDocument>>();
 }
 
 class ProductSkuGeneratorDouble implements ProductSkuGenerator {

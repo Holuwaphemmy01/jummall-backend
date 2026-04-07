@@ -9,6 +9,7 @@ import type {
   UploadProductCategoryImageInput,
   UploadProductImageInput,
   UploadSellerKycDocumentInput,
+  UploadSliderImageInput,
   UploadedDocument
 } from "../../../src/ports/document-storage";
 import type {
@@ -75,6 +76,9 @@ class DocumentStorageDouble implements DocumentStorage {
     .mockImplementation(async (input) => ({
       storagePath: `product-brands/${input.brandName.toLowerCase()}/${input.fileName}`
     }));
+
+  uploadSliderImage = jest
+    .fn<(input: UploadSliderImageInput) => Promise<UploadedDocument>>();
 }
 
 function makeImageInput(

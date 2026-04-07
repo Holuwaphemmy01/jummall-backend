@@ -29,6 +29,13 @@ export interface UploadProductBrandImageInput {
   fileContents: Buffer;
 }
 
+export interface UploadSliderImageInput {
+  sliderTitle: string;
+  fileName: string;
+  mimeType: string;
+  fileContents: Buffer;
+}
+
 export interface UploadedDocument {
   storagePath: string;
 }
@@ -44,4 +51,5 @@ export interface DocumentStorage {
   uploadProductBrandImage(
     input: UploadProductBrandImageInput
   ): Promise<UploadedDocument>;
+  uploadSliderImage(input: UploadSliderImageInput): Promise<UploadedDocument>;
 }

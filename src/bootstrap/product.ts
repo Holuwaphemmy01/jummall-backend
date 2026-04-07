@@ -3,18 +3,22 @@ import { ListApprovedProducts } from "../application/product/list-approved-produ
 import { ListApprovedProductsByBrandName } from "../application/product/list-approved-products-by-brand-name";
 import { ListApprovedProductsByCategory } from "../application/product/list-approved-products-by-category";
 import { SearchApprovedProductSuggestions } from "../application/product/search-approved-product-suggestions";
+import { ListActiveSliders } from "../application/slider/list-active-sliders";
 import createProductRouter from "../infrastructure/api/routes/product-routes";
 import { PostgresProductCatalogRepository } from "../infrastructure/database/repositories/postgres-product-catalog-repository";
 import { PostgresProductBrandRepository } from "../infrastructure/database/repositories/postgres-product-brand-repository";
 import { PostgresProductCategoryRepository } from "../infrastructure/database/repositories/postgres-product-category-repository";
+import { PostgresSliderRepository } from "../infrastructure/database/repositories/postgres-slider-repository";
 
 export function createProductModule() {
   const productBrandRepository = new PostgresProductBrandRepository();
   const productCatalogRepository = new PostgresProductCatalogRepository();
   const productCategoryRepository = new PostgresProductCategoryRepository();
+  const sliderRepository = new PostgresSliderRepository();
   const getApprovedProductDetail = new GetApprovedProductDetail(
     productCatalogRepository
   );
+  const listActiveSliders = new ListActiveSliders(sliderRepository);
   const listApprovedProducts = new ListApprovedProducts(productCatalogRepository);
   const listApprovedProductsByBrandName = new ListApprovedProductsByBrandName(
     productBrandRepository,
@@ -30,6 +34,7 @@ export function createProductModule() {
 
   return createProductRouter({
     getApprovedProductDetail,
+    listActiveSliders,
     listApprovedProducts,
     listApprovedProductsByBrandName,
     listApprovedProductsByCategory,

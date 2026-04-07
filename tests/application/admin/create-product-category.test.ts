@@ -9,6 +9,7 @@ import type {
   UploadProductCategoryImageInput,
   UploadProductImageInput,
   UploadSellerKycDocumentInput,
+  UploadSliderImageInput,
   UploadedDocument
 } from "../../../src/ports/document-storage";
 import type {
@@ -61,6 +62,9 @@ class DocumentStorageDouble implements DocumentStorage {
 
   uploadProductBrandImage = jest
     .fn<(input: UploadProductBrandImageInput) => Promise<UploadedDocument>>();
+
+  uploadSliderImage = jest
+    .fn<(input: UploadSliderImageInput) => Promise<UploadedDocument>>();
 }
 
 function makeImageInput(

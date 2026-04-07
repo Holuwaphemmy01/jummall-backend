@@ -4,6 +4,7 @@ import { ApproveProductPendingReview } from "../application/admin/approve-produc
 import { ApproveSellerKyc } from "../application/admin/approve-seller-kyc";
 import { CreateCategoryShippingRule } from "../application/admin/create-category-shipping-rule";
 import { CreateFreeShippingRule } from "../application/admin/create-free-shipping-rule";
+import { CreateSlider } from "../application/admin/create-slider";
 import { GetOrderDetail } from "../application/admin/get-order-detail";
 import { CreateProductBrand } from "../application/admin/create-product-brand";
 import { CreateProductCategory } from "../application/admin/create-product-category";
@@ -12,6 +13,7 @@ import { CreateShippingZoneRule } from "../application/admin/create-shipping-zon
 import { GetCategoryShippingRule } from "../application/admin/get-category-shipping-rule";
 import { GetCompletedSellerKyc } from "../application/admin/get-completed-seller-kyc";
 import { GetFreeShippingRule } from "../application/admin/get-free-shipping-rule";
+import { GetSlider } from "../application/admin/get-slider";
 import { GetProductBrand } from "../application/admin/get-product-brand";
 import { GetProductPendingReviewDetail } from "../application/admin/get-product-pending-review-detail";
 import { GetProductCategory } from "../application/admin/get-product-category";
@@ -22,6 +24,7 @@ import { ListOrders } from "../application/admin/list-orders";
 import { ListFreeShippingRules } from "../application/admin/list-free-shipping-rules";
 import { ListCategoryShippingRules } from "../application/admin/list-category-shipping-rules";
 import { ListProductBrands } from "../application/admin/list-product-brands";
+import { ListSliders } from "../application/admin/list-sliders";
 import { ListCompletedSellerKyc } from "../application/admin/list-completed-seller-kyc";
 import { ListProductsPendingReview } from "../application/admin/list-products-pending-review";
 import { ListShippingZoneRules } from "../application/admin/list-shipping-zone-rules";
@@ -29,6 +32,7 @@ import { ListShippingZones } from "../application/admin/list-shipping-zones";
 import { RejectProductPendingReview } from "../application/admin/reject-product-pending-review";
 import { SetCategoryShippingRuleStatus } from "../application/admin/set-category-shipping-rule-status";
 import { SetFreeShippingRuleStatus } from "../application/admin/set-free-shipping-rule-status";
+import { SetSliderStatus } from "../application/admin/set-slider-status";
 import { SetShippingZoneRuleStatus } from "../application/admin/set-shipping-zone-rule-status";
 import { SetShippingZoneStatus } from "../application/admin/set-shipping-zone-status";
 import { UpdateCategoryShippingRule } from "../application/admin/update-category-shipping-rule";
@@ -39,6 +43,7 @@ import { UpdateShippingSettings } from "../application/admin/update-shipping-set
 import { UpdateOrderItemDeliveryStatus } from "../application/admin/update-order-item-delivery-status";
 import { UpdateProductBrand } from "../application/admin/update-product-brand";
 import { ListProductCategories } from "../application/admin/list-product-categories";
+import { UpdateSlider } from "../application/admin/update-slider";
 import { UpdateProductCategory } from "../application/admin/update-product-category";
 import { createAuthMiddleware } from "../infrastructure/api/middleware/create-auth-middleware";
 import createAdminRouter from "../infrastructure/api/routes/admin-routes";
@@ -53,6 +58,7 @@ import { PostgresProductRepository } from "../infrastructure/database/repositori
 import { PostgresShippingZoneRepository } from "../infrastructure/database/repositories/postgres-shipping-zone-repository";
 import { PostgresShippingZoneRuleRepository } from "../infrastructure/database/repositories/postgres-shipping-zone-rule-repository";
 import { PostgresShippingSettingsRepository } from "../infrastructure/database/repositories/postgres-shipping-settings-repository";
+import { PostgresSliderRepository } from "../infrastructure/database/repositories/postgres-slider-repository";
 import { JwtTokenVerifier } from "../infrastructure/security/jwt-token-verifier";
 import { SupabaseDocumentStorage } from "../infrastructure/storage/supabase-document-storage";
 
@@ -64,6 +70,7 @@ export function createAdminModule() {
   const productBrandRepository = new PostgresProductBrandRepository();
   const productCategoryRepository = new PostgresProductCategoryRepository();
   const productRepository = new PostgresProductRepository();
+  const sliderRepository = new PostgresSliderRepository();
   const shippingZoneRepository = new PostgresShippingZoneRepository();
   const shippingZoneRuleRepository = new PostgresShippingZoneRuleRepository();
   const categoryShippingRuleRepository =
@@ -84,6 +91,7 @@ export function createAdminModule() {
   const createFreeShippingRule = new CreateFreeShippingRule(
     freeShippingRuleRepository
   );
+  const createSlider = new CreateSlider(sliderRepository, documentStorage);
   const createProductBrand = new CreateProductBrand(
     productBrandRepository,
     documentStorage
@@ -101,11 +109,13 @@ export function createAdminModule() {
     categoryShippingRuleRepository
   );
   const getFreeShippingRule = new GetFreeShippingRule(freeShippingRuleRepository);
+  const getSlider = new GetSlider(sliderRepository);
   const listCompletedSellerKyc = new ListCompletedSellerKyc(adminKycRepository);
   const listOrders = new ListOrders(authenticationRepository, orderRepository);
   const listFreeShippingRules = new ListFreeShippingRules(
     freeShippingRuleRepository
   );
+  const listSliders = new ListSliders(sliderRepository);
   const listCategoryShippingRules = new ListCategoryShippingRules(
     categoryShippingRuleRepository
   );
@@ -144,6 +154,7 @@ export function createAdminModule() {
   const setFreeShippingRuleStatus = new SetFreeShippingRuleStatus(
     freeShippingRuleRepository
   );
+  const setSliderStatus = new SetSliderStatus(sliderRepository);
   const setShippingZoneRuleStatus = new SetShippingZoneRuleStatus(
     shippingZoneRuleRepository
   );
@@ -161,6 +172,7 @@ export function createAdminModule() {
     authenticationRepository,
     orderRepository
   );
+  const updateSlider = new UpdateSlider(sliderRepository, documentStorage);
   const updateProductBrand = new UpdateProductBrand(
     productBrandRepository,
     documentStorage
@@ -185,12 +197,14 @@ export function createAdminModule() {
       approveSellerKyc,
       createCategoryShippingRule,
       createFreeShippingRule,
+      createSlider,
       createProductBrand,
       createProductCategory,
       createShippingZone,
       createShippingZoneRule,
       getCategoryShippingRule,
       getFreeShippingRule,
+      getSlider,
       getProductBrand,
       getProductPendingReviewDetail,
       getShippingZone,
@@ -198,6 +212,7 @@ export function createAdminModule() {
       getShippingSettings,
       listCompletedSellerKyc,
       listFreeShippingRules,
+      listSliders,
       listCategoryShippingRules,
       listProductBrands,
       listProductsPendingReview,
@@ -207,6 +222,7 @@ export function createAdminModule() {
       rejectProductPendingReview,
       setCategoryShippingRuleStatus,
       setFreeShippingRuleStatus,
+      setSliderStatus,
       setShippingZoneRuleStatus,
       setShippingZoneStatus,
       updateCategoryShippingRule,
@@ -219,6 +235,7 @@ export function createAdminModule() {
       updateShippingSettings,
       listOrders,
       updateOrderItemDeliveryStatus,
+      updateSlider,
       updateProductBrand,
       updateProductCategory
     })

@@ -2732,6 +2732,315 @@
         }
       }
     },
+    "/admin/sliders": {
+      "post": {
+        "tags": [
+          "admin-sliders"
+        ],
+        "summary": "Create slider",
+        "description": "Creates a homepage promotional slider item, including marketing copy and presentation metadata. New sliders start as inactive so admin can review ordering before publishing them to buyers.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSliderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Slider created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SliderSingleResponse"
+                },
+                "example": {
+                  "message": "Slider created successfully.",
+                  "data": {
+                    "id": "slider-id",
+                    "title": "Mega Sale",
+                    "description": "Biggest deals of the week",
+                    "subtitle": "Starting at N250,000",
+                    "button_label": "Shop Now",
+                    "background_color": "rgb(227, 237, 246)",
+                    "is_light": true,
+                    "display_order": 1,
+                    "status": "inactive",
+                    "image": {
+                      "storage_path": "sliders/mega-sale/1712534400000-banner.jpg",
+                      "public_url": "https://your-project.supabase.co/storage/v1/object/public/slider-images/sliders/mega-sale/1712534400000-banner.jpg",
+                      "mime_type": "image/jpeg",
+                      "original_file_name": "banner.jpg"
+                    },
+                    "created_at": "2026-04-07T00:00:00.000Z",
+                    "updated_at": "2026-04-07T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "admin-sliders"
+        ],
+        "summary": "List sliders",
+        "description": "Returns all sliders, including inactive items, sorted by display order.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sliders fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SliderListResponse"
+                },
+                "example": {
+                  "message": "Sliders fetched successfully.",
+                  "data": [
+                    {
+                      "id": "slider-id",
+                      "title": "Mega Sale",
+                      "description": "Biggest deals of the week",
+                      "subtitle": "Starting at N250,000",
+                      "button_label": "Shop Now",
+                      "background_color": "rgb(227, 237, 246)",
+                      "is_light": true,
+                      "display_order": 1,
+                      "status": "inactive",
+                      "image": {
+                        "storage_path": "sliders/mega-sale/1712534400000-banner.jpg",
+                        "public_url": "https://your-project.supabase.co/storage/v1/object/public/slider-images/sliders/mega-sale/1712534400000-banner.jpg",
+                        "mime_type": "image/jpeg",
+                        "original_file_name": "banner.jpg"
+                      },
+                      "created_at": "2026-04-07T00:00:00.000Z",
+                      "updated_at": "2026-04-07T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          }
+        }
+      }
+    },
+    "/admin/sliders/{sliderId}": {
+      "get": {
+        "tags": [
+          "admin-sliders"
+        ],
+        "summary": "Get slider",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sliderId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Slider fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SliderSingleResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Slider not found"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "admin-sliders"
+        ],
+        "summary": "Update slider",
+        "description": "Updates slider text, display order, or image. Omitting `image` keeps the current image unchanged.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sliderId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSliderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Slider updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SliderSingleResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Slider not found"
+          }
+        }
+      }
+    },
+    "/admin/sliders/{sliderId}/activate": {
+      "post": {
+        "tags": [
+          "admin-sliders"
+        ],
+        "summary": "Activate slider",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sliderId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Slider activated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SliderSingleResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Slider not found"
+          }
+        }
+      }
+    },
+    "/admin/sliders/{sliderId}/deactivate": {
+      "post": {
+        "tags": [
+          "admin-sliders"
+        ],
+        "summary": "Deactivate slider",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sliderId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Slider deactivated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SliderSingleResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Slider not found"
+          }
+        }
+      }
+    },
     "/admin/products/pending-review": {
       "get": {
         "tags": [
@@ -4723,6 +5032,51 @@
           },
           "404": {
             "description": "Product not found"
+          }
+        }
+      }
+    },
+    "/products/sliders": {
+      "get": {
+        "tags": [
+          "product-catalog"
+        ],
+        "summary": "List active sliders",
+        "description": "Returns the active promotional sliders that buyers can render in the homepage carousel. Results are already sorted by display order.",
+        "responses": {
+          "200": {
+            "description": "Sliders fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SliderListResponse"
+                },
+                "example": {
+                  "message": "Sliders fetched successfully.",
+                  "data": [
+                    {
+                      "id": "slider-id",
+                      "title": "Mega Sale",
+                      "description": "Biggest deals of the week",
+                      "subtitle": "Starting at N250,000",
+                      "button_label": "Shop Now",
+                      "background_color": "rgb(227, 237, 246)",
+                      "is_light": true,
+                      "display_order": 1,
+                      "status": "active",
+                      "image": {
+                        "storage_path": "sliders/mega-sale/1712534400000-banner.jpg",
+                        "public_url": "https://your-project.supabase.co/storage/v1/object/public/slider-images/sliders/mega-sale/1712534400000-banner.jpg",
+                        "mime_type": "image/jpeg",
+                        "original_file_name": "banner.jpg"
+                      },
+                      "created_at": "2026-04-07T00:00:00.000Z",
+                      "updated_at": "2026-04-07T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
           }
         }
       }
@@ -7709,6 +8063,10 @@
       "description": "Admin-managed product brand catalog endpoints."
     },
     {
+      "name": "admin-sliders",
+      "description": "Admin-managed homepage slider endpoints for promotional carousel content."
+    },
+    {
       "name": "admin-product-categories",
       "description": "Admin-managed product category catalog endpoints, including deduction percentage configuration."
     },
@@ -8108,6 +8466,225 @@
           "original_file_name": {
             "type": "string",
             "example": "apple.jpg"
+          }
+        }
+      },
+      "SliderImageUploadRequest": {
+        "type": "object",
+        "required": [
+          "file_name",
+          "mime_type",
+          "file_base64"
+        ],
+        "properties": {
+          "file_name": {
+            "type": "string",
+            "example": "banner.jpg"
+          },
+          "mime_type": {
+            "type": "string",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ],
+            "example": "image/jpeg"
+          },
+          "file_base64": {
+            "type": "string",
+            "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."
+          }
+        }
+      },
+      "SliderImageResponse": {
+        "type": "object",
+        "properties": {
+          "storage_path": {
+            "type": "string",
+            "example": "sliders/mega-sale/1712534400000-banner.jpg"
+          },
+          "public_url": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://your-project.supabase.co/storage/v1/object/public/slider-images/sliders/mega-sale/1712534400000-banner.jpg"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "image/jpeg"
+          },
+          "original_file_name": {
+            "type": "string",
+            "example": "banner.jpg"
+          }
+        }
+      },
+      "SliderStatus": {
+        "type": "string",
+        "enum": [
+          "active",
+          "inactive"
+        ],
+        "example": "active"
+      },
+      "SliderResponseData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "example": "Mega Sale"
+          },
+          "description": {
+            "type": "string",
+            "example": "Biggest deals of the week"
+          },
+          "subtitle": {
+            "type": "string",
+            "example": "Starting at N250,000"
+          },
+          "button_label": {
+            "type": "string",
+            "example": "Shop Now"
+          },
+          "background_color": {
+            "type": "string",
+            "example": "rgb(227, 237, 246)"
+          },
+          "is_light": {
+            "type": "boolean",
+            "example": true
+          },
+          "display_order": {
+            "type": "integer",
+            "example": 1
+          },
+          "status": {
+            "$ref": "#/components/schemas/SliderStatus"
+          },
+          "image": {
+            "$ref": "#/components/schemas/SliderImageResponse"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-04-07T00:00:00.000Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-04-07T00:00:00.000Z"
+          }
+        }
+      },
+      "SliderSingleResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Slider fetched successfully."
+          },
+          "data": {
+            "$ref": "#/components/schemas/SliderResponseData"
+          }
+        }
+      },
+      "SliderListResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Sliders fetched successfully."
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SliderResponseData"
+            }
+          }
+        }
+      },
+      "CreateSliderRequest": {
+        "type": "object",
+        "required": [
+          "title",
+          "description",
+          "subtitle",
+          "button_label",
+          "background_color",
+          "is_light",
+          "display_order",
+          "image"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Mega Sale"
+          },
+          "description": {
+            "type": "string",
+            "example": "Biggest deals of the week"
+          },
+          "subtitle": {
+            "type": "string",
+            "example": "Starting at N250,000"
+          },
+          "button_label": {
+            "type": "string",
+            "example": "Shop Now"
+          },
+          "background_color": {
+            "type": "string",
+            "example": "rgb(227, 237, 246)"
+          },
+          "is_light": {
+            "type": "boolean",
+            "example": true
+          },
+          "display_order": {
+            "type": "integer",
+            "example": 1
+          },
+          "image": {
+            "$ref": "#/components/schemas/SliderImageUploadRequest"
+          }
+        }
+      },
+      "UpdateSliderRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Weekend Sale"
+          },
+          "description": {
+            "type": "string",
+            "example": "Fresh weekend deals for buyers."
+          },
+          "subtitle": {
+            "type": "string",
+            "example": "Fresh arrivals this weekend"
+          },
+          "button_label": {
+            "type": "string",
+            "example": "Explore Deals"
+          },
+          "background_color": {
+            "type": "string",
+            "example": "rgb(17, 80, 97)"
+          },
+          "is_light": {
+            "type": "boolean",
+            "example": false
+          },
+          "display_order": {
+            "type": "integer",
+            "example": 2
+          },
+          "image": {
+            "$ref": "#/components/schemas/SliderImageUploadRequest"
           }
         }
       },

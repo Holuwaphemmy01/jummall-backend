@@ -35,3 +35,10 @@ export function buildProductImagePublicUrl(storagePath: string) {
     storagePath
   );
 }
+
+export function buildSliderImagePublicUrl(storagePath: string) {
+  return buildSupabasePublicObjectUrl(
+    process.env.SUPABASE_SLIDER_IMAGE_BUCKET ?? "slider-images",
+    storagePath
+  );
+}
