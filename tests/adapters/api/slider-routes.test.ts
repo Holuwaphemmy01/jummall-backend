@@ -396,7 +396,7 @@ describe("slider routes", () => {
           getApprovedProductDetail: createUnusedUseCase() as never,
           listActiveSliders: listActiveSliders as never,
           listApprovedProducts: createUnusedUseCase() as never,
-          listApprovedProductsByBrandName: createUnusedUseCase() as never,
+          listApprovedProductsByBrandId: createUnusedUseCase() as never,
           listApprovedProductsByCategory: createUnusedUseCase() as never,
           searchApprovedProductSuggestions: createUnusedUseCase() as never
         })
