@@ -10,10 +10,12 @@ import type { ListApprovedProductsByCategoryUseCase } from "../../../application
 import { ListApprovedProductsByCategoryError } from "../../../application/product/list-approved-products-by-category";
 import type { SearchApprovedProductSuggestionsUseCase } from "../../../application/product/search-approved-product-suggestions";
 import { SearchApprovedProductSuggestionsError } from "../../../application/product/search-approved-product-suggestions";
+import type { ListActiveSlidersUseCase } from "../../../application/slider/list-active-sliders";
 import {
   toPrimaryProductImageResponse,
   toProductImageResponse
 } from "../responses/product-image-response";
+import { toSliderResponse } from "../responses/slider-response";
 import { listCategoryProductsSchema } from "../validation/list-category-products-schema";
 import { listProductsSchema } from "../validation/list-products-schema";
 import { searchProductsSchema } from "../validation/search-products-schema";
@@ -23,6 +25,7 @@ interface ProductRouterDependencies {
   listApprovedProducts: ListApprovedProductsUseCase;
   listApprovedProductsByBrandName: ListApprovedProductsByBrandNameUseCase;
   listApprovedProductsByCategory: ListApprovedProductsByCategoryUseCase;
+  listActiveSliders: ListActiveSlidersUseCase;
   searchApprovedProductSuggestions: SearchApprovedProductSuggestionsUseCase;
 }
 
@@ -31,9 +34,25 @@ export default function createProductRouter({
   listApprovedProducts,
   listApprovedProductsByBrandName,
   listApprovedProductsByCategory,
+  listActiveSliders,
   searchApprovedProductSuggestions
 }: ProductRouterDependencies) {
   const productRouter = Router();
+
+  productRouter.get("/sliders", async (_req, res) => {
+    try {
+      const sliders = await listActiveSliders.execute();
+
+      return res.status(200).json({
+        message: "Sliders fetched successfully.",
+        data: sliders.map((slider) => toSliderResponse(slider))
+      });
+    } catch {
+      return res.status(500).json({
+        message: "Unable to fetch sliders."
+      });
+    }
+  });
 
   productRouter.get("/", async (req, res) => {
     const { error, value } = listProductsSchema.validate(req.query, {

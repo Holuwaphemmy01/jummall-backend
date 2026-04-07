@@ -4,6 +4,7 @@ import type {
   UploadProductCategoryImageInput,
   UploadProductImageInput,
   UploadSellerKycDocumentInput,
+  UploadSliderImageInput,
   UploadedDocument
 } from "../../ports/document-storage";
 
@@ -20,7 +21,9 @@ export class SupabaseDocumentStorage implements DocumentStorage {
       process.env.SUPABASE_PRODUCT_CATEGORY_IMAGE_BUCKET ??
       "product-category-images",
     private readonly productBrandImageBucketName: string =
-      process.env.SUPABASE_PRODUCT_BRAND_IMAGE_BUCKET ?? "product-brand-images"
+      process.env.SUPABASE_PRODUCT_BRAND_IMAGE_BUCKET ?? "product-brand-images",
+    private readonly sliderImageBucketName: string =
+      process.env.SUPABASE_SLIDER_IMAGE_BUCKET ?? "slider-images"
   ) {}
 
   async uploadSellerKycDocument(
@@ -171,6 +174,43 @@ export class SupabaseDocumentStorage implements DocumentStorage {
     };
   }
 
+  async uploadSliderImage(
+    input: UploadSliderImageInput
+  ): Promise<UploadedDocument> {
+    if (!this.supabaseUrl) {
+      throw new Error("SUPABASE_URL is not set.");
+    }
+
+    if (!this.serviceRoleKey) {
+      throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set.");
+    }
+
+    const storagePath = this.buildSliderImageStoragePath(input);
+    const uploadUrl = `${this.supabaseUrl.replace(/\/$/, "")}/storage/v1/object/${this.sliderImageBucketName}/${storagePath}`;
+
+    const response = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {
+        apikey: this.serviceRoleKey,
+        Authorization: `Bearer ${this.serviceRoleKey}`,
+        "Content-Type": input.mimeType,
+        "x-upsert": "true"
+      },
+      body: new Uint8Array(input.fileContents)
+    });
+
+    if (!response.ok) {
+      const errorResponse = await response.text();
+      throw new Error(
+        `Unable to upload slider image to storage. ${errorResponse}`.trim()
+      );
+    }
+
+    return {
+      storagePath
+    };
+  }
+
   private buildStoragePath(input: UploadSellerKycDocumentInput): string {
     const sanitizedFileName = input.fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
 
@@ -222,6 +262,21 @@ export class SupabaseDocumentStorage implements DocumentStorage {
     return [
       "product-brands",
       sanitizedBrandName,
+      `${Date.now()}-${sanitizedFileName}`
+    ].join("/");
+  }
+
+  private buildSliderImageStoragePath(input: UploadSliderImageInput): string {
+    const sanitizedSliderTitle = input.sliderTitle
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "slider";
+    const sanitizedFileName = input.fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
+
+    return [
+      "sliders",
+      sanitizedSliderTitle,
       `${Date.now()}-${sanitizedFileName}`
     ].join("/");
   }

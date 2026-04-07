@@ -26,7 +26,8 @@ describe("SupabaseDocumentStorage", () => {
       "seller-kyc-documents",
       "product-images",
       "product-category-images",
-      "product-brand-images"
+      "product-brand-images",
+      "slider-images"
     );
 
     const result = await storage.uploadSellerKycDocument({
@@ -58,7 +59,8 @@ describe("SupabaseDocumentStorage", () => {
       "seller-kyc-documents",
       "product-images",
       "product-category-images",
-      "product-brand-images"
+      "product-brand-images",
+      "slider-images"
     );
 
     const result = await storage.uploadProductImage({
@@ -90,7 +92,8 @@ describe("SupabaseDocumentStorage", () => {
       "seller-kyc-documents",
       "product-images",
       "product-category-images",
-      "product-brand-images"
+      "product-brand-images",
+      "slider-images"
     );
 
     const result = await storage.uploadProductCategoryImage({
@@ -122,7 +125,8 @@ describe("SupabaseDocumentStorage", () => {
       "seller-kyc-documents",
       "product-images",
       "product-category-images",
-      "product-brand-images"
+      "product-brand-images",
+      "slider-images"
     );
 
     const result = await storage.uploadProductBrandImage({
@@ -145,5 +149,36 @@ describe("SupabaseDocumentStorage", () => {
     );
     expect(result.storagePath).toContain("product-brands/apple/");
     expect(result.storagePath).toContain("apple.jpg");
+  });
+
+  it("uploads slider images to the configured slider image bucket", async () => {
+    const storage = new SupabaseDocumentStorage(
+      "https://example.supabase.co",
+      "service-role-key",
+      "seller-kyc-documents",
+      "product-images",
+      "product-category-images",
+      "product-brand-images",
+      "slider-images"
+    );
+
+    const result = await storage.uploadSliderImage({
+      sliderTitle: "Mega Sale",
+      fileName: "banner.jpg",
+      mimeType: "image/jpeg",
+      fileContents: Buffer.from("slider-image")
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/storage/v1/object/slider-images/sliders/mega-sale/"),
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          "Content-Type": "image/jpeg"
+        })
+      })
+    );
+    expect(result.storagePath).toContain("sliders/mega-sale/");
+    expect(result.storagePath).toContain("banner.jpg");
   });
 });
