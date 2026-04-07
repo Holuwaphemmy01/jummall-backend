@@ -7,7 +7,20 @@ import type {
   ShippingOwnerType
 } from "./shipping/shipping-models";
 
-export type OrderStatus = "pending_fulfillment";
+export type OrderItemDeliveryStatus =
+  | "pending_fulfillment"
+  | "shipped"
+  | "delivered"
+  | "delivery_failed";
+export type OrderStatusUpdatedByRole = "admin" | "seller";
+
+export type OrderStatus =
+  | "pending_fulfillment"
+  | "partially_shipped"
+  | "shipped"
+  | "partially_delivered"
+  | "delivered"
+  | "delivery_failed";
 
 export interface OrderItemImageRecord {
   id: string;
@@ -67,6 +80,14 @@ export interface OrderItemRecord {
   currency: string;
   condition: string;
   weightKg: number;
+  deliveryStatus: OrderItemDeliveryStatus;
+  deliveryStatusUpdatedAt: Date | null;
+  deliveryStatusUpdatedByUserId: string | null;
+  deliveryStatusUpdatedByRole: OrderStatusUpdatedByRole | null;
+  shippedAt: Date | null;
+  deliveredAt: Date | null;
+  deliveryFailedAt: Date | null;
+  deliveryFailureReason: string | null;
   images: OrderItemImageRecord[];
   createdAt: Date;
   updatedAt: Date;
@@ -172,12 +193,15 @@ export interface OrderHistoryItemPreviewRecord {
   productId: string;
   productName: string;
   quantity: number;
+  deliveryStatus: OrderItemDeliveryStatus;
   images: OrderItemImageRecord[];
 }
 
 export interface OrderHistoryRecord {
   id: string;
+  buyerId: string;
   status: OrderStatus;
+  shippingMode: ShippingMode;
   currency: string;
   totalItems: number;
   rawSubtotal: number;
@@ -196,11 +220,74 @@ export interface FindOrdersPageByBuyerIdInput {
   limit: number;
 }
 
+export interface FindOrdersPageInput {
+  page: number;
+  limit: number;
+}
+
+export interface FindOrdersPageBySellerIdInput {
+  sellerId: string;
+  page: number;
+  limit: number;
+}
+
 export interface OrderHistoryPage {
   items: OrderHistoryRecord[];
   total: number;
   page: number;
   limit: number;
+}
+
+export interface SellerOrderHistoryRecord {
+  id: string;
+  status: OrderStatus;
+  shippingMode: ShippingMode;
+  currency: string;
+  totalItems: number;
+  subtotal: number;
+  canUpdateDeliveryStatus: boolean;
+  paidAt: Date | null;
+  createdAt: Date;
+  itemsPreview: OrderHistoryItemPreviewRecord[];
+}
+
+export interface SellerOrderHistoryPage {
+  items: SellerOrderHistoryRecord[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface SellerOrderDetailRecord {
+  id: string;
+  status: OrderStatus;
+  shippingMode: ShippingMode;
+  currency: string;
+  totalItems: number;
+  subtotal: number;
+  canUpdateDeliveryStatus: boolean;
+  paidAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  billingAddress: OrderBillingAddressSnapshot;
+  items: OrderItemRecord[];
+}
+
+export interface OrderItemDeliveryContextRecord {
+  id: string;
+  orderId: string;
+  sellerId: string;
+  shippingMode: ShippingMode;
+  deliveryStatus: OrderItemDeliveryStatus;
+}
+
+export interface UpdateOrderItemDeliveryStatusInput {
+  orderItemId: string;
+  deliveryStatus: OrderItemDeliveryStatus;
+  deliveryFailureReason: string | null;
+  updatedByUserId: string;
+  updatedByRole: OrderStatusUpdatedByRole;
+  updatedAt: Date;
 }
 
 export interface OrderRepository {
@@ -210,5 +297,19 @@ export interface OrderRepository {
     orderId: string,
     buyerId: string
   ): Promise<OrderDetailRecord | null>;
+  findDetailByIdAndSellerId(
+    orderId: string,
+    sellerId: string
+  ): Promise<SellerOrderDetailRecord | null>;
   findPageByBuyerId(input: FindOrdersPageByBuyerIdInput): Promise<OrderHistoryPage>;
+  findPageBySellerId(
+    input: FindOrdersPageBySellerIdInput
+  ): Promise<SellerOrderHistoryPage>;
+  findPage(input: FindOrdersPageInput): Promise<OrderHistoryPage>;
+  findItemDeliveryContextById(
+    orderItemId: string
+  ): Promise<OrderItemDeliveryContextRecord | null>;
+  updateItemDeliveryStatus(
+    input: UpdateOrderItemDeliveryStatusInput
+  ): Promise<void>;
 }

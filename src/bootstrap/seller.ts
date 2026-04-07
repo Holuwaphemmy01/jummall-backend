@@ -9,12 +9,14 @@ import { SendWelcomeEmail } from "../application/notification/send-welcome-email
 import { CreateSellerCategoryShippingRule } from "../application/seller/create-category-shipping-rule";
 import { CreateSellerShippingZone } from "../application/seller/create-shipping-zone";
 import { CreateSellerShippingZoneRule } from "../application/seller/create-shipping-zone-rule";
+import { GetSellerOrderDetail } from "../application/seller/get-order-detail";
 import { GetSellerCategoryShippingRule } from "../application/seller/get-category-shipping-rule";
 import { GetSellerShippingZone } from "../application/seller/get-shipping-zone";
 import { GetSellerShippingZoneRule } from "../application/seller/get-shipping-zone-rule";
 import { ListAvailableProductBrands } from "../application/seller/list-available-product-brands";
 import { ListAvailableProductCategories } from "../application/seller/list-available-product-categories";
 import { ListSellerCategoryShippingRules } from "../application/seller/list-category-shipping-rules";
+import { ListSellerOrders } from "../application/seller/list-orders";
 import { ListSellerProducts } from "../application/seller/list-seller-products";
 import { ListSellerShippingZoneRules } from "../application/seller/list-shipping-zone-rules";
 import { ListSellerShippingZones } from "../application/seller/list-shipping-zones";
@@ -22,6 +24,7 @@ import { RegisterSeller } from "../application/seller/register-seller";
 import { SetSellerCategoryShippingRuleStatus } from "../application/seller/set-category-shipping-rule-status";
 import { SetSellerShippingZoneStatus } from "../application/seller/set-shipping-zone-status";
 import { SetSellerShippingZoneRuleStatus } from "../application/seller/set-shipping-zone-rule-status";
+import { UpdateSellerOrderItemDeliveryStatus } from "../application/seller/update-order-item-delivery-status";
 import { UpdateSellerCategoryShippingRule } from "../application/seller/update-category-shipping-rule";
 import { UpdateSellerShippingZone } from "../application/seller/update-shipping-zone";
 import { UpdateSellerShippingZoneRule } from "../application/seller/update-shipping-zone-rule";
@@ -34,12 +37,14 @@ import createSellerKycRouter from "../infrastructure/api/routes/seller-kyc-route
 import createSellerRouter, {
   createProtectedSellerBrandRouter,
   createProtectedSellerCategoryRouter,
+  createProtectedSellerOrderRouter,
   createProtectedSellerProductListRouter,
   createProtectedSellerProductRouter,
   createProtectedSellerShippingRouter
 } from "../infrastructure/api/routes/seller-routes";
 import { PostgresEmailVerificationRepository } from "../infrastructure/database/repositories/postgres-email-verification-repository";
 import { PostgresCategoryShippingRuleRepository } from "../infrastructure/database/repositories/postgres-category-shipping-rule-repository";
+import { PostgresOrderRepository } from "../infrastructure/database/repositories/postgres-order-repository";
 import { PostgresSellerKycRepository } from "../infrastructure/database/repositories/postgres-seller-kyc-repository";
 import { PostgresSellerRepository } from "../infrastructure/database/repositories/postgres-seller-repository";
 import { PostgresShippingSettingsRepository } from "../infrastructure/database/repositories/postgres-shipping-settings-repository";
@@ -57,6 +62,7 @@ export function createSellerModule() {
   const authenticationRepository = new PostgresAuthenticationRepository();
   const productBrandRepository = new PostgresProductBrandRepository();
   const productCategoryRepository = new PostgresProductCategoryRepository();
+  const orderRepository = new PostgresOrderRepository();
   const productRepository = new PostgresProductRepository();
   const sellerRepository = new PostgresSellerRepository();
   const sellerKycRepository = new PostgresSellerKycRepository();
@@ -176,6 +182,19 @@ export function createSellerModule() {
     authenticationRepository,
     productRepository
   );
+  const listSellerOrders = new ListSellerOrders(
+    authenticationRepository,
+    orderRepository
+  );
+  const getSellerOrderDetail = new GetSellerOrderDetail(
+    authenticationRepository,
+    orderRepository
+  );
+  const updateSellerOrderItemDeliveryStatus =
+    new UpdateSellerOrderItemDeliveryStatus(
+      authenticationRepository,
+      orderRepository
+    );
   const uploadSellerKycDocument = new UploadSellerKycDocument(
     sellerKycRepository,
     documentStorage
@@ -207,6 +226,15 @@ export function createSellerModule() {
     "/get-all-products",
     authenticateSeller,
     createProtectedSellerProductListRouter({ listSellerProducts })
+  );
+  sellerRouter.use(
+    "/orders",
+    authenticateSeller,
+    createProtectedSellerOrderRouter({
+      listSellerOrders,
+      getSellerOrderDetail,
+      updateSellerOrderItemDeliveryStatus
+    })
   );
   sellerRouter.use(
     "/create-product",

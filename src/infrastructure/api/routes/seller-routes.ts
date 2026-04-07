@@ -3,12 +3,16 @@ import { Router } from "express";
 import type { CreateSellerCategoryShippingRuleUseCase } from "../../../application/seller/create-category-shipping-rule";
 import type { CreateSellerShippingZoneUseCase } from "../../../application/seller/create-shipping-zone";
 import type { CreateSellerShippingZoneRuleUseCase } from "../../../application/seller/create-shipping-zone-rule";
+import type { GetSellerOrderDetailUseCase } from "../../../application/seller/get-order-detail";
+import { GetSellerOrderDetailError } from "../../../application/seller/get-order-detail";
 import type { GetSellerCategoryShippingRuleUseCase } from "../../../application/seller/get-category-shipping-rule";
 import type { GetSellerShippingZoneUseCase } from "../../../application/seller/get-shipping-zone";
 import type { GetSellerShippingZoneRuleUseCase } from "../../../application/seller/get-shipping-zone-rule";
 import type { ListAvailableProductBrandsUseCase } from "../../../application/seller/list-available-product-brands";
 import type { ListAvailableProductCategoriesUseCase } from "../../../application/seller/list-available-product-categories";
 import type { ListSellerCategoryShippingRulesUseCase } from "../../../application/seller/list-category-shipping-rules";
+import type { ListSellerOrdersUseCase } from "../../../application/seller/list-orders";
+import { ListSellerOrdersError } from "../../../application/seller/list-orders";
 import type { ListSellerProductsUseCase } from "../../../application/seller/list-seller-products";
 import { ListSellerProductsError } from "../../../application/seller/list-seller-products";
 import type { ListSellerShippingZoneRulesUseCase } from "../../../application/seller/list-shipping-zone-rules";
@@ -19,6 +23,8 @@ import type { SetSellerCategoryShippingRuleStatusUseCase } from "../../../applic
 import type { SetSellerShippingZoneStatusUseCase } from "../../../application/seller/set-shipping-zone-status";
 import type { SetSellerShippingZoneRuleStatusUseCase } from "../../../application/seller/set-shipping-zone-rule-status";
 import { SellerShippingConfigurationError } from "../../../application/seller/shipping-configuration-error";
+import type { UpdateSellerOrderItemDeliveryStatusUseCase } from "../../../application/seller/update-order-item-delivery-status";
+import { UpdateSellerOrderItemDeliveryStatusError } from "../../../application/seller/update-order-item-delivery-status";
 import type { UpdateSellerCategoryShippingRuleUseCase } from "../../../application/seller/update-category-shipping-rule";
 import type { UpdateSellerShippingZoneUseCase } from "../../../application/seller/update-shipping-zone";
 import type { UpdateSellerShippingZoneRuleUseCase } from "../../../application/seller/update-shipping-zone-rule";
@@ -27,14 +33,20 @@ import { UploadProductError } from "../../../application/seller/upload-product";
 import { parseBase64File } from "../files/parse-base64-file";
 import type { AuthenticatedUser } from "../middleware/create-auth-middleware";
 import {
+  toSellerOrderDetailResponse,
+  toSellerOrderHistoryResponse
+} from "../responses/order-response";
+import {
   buildProductBrandImagePublicUrl,
   buildProductCategoryImagePublicUrl
 } from "../../storage/build-public-storage-url";
 import { toProductImageResponse } from "../responses/product-image-response";
 import { createCategoryShippingRuleSchema } from "../validation/create-category-shipping-rule-schema";
+import { listOrdersSchema } from "../validation/list-orders-schema";
 import { registerSellerSchema } from "../validation/register-seller-schema";
 import { createShippingZoneRuleSchema } from "../validation/create-shipping-zone-rule-schema";
 import { createShippingZoneSchema } from "../validation/create-shipping-zone-schema";
+import { updateOrderItemDeliveryStatusSchema } from "../validation/update-order-item-delivery-status-schema";
 import { updateCategoryShippingRuleSchema } from "../validation/update-category-shipping-rule-schema";
 import { updateShippingZoneRuleSchema } from "../validation/update-shipping-zone-rule-schema";
 import { updateShippingZoneSchema } from "../validation/update-shipping-zone-schema";
@@ -58,6 +70,12 @@ interface SellerBrandRouterDependencies {
 
 interface SellerCategoryRouterDependencies {
   listAvailableProductCategories: ListAvailableProductCategoriesUseCase;
+}
+
+interface SellerOrderRouterDependencies {
+  listSellerOrders: ListSellerOrdersUseCase;
+  getSellerOrderDetail: GetSellerOrderDetailUseCase;
+  updateSellerOrderItemDeliveryStatus: UpdateSellerOrderItemDeliveryStatusUseCase;
 }
 
 interface SellerShippingRouterDependencies {
@@ -377,6 +395,127 @@ export function createProtectedSellerCategoryRouter({
   });
 
   return sellerCategoryRouter;
+}
+
+export function createProtectedSellerOrderRouter({
+  listSellerOrders,
+  getSellerOrderDetail,
+  updateSellerOrderItemDeliveryStatus
+}: SellerOrderRouterDependencies) {
+  const sellerOrderRouter = Router();
+
+  sellerOrderRouter.get("/", async (req, res) => {
+    const { error, value } = listOrdersSchema.validate(req.query, {
+      abortEarly: false,
+      stripUnknown: true,
+      convert: true
+    });
+
+    if (error) {
+      return validationFailure(res, error);
+    }
+
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      const result = await listSellerOrders.execute({
+        sellerId: authUser.sub,
+        page: value.page,
+        limit: value.limit
+      });
+
+      return res.status(200).json({
+        message: "Seller orders fetched successfully.",
+        data: {
+          orders: result.items.map((order) => toSellerOrderHistoryResponse(order)),
+          pagination: {
+            page: result.page,
+            limit: result.limit,
+            total: result.total,
+            total_pages: Math.ceil(result.total / result.limit)
+          }
+        }
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ListSellerOrdersError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch seller orders."
+      });
+    }
+  });
+
+  sellerOrderRouter.get("/:orderId", async (req, res) => {
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      const order = await getSellerOrderDetail.execute({
+        sellerId: authUser.sub,
+        orderId: req.params.orderId
+      });
+
+      return res.status(200).json({
+        message: "Seller order fetched successfully.",
+        data: toSellerOrderDetailResponse(order)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof GetSellerOrderDetailError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch seller order."
+      });
+    }
+  });
+
+  sellerOrderRouter.patch("/items/:orderItemId/delivery-status", async (req, res) => {
+    const { error, value } = updateOrderItemDeliveryStatusSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return validationFailure(res, error);
+    }
+
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      const order = await updateSellerOrderItemDeliveryStatus.execute({
+        sellerId: authUser.sub,
+        orderItemId: req.params.orderItemId,
+        deliveryStatus: value.delivery_status,
+        deliveryFailureReason: value.delivery_failure_reason
+      });
+
+      return res.status(200).json({
+        message: "Order item delivery status updated successfully.",
+        data: toSellerOrderDetailResponse(order)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof UpdateSellerOrderItemDeliveryStatusError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to update order item delivery status."
+      });
+    }
+  });
+
+  return sellerOrderRouter;
 }
 
 export function createProtectedSellerShippingRouter({

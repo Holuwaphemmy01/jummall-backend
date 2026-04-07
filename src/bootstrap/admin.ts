@@ -4,6 +4,7 @@ import { ApproveProductPendingReview } from "../application/admin/approve-produc
 import { ApproveSellerKyc } from "../application/admin/approve-seller-kyc";
 import { CreateCategoryShippingRule } from "../application/admin/create-category-shipping-rule";
 import { CreateFreeShippingRule } from "../application/admin/create-free-shipping-rule";
+import { GetOrderDetail } from "../application/admin/get-order-detail";
 import { CreateProductBrand } from "../application/admin/create-product-brand";
 import { CreateProductCategory } from "../application/admin/create-product-category";
 import { CreateShippingZone } from "../application/admin/create-shipping-zone";
@@ -17,6 +18,7 @@ import { GetProductCategory } from "../application/admin/get-product-category";
 import { GetShippingZone } from "../application/admin/get-shipping-zone";
 import { GetShippingZoneRule } from "../application/admin/get-shipping-zone-rule";
 import { GetShippingSettings } from "../application/admin/get-shipping-settings";
+import { ListOrders } from "../application/admin/list-orders";
 import { ListFreeShippingRules } from "../application/admin/list-free-shipping-rules";
 import { ListCategoryShippingRules } from "../application/admin/list-category-shipping-rules";
 import { ListProductBrands } from "../application/admin/list-product-brands";
@@ -34,14 +36,17 @@ import { UpdateFreeShippingRule } from "../application/admin/update-free-shippin
 import { UpdateShippingZone } from "../application/admin/update-shipping-zone";
 import { UpdateShippingZoneRule } from "../application/admin/update-shipping-zone-rule";
 import { UpdateShippingSettings } from "../application/admin/update-shipping-settings";
+import { UpdateOrderItemDeliveryStatus } from "../application/admin/update-order-item-delivery-status";
 import { UpdateProductBrand } from "../application/admin/update-product-brand";
 import { ListProductCategories } from "../application/admin/list-product-categories";
 import { UpdateProductCategory } from "../application/admin/update-product-category";
 import { createAuthMiddleware } from "../infrastructure/api/middleware/create-auth-middleware";
 import createAdminRouter from "../infrastructure/api/routes/admin-routes";
+import { PostgresAuthenticationRepository } from "../infrastructure/database/repositories/postgres-authentication-repository";
 import { PostgresAdminKycRepository } from "../infrastructure/database/repositories/postgres-admin-kyc-repository";
 import { PostgresCategoryShippingRuleRepository } from "../infrastructure/database/repositories/postgres-category-shipping-rule-repository";
 import { PostgresFreeShippingRuleRepository } from "../infrastructure/database/repositories/postgres-free-shipping-rule-repository";
+import { PostgresOrderRepository } from "../infrastructure/database/repositories/postgres-order-repository";
 import { PostgresProductBrandRepository } from "../infrastructure/database/repositories/postgres-product-brand-repository";
 import { PostgresProductCategoryRepository } from "../infrastructure/database/repositories/postgres-product-category-repository";
 import { PostgresProductRepository } from "../infrastructure/database/repositories/postgres-product-repository";
@@ -54,6 +59,8 @@ import { SupabaseDocumentStorage } from "../infrastructure/storage/supabase-docu
 export function createAdminModule() {
   const adminRouter = Router();
   const adminKycRepository = new PostgresAdminKycRepository();
+  const authenticationRepository = new PostgresAuthenticationRepository();
+  const orderRepository = new PostgresOrderRepository();
   const productBrandRepository = new PostgresProductBrandRepository();
   const productCategoryRepository = new PostgresProductCategoryRepository();
   const productRepository = new PostgresProductRepository();
@@ -95,6 +102,7 @@ export function createAdminModule() {
   );
   const getFreeShippingRule = new GetFreeShippingRule(freeShippingRuleRepository);
   const listCompletedSellerKyc = new ListCompletedSellerKyc(adminKycRepository);
+  const listOrders = new ListOrders(authenticationRepository, orderRepository);
   const listFreeShippingRules = new ListFreeShippingRules(
     freeShippingRuleRepository
   );
@@ -109,6 +117,10 @@ export function createAdminModule() {
   );
   const listShippingZones = new ListShippingZones(shippingZoneRepository);
   const getCompletedSellerKyc = new GetCompletedSellerKyc(adminKycRepository);
+  const getOrderDetail = new GetOrderDetail(
+    authenticationRepository,
+    orderRepository
+  );
   const getProductBrand = new GetProductBrand(productBrandRepository);
   const getProductPendingReviewDetail = new GetProductPendingReviewDetail(
     productRepository
@@ -144,6 +156,10 @@ export function createAdminModule() {
   );
   const updateFreeShippingRule = new UpdateFreeShippingRule(
     freeShippingRuleRepository
+  );
+  const updateOrderItemDeliveryStatus = new UpdateOrderItemDeliveryStatus(
+    authenticationRepository,
+    orderRepository
   );
   const updateProductBrand = new UpdateProductBrand(
     productBrandRepository,
@@ -196,10 +212,13 @@ export function createAdminModule() {
       updateCategoryShippingRule,
       updateFreeShippingRule,
       getCompletedSellerKyc,
+      getOrderDetail,
       getProductCategory,
       updateShippingZone,
       updateShippingZoneRule,
       updateShippingSettings,
+      listOrders,
+      updateOrderItemDeliveryStatus,
       updateProductBrand,
       updateProductCategory
     })
