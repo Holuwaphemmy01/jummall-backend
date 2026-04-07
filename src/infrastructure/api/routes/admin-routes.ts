@@ -8,6 +8,8 @@ import {
   ApproveSellerKycError,
   type ApproveSellerKycUseCase
 } from "../../../application/admin/approve-seller-kyc";
+import type { GetOrderDetailUseCase } from "../../../application/admin/get-order-detail";
+import { GetOrderDetailError } from "../../../application/admin/get-order-detail";
 import type { CreateCategoryShippingRuleUseCase } from "../../../application/admin/create-category-shipping-rule";
 import type { CreateFreeShippingRuleUseCase } from "../../../application/admin/create-free-shipping-rule";
 import type { CreateProductBrandUseCase } from "../../../application/admin/create-product-brand";
@@ -32,6 +34,8 @@ import {
 import type { ListCategoryShippingRulesUseCase } from "../../../application/admin/list-category-shipping-rules";
 import type { ListCompletedSellerKycUseCase } from "../../../application/admin/list-completed-seller-kyc";
 import type { ListFreeShippingRulesUseCase } from "../../../application/admin/list-free-shipping-rules";
+import type { ListOrdersUseCase } from "../../../application/admin/list-orders";
+import { ListOrdersError } from "../../../application/admin/list-orders";
 import type { ListProductBrandsUseCase } from "../../../application/admin/list-product-brands";
 import type { ListProductsPendingReviewUseCase } from "../../../application/admin/list-products-pending-review";
 import type { ListProductCategoriesUseCase } from "../../../application/admin/list-product-categories";
@@ -52,6 +56,8 @@ import type { UpdateCategoryShippingRuleUseCase } from "../../../application/adm
 import type { UpdateFreeShippingRuleUseCase } from "../../../application/admin/update-free-shipping-rule";
 import type { UpdateProductBrandUseCase } from "../../../application/admin/update-product-brand";
 import type { UpdateProductCategoryUseCase } from "../../../application/admin/update-product-category";
+import type { UpdateOrderItemDeliveryStatusUseCase } from "../../../application/admin/update-order-item-delivery-status";
+import { UpdateOrderItemDeliveryStatusError } from "../../../application/admin/update-order-item-delivery-status";
 import type { UpdateShippingZoneUseCase } from "../../../application/admin/update-shipping-zone";
 import type { UpdateShippingZoneRuleUseCase } from "../../../application/admin/update-shipping-zone-rule";
 import type { UpdateShippingSettingsUseCase } from "../../../application/admin/update-shipping-settings";
@@ -68,9 +74,15 @@ import {
   buildProductBrandImagePublicUrl,
   buildProductCategoryImagePublicUrl
 } from "../../storage/build-public-storage-url";
+import {
+  toAdminOrderDetailResponse,
+  toAdminOrderHistoryResponse
+} from "../responses/order-response";
 import { toProductImageResponse } from "../responses/product-image-response";
 import { createProductCategorySchema } from "../validation/create-product-category-schema";
+import { listOrdersSchema } from "../validation/list-orders-schema";
 import { rejectProductPendingReviewSchema } from "../validation/reject-product-pending-review-schema";
+import { updateOrderItemDeliveryStatusSchema } from "../validation/update-order-item-delivery-status-schema";
 import { updateCategoryShippingRuleSchema } from "../validation/update-category-shipping-rule-schema";
 import { updateFreeShippingRuleSchema } from "../validation/update-free-shipping-rule-schema";
 import { updateShippingSettingsSchema } from "../validation/update-shipping-settings-schema";
@@ -110,11 +122,14 @@ interface AdminRouterDependencies {
   updateCategoryShippingRule: UpdateCategoryShippingRuleUseCase;
   updateFreeShippingRule: UpdateFreeShippingRuleUseCase;
   getCompletedSellerKyc: GetCompletedSellerKycUseCase;
+  getOrderDetail: GetOrderDetailUseCase;
   getProductCategory: GetProductCategoryUseCase;
   getShippingSettings: GetShippingSettingsUseCase;
+  listOrders: ListOrdersUseCase;
   updateShippingZone: UpdateShippingZoneUseCase;
   updateShippingZoneRule: UpdateShippingZoneRuleUseCase;
   updateShippingSettings: UpdateShippingSettingsUseCase;
+  updateOrderItemDeliveryStatus: UpdateOrderItemDeliveryStatusUseCase;
   updateProductBrand: UpdateProductBrandUseCase;
   updateProductCategory: UpdateProductCategoryUseCase;
 }
@@ -150,11 +165,14 @@ export default function createAdminRouter({
   updateCategoryShippingRule,
   updateFreeShippingRule,
   getCompletedSellerKyc,
+  getOrderDetail,
   getProductCategory,
   getShippingSettings,
+  listOrders,
   updateShippingZone,
   updateShippingZoneRule,
   updateShippingSettings,
+  updateOrderItemDeliveryStatus,
   updateProductBrand,
   updateProductCategory
 }: AdminRouterDependencies) {
@@ -1176,6 +1194,117 @@ export default function createAdminRouter({
 
       return res.status(500).json({
         message: "Unable to update product category."
+      });
+    }
+  });
+
+  adminRouter.get("/orders", async (req, res) => {
+    const { error, value } = listOrdersSchema.validate(req.query, {
+      abortEarly: false,
+      stripUnknown: true,
+      convert: true
+    });
+
+    if (error) {
+      return validationFailure(res, error);
+    }
+
+    const authUser = res.locals.authUser;
+
+    try {
+      const result = await listOrders.execute({
+        adminId: authUser.sub,
+        page: value.page,
+        limit: value.limit
+      });
+
+      return res.status(200).json({
+        message: "Orders fetched successfully.",
+        data: {
+          orders: result.items.map((order) => toAdminOrderHistoryResponse(order)),
+          pagination: {
+            page: result.page,
+            limit: result.limit,
+            total: result.total,
+            total_pages: Math.ceil(result.total / result.limit)
+          }
+        }
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof ListOrdersError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch orders."
+      });
+    }
+  });
+
+  adminRouter.get("/orders/:orderId", async (req, res) => {
+    const authUser = res.locals.authUser;
+
+    try {
+      const order = await getOrderDetail.execute({
+        adminId: authUser.sub,
+        orderId: req.params.orderId
+      });
+
+      return res.status(200).json({
+        message: "Order fetched successfully.",
+        data: toAdminOrderDetailResponse(order)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof GetOrderDetailError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to fetch order."
+      });
+    }
+  });
+
+  adminRouter.patch("/orders/items/:orderItemId/delivery-status", async (req, res) => {
+    const { error, value } = updateOrderItemDeliveryStatusSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return validationFailure(res, error);
+    }
+
+    const authUser = res.locals.authUser;
+
+    try {
+      const order = await updateOrderItemDeliveryStatus.execute({
+        adminId: authUser.sub,
+        orderItemId: req.params.orderItemId,
+        deliveryStatus: value.delivery_status,
+        deliveryFailureReason: value.delivery_failure_reason
+      });
+
+      return res.status(200).json({
+        message: "Order item delivery status updated successfully.",
+        data: toAdminOrderDetailResponse(order)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof UpdateOrderItemDeliveryStatusError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to update order item delivery status."
       });
     }
   });

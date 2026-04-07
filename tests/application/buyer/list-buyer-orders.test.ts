@@ -43,6 +43,10 @@ class OrderRepositoryDouble implements OrderRepository {
     return null;
   }
 
+  async findDetailByIdAndSellerId() {
+    return null;
+  }
+
   async findPageByBuyerId(input: FindOrdersPageByBuyerIdInput): Promise<OrderHistoryPage> {
     return {
       ...this.page,
@@ -50,6 +54,30 @@ class OrderRepositoryDouble implements OrderRepository {
       limit: input.limit
     };
   }
+
+  async findPageBySellerId() {
+    return {
+      items: [],
+      total: 0,
+      page: 1,
+      limit: 20
+    };
+  }
+
+  async findPage() {
+    return {
+      items: [],
+      total: 0,
+      page: 1,
+      limit: 20
+    };
+  }
+
+  async findItemDeliveryContextById() {
+    return null;
+  }
+
+  async updateItemDeliveryStatus(): Promise<void> {}
 }
 
 describe("list buyer orders", () => {
@@ -134,7 +162,9 @@ function makeOrderHistoryPage(): OrderHistoryPage {
     items: [
       {
         id: "order-1",
+        buyerId: "buyer-1",
         status: "pending_fulfillment",
+        shippingMode: "PLATFORM",
         currency: "NGN",
         totalItems: 1,
         rawSubtotal: 10000,

@@ -39,6 +39,10 @@ class OrderRepositoryDouble implements OrderRepository {
     return this.order;
   }
 
+  async findDetailByIdAndSellerId() {
+    return null;
+  }
+
   async findPageByBuyerId() {
     return {
       items: [],
@@ -47,6 +51,30 @@ class OrderRepositoryDouble implements OrderRepository {
       limit: 20
     };
   }
+
+  async findPageBySellerId() {
+    return {
+      items: [],
+      total: 0,
+      page: 1,
+      limit: 20
+    };
+  }
+
+  async findPage() {
+    return {
+      items: [],
+      total: 0,
+      page: 1,
+      limit: 20
+    };
+  }
+
+  async findItemDeliveryContextById() {
+    return null;
+  }
+
+  async updateItemDeliveryStatus(): Promise<void> {}
 }
 
 describe("get buyer order detail", () => {
@@ -179,6 +207,14 @@ function makeOrderDetail(): OrderDetailRecord {
         currency: "NGN",
         condition: "new",
         weightKg: 1,
+        deliveryStatus: "pending_fulfillment",
+        deliveryStatusUpdatedAt: null,
+        deliveryStatusUpdatedByUserId: null,
+        deliveryStatusUpdatedByRole: null,
+        shippedAt: null,
+        deliveredAt: null,
+        deliveryFailedAt: null,
+        deliveryFailureReason: null,
         images: [
           {
             id: "order-image-1",

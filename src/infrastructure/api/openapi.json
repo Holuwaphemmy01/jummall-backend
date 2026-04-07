@@ -6792,6 +6792,7 @@
                             "product_id": "product-id",
                             "product_name": "Wireless Headset",
                             "quantity": 2,
+                            "delivery_status": "pending_fulfillment",
                             "primary_image": "products/seller-id/product-id/front.jpg",
                             "primary_image_public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/product-id/front.jpg"
                           }
@@ -6910,6 +6911,12 @@
                             "currency": "NGN",
                             "condition": "new",
                             "weight_kg": 0.4,
+                            "delivery_status": "pending_fulfillment",
+                            "delivery_status_updated_at": null,
+                            "shipped_at": null,
+                            "delivered_at": null,
+                            "delivery_failed_at": null,
+                            "delivery_failure_reason": null,
                             "images": [
                               {
                                 "id": "order-item-image-id",
@@ -6996,6 +7003,12 @@
                             "currency": "NGN",
                             "condition": "new",
                             "weight_kg": 1,
+                            "delivery_status": "pending_fulfillment",
+                            "delivery_status_updated_at": null,
+                            "shipped_at": null,
+                            "delivered_at": null,
+                            "delivery_failed_at": null,
+                            "delivery_failure_reason": null,
                             "images": []
                           }
                         ],
@@ -7015,6 +7028,624 @@
           },
           "404": {
             "description": "Buyer account or order not found"
+          }
+        }
+      }
+    },
+    "/sellers/orders": {
+      "get": {
+        "tags": [
+          "seller-orders"
+        ],
+        "summary": "List seller orders",
+        "description": "Returns paginated seller-scoped orders only. Each result includes only the authenticated seller's sold items and a seller-scoped aggregate status. When shipping mode is PLATFORM, delivery fields remain visible but cannot be updated by the seller.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "Page number to fetch."
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Number of orders to return per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seller orders fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SellerOrderHistoryResponse"
+                },
+                "example": {
+                  "message": "Seller orders fetched successfully.",
+                  "data": {
+                    "orders": [
+                      {
+                        "id": "order-id",
+                        "status": "pending_fulfillment",
+                        "shipping_mode": "VENDOR",
+                        "currency": "NGN",
+                        "total_items": 1,
+                        "subtotal": 10000,
+                        "can_update_delivery_status": true,
+                        "paid_at": "2026-04-06T10:00:00.000Z",
+                        "created_at": "2026-04-06T10:00:00.000Z",
+                        "items_preview": [
+                          {
+                            "order_item_id": "order-item-id",
+                            "product_id": "product-id",
+                            "product_name": "Phone",
+                            "quantity": 1,
+                            "delivery_status": "pending_fulfillment",
+                            "primary_image": "products/seller-id/product-id/front.jpg",
+                            "primary_image_public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/product-id/front.jpg"
+                          }
+                        ]
+                      }
+                    ],
+                    "pagination": {
+                      "page": 1,
+                      "limit": 20,
+                      "total": 1,
+                      "total_pages": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required"
+          },
+          "404": {
+            "description": "Seller account not found"
+          }
+        }
+      }
+    },
+    "/sellers/orders/{orderId}": {
+      "get": {
+        "tags": [
+          "seller-orders"
+        ],
+        "summary": "Get seller order detail",
+        "description": "Returns one seller-scoped order detail view containing only the authenticated seller's items. Delivery fields remain visible in PLATFORM shipping mode, but updates are read-only there.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "orderId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Order id to fetch."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seller order fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SellerOrderDetailResponse"
+                },
+                "examples": {
+                  "vendor_logistics_order": {
+                    "value": {
+                      "message": "Seller order fetched successfully.",
+                      "data": {
+                        "id": "order-id",
+                        "status": "pending_fulfillment",
+                        "shipping_mode": "VENDOR",
+                        "currency": "NGN",
+                        "total_items": 1,
+                        "subtotal": 10000,
+                        "can_update_delivery_status": true,
+                        "paid_at": "2026-04-06T10:00:00.000Z",
+                        "created_at": "2026-04-06T10:00:00.000Z",
+                        "updated_at": "2026-04-06T10:00:00.000Z",
+                        "billing_address": {
+                          "full_name": "Buyer One",
+                          "phone_number": "08000000000",
+                          "address_line_1": "1 Buyer St",
+                          "address_line_2": null,
+                          "city": "Ikeja",
+                          "state": "Lagos",
+                          "country": "Nigeria",
+                          "postal_code": null
+                        },
+                        "items": [
+                          {
+                            "id": "order-item-id",
+                            "product_id": "product-id",
+                            "seller_id": "seller-id",
+                            "category_id": "category-id",
+                            "category_name": "Electronics",
+                            "brand_id": null,
+                            "brand_name": null,
+                            "product_name": "Phone",
+                            "product_description": "Phone",
+                            "sku": "PHONE-001",
+                            "unit_price": 10000,
+                            "quantity": 1,
+                            "line_subtotal": 10000,
+                            "currency": "NGN",
+                            "condition": "new",
+                            "weight_kg": 1,
+                            "delivery_status": "pending_fulfillment",
+                            "delivery_status_updated_at": null,
+                            "shipped_at": null,
+                            "delivered_at": null,
+                            "delivery_failed_at": null,
+                            "delivery_failure_reason": null,
+                            "can_update_delivery_status": true,
+                            "images": []
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "platform_logistics_order": {
+                    "value": {
+                      "message": "Seller order fetched successfully.",
+                      "data": {
+                        "id": "order-id",
+                        "status": "pending_fulfillment",
+                        "shipping_mode": "PLATFORM",
+                        "currency": "NGN",
+                        "total_items": 1,
+                        "subtotal": 10000,
+                        "can_update_delivery_status": false,
+                        "paid_at": "2026-04-06T10:00:00.000Z",
+                        "created_at": "2026-04-06T10:00:00.000Z",
+                        "updated_at": "2026-04-06T10:00:00.000Z",
+                        "billing_address": {
+                          "full_name": "Buyer One",
+                          "phone_number": "08000000000",
+                          "address_line_1": "1 Buyer St",
+                          "address_line_2": null,
+                          "city": "Ikeja",
+                          "state": "Lagos",
+                          "country": "Nigeria",
+                          "postal_code": null
+                        },
+                        "items": [
+                          {
+                            "id": "order-item-id",
+                            "product_id": "product-id",
+                            "seller_id": "seller-id",
+                            "category_id": "category-id",
+                            "category_name": "Electronics",
+                            "brand_id": null,
+                            "brand_name": null,
+                            "product_name": "Phone",
+                            "product_description": "Phone",
+                            "sku": "PHONE-001",
+                            "unit_price": 10000,
+                            "quantity": 1,
+                            "line_subtotal": 10000,
+                            "currency": "NGN",
+                            "condition": "new",
+                            "weight_kg": 1,
+                            "delivery_status": "pending_fulfillment",
+                            "delivery_status_updated_at": null,
+                            "shipped_at": null,
+                            "delivered_at": null,
+                            "delivery_failed_at": null,
+                            "delivery_failure_reason": null,
+                            "can_update_delivery_status": false,
+                            "images": []
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required"
+          },
+          "404": {
+            "description": "Seller account or order not found"
+          }
+        }
+      }
+    },
+    "/sellers/orders/items/{orderItemId}/delivery-status": {
+      "patch": {
+        "tags": [
+          "seller-orders"
+        ],
+        "summary": "Update seller order item delivery status",
+        "description": "Updates one seller-owned order item's delivery status when the order uses VENDOR shipping mode. Sellers can view PLATFORM mode orders but cannot update delivery status there.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "orderItemId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Order item id to update."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrderItemDeliveryStatusRequest"
+              },
+              "examples": {
+                "mark_as_shipped": {
+                  "value": {
+                    "delivery_status": "shipped"
+                  }
+                },
+                "mark_as_delivery_failed": {
+                  "value": {
+                    "delivery_status": "delivery_failed",
+                    "delivery_failure_reason": "Customer phone number was unreachable."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order item delivery status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SellerOrderDetailResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or invalid delivery-status transition"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Seller access required or platform-managed logistics order"
+          },
+          "404": {
+            "description": "Seller account or order item not found"
+          }
+        }
+      }
+    },
+    "/admin/orders": {
+      "get": {
+        "tags": [
+          "admin-orders"
+        ],
+        "summary": "List marketplace orders",
+        "description": "Returns paginated marketplace order history for admin users. Results include buyer id, shipping mode, aggregate order status, and a small preview of item-level delivery statuses.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "Page number to fetch."
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Number of orders to return per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Orders fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderHistoryResponse"
+                },
+                "example": {
+                  "message": "Orders fetched successfully.",
+                  "data": {
+                    "orders": [
+                      {
+                        "id": "order-id",
+                        "buyer_id": "buyer-id",
+                        "status": "pending_fulfillment",
+                        "shipping_mode": "PLATFORM",
+                        "currency": "NGN",
+                        "total_items": 1,
+                        "raw_subtotal": 10000,
+                        "discounted_subtotal": 10000,
+                        "final_shipping_fee": 500,
+                        "total_paid": 10500,
+                        "free_shipping_applied": false,
+                        "paid_at": "2026-04-06T10:00:00.000Z",
+                        "created_at": "2026-04-06T10:00:00.000Z",
+                        "items_preview": [
+                          {
+                            "order_item_id": "order-item-id",
+                            "product_id": "product-id",
+                            "product_name": "Phone",
+                            "quantity": 1,
+                            "delivery_status": "pending_fulfillment",
+                            "primary_image": "products/seller-id/product-id/front.jpg",
+                            "primary_image_public_url": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/product-id/front.jpg"
+                          }
+                        ]
+                      }
+                    ],
+                    "pagination": {
+                      "page": 1,
+                      "limit": 20,
+                      "total": 1,
+                      "total_pages": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Admin account not found"
+          }
+        }
+      }
+    },
+    "/admin/orders/{orderId}": {
+      "get": {
+        "tags": [
+          "admin-orders"
+        ],
+        "summary": "Get marketplace order detail",
+        "description": "Returns the full saved order snapshot for one marketplace order, including buyer id, item-level delivery statuses, and shipping breakdown segments.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "orderId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Order id to fetch."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderDetailResponse"
+                },
+                "example": {
+                  "message": "Order fetched successfully.",
+                  "data": {
+                    "buyer_id": "buyer-id",
+                    "id": "order-id",
+                    "status": "pending_fulfillment",
+                    "payment_provider": "paystack",
+                    "currency": "NGN",
+                    "total_items": 1,
+                    "raw_subtotal": 10000,
+                    "discounted_subtotal": 10000,
+                    "base_shipping_fee": 500,
+                    "final_shipping_fee": 500,
+                    "total_paid": 10500,
+                    "shipping_mode": "PLATFORM",
+                    "category_shipping_mode": "HIGHEST",
+                    "free_shipping": {
+                      "applied": false,
+                      "rule_id": null,
+                      "rule_type": null,
+                      "coupon_code": null
+                    },
+                    "paid_at": "2026-04-06T10:00:00.000Z",
+                    "created_at": "2026-04-06T10:00:00.000Z",
+                    "updated_at": "2026-04-06T10:00:00.000Z",
+                    "billing_address": {
+                      "full_name": "Buyer One",
+                      "phone_number": "08000000000",
+                      "address_line_1": "1 Buyer St",
+                      "address_line_2": null,
+                      "city": "Ikeja",
+                      "state": "Lagos",
+                      "country": "Nigeria",
+                      "postal_code": null
+                    },
+                    "items": [
+                      {
+                        "id": "order-item-id",
+                        "product_id": "product-id",
+                        "seller_id": "seller-id",
+                        "category_id": "category-id",
+                        "category_name": "Electronics",
+                        "brand_id": null,
+                        "brand_name": null,
+                        "product_name": "Phone",
+                        "product_description": "Phone",
+                        "sku": "PHONE-001",
+                        "unit_price": 10000,
+                        "quantity": 1,
+                        "line_subtotal": 10000,
+                        "currency": "NGN",
+                        "condition": "new",
+                        "weight_kg": 1,
+                        "delivery_status": "pending_fulfillment",
+                        "delivery_status_updated_at": null,
+                        "shipped_at": null,
+                        "delivered_at": null,
+                        "delivery_failed_at": null,
+                        "delivery_failure_reason": null,
+                        "images": []
+                      }
+                    ],
+                    "shipping_segments": []
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Admin account or order not found"
+          }
+        }
+      }
+    },
+    "/admin/orders/items/{orderItemId}/delivery-status": {
+      "patch": {
+        "tags": [
+          "admin-orders"
+        ],
+        "summary": "Update marketplace order item delivery status",
+        "description": "Updates one order item's delivery status as an admin override or as the primary logistics actor for PLATFORM shipping mode orders.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "orderItemId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Order item id to update."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrderItemDeliveryStatusRequest"
+              },
+              "examples": {
+                "mark_as_shipped": {
+                  "value": {
+                    "delivery_status": "shipped"
+                  }
+                },
+                "mark_as_delivered": {
+                  "value": {
+                    "delivery_status": "delivered"
+                  }
+                },
+                "mark_as_delivery_failed": {
+                  "value": {
+                    "delivery_status": "delivery_failed",
+                    "delivery_failure_reason": "Customer was unavailable at the delivery location."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order item delivery status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderDetailResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or invalid delivery-status transition"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Admin access required"
+          },
+          "404": {
+            "description": "Admin account or order item not found"
           }
         }
       }
@@ -7061,14 +7692,18 @@
       "name": "seller-account",
       "description": "Seller account registration and account bootstrap endpoints."
     },
-    {
-      "name": "seller-catalog",
-      "description": "Seller-facing catalog endpoints for reading admin-managed metadata and creating products."
-    },
-    {
-      "name": "seller-kyc",
-      "description": "Seller KYC draft, document upload, and submission endpoints."
-    },
+      {
+        "name": "seller-catalog",
+        "description": "Seller-facing catalog endpoints for reading admin-managed metadata and creating products."
+      },
+      {
+        "name": "seller-orders",
+        "description": "Seller order endpoints for viewing sold items and updating item-level delivery status when vendor logistics applies."
+      },
+      {
+        "name": "seller-kyc",
+        "description": "Seller KYC draft, document upload, and submission endpoints."
+      },
     {
       "name": "admin-product-brands",
       "description": "Admin-managed product brand catalog endpoints."
@@ -7077,14 +7712,18 @@
       "name": "admin-product-categories",
       "description": "Admin-managed product category catalog endpoints, including deduction percentage configuration."
     },
-    {
-      "name": "admin-product-review",
-      "description": "Admin moderation endpoints for seller-submitted products."
-    },
-    {
-      "name": "admin-kyc",
-      "description": "Admin review and approval endpoints for seller KYC submissions."
-    }
+      {
+        "name": "admin-product-review",
+        "description": "Admin moderation endpoints for seller-submitted products."
+      },
+      {
+        "name": "admin-orders",
+        "description": "Admin order endpoints for viewing marketplace orders and managing item-level delivery statuses."
+      },
+      {
+        "name": "admin-kyc",
+        "description": "Admin review and approval endpoints for seller KYC submissions."
+      }
   ],
   "components": {
     "securitySchemes": {
@@ -8679,6 +9318,52 @@
           }
         }
       },
+      "OrderStatus": {
+        "type": "string",
+        "enum": [
+          "pending_fulfillment",
+          "partially_shipped",
+          "shipped",
+          "partially_delivered",
+          "delivered",
+          "delivery_failed"
+        ],
+        "example": "pending_fulfillment"
+      },
+      "OrderItemDeliveryStatus": {
+        "type": "string",
+        "enum": [
+          "pending_fulfillment",
+          "shipped",
+          "delivered",
+          "delivery_failed"
+        ],
+        "example": "pending_fulfillment"
+      },
+      "UpdateOrderItemDeliveryStatusRequest": {
+        "type": "object",
+        "required": [
+          "delivery_status"
+        ],
+        "properties": {
+          "delivery_status": {
+            "type": "string",
+            "enum": [
+              "shipped",
+              "delivered",
+              "delivery_failed"
+            ],
+            "example": "shipped"
+          },
+          "delivery_failure_reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": null
+          }
+        }
+      },
       "BuyerOrderHistoryResponse": {
         "type": "object",
         "properties": {
@@ -8699,11 +9384,7 @@
                       "format": "uuid"
                     },
                     "status": {
-                      "type": "string",
-                      "enum": [
-                        "pending_fulfillment"
-                      ],
-                      "example": "pending_fulfillment"
+                      "$ref": "#/components/schemas/OrderStatus"
                     },
                     "currency": {
                       "type": "string",
@@ -8767,6 +9448,9 @@
                             "type": "integer",
                             "example": 2
                           },
+                          "delivery_status": {
+                            "$ref": "#/components/schemas/OrderItemDeliveryStatus"
+                          },
                           "primary_image": {
                             "type": [
                               "string",
@@ -8827,11 +9511,7 @@
                 "format": "uuid"
               },
               "status": {
-                "type": "string",
-                "enum": [
-                  "pending_fulfillment"
-                ],
-                "example": "pending_fulfillment"
+                "$ref": "#/components/schemas/OrderStatus"
               },
               "payment_provider": {
                 "type": "string",
@@ -9058,6 +9738,48 @@
                       "type": "number",
                       "example": 0.4
                     },
+                    "delivery_status": {
+                      "$ref": "#/components/schemas/OrderItemDeliveryStatus"
+                    },
+                    "delivery_status_updated_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "example": null
+                    },
+                    "shipped_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "example": null
+                    },
+                    "delivered_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "example": null
+                    },
+                    "delivery_failed_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "example": null
+                    },
+                    "delivery_failure_reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "example": null
+                    },
                     "images": {
                       "type": "array",
                       "items": {
@@ -9139,6 +9861,893 @@
                     "final_shipping_fee": {
                       "type": "number",
                       "example": 0
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "SellerOrderHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Seller orders fetched successfully."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "orders": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "status": {
+                      "$ref": "#/components/schemas/OrderStatus"
+                    },
+                    "shipping_mode": {
+                      "type": "string",
+                      "enum": [
+                        "PLATFORM",
+                        "VENDOR"
+                      ],
+                      "example": "VENDOR"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "example": "NGN"
+                    },
+                    "total_items": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "subtotal": {
+                      "type": "number",
+                      "example": 10000
+                    },
+                    "can_update_delivery_status": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "paid_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "example": "2026-04-06T10:00:00.000Z"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-04-06T10:00:00.000Z"
+                    },
+                    "items_preview": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "order_item_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "product_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "product_name": {
+                            "type": "string",
+                            "example": "Phone"
+                          },
+                          "quantity": {
+                            "type": "integer",
+                            "example": 1
+                          },
+                          "delivery_status": {
+                            "$ref": "#/components/schemas/OrderItemDeliveryStatus"
+                          },
+                          "primary_image": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "example": "products/seller-id/product-id/front.jpg"
+                          },
+                          "primary_image_public_url": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "example": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/product-id/front.jpg"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "pagination": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "example": 20
+                  },
+                  "total": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "total_pages": {
+                    "type": "integer",
+                    "example": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "SellerOrderDetailResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Seller order fetched successfully."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "status": {
+                "$ref": "#/components/schemas/OrderStatus"
+              },
+              "shipping_mode": {
+                "type": "string",
+                "enum": [
+                  "PLATFORM",
+                  "VENDOR"
+                ],
+                "example": "VENDOR"
+              },
+              "currency": {
+                "type": "string",
+                "example": "NGN"
+              },
+              "total_items": {
+                "type": "integer",
+                "example": 1
+              },
+              "subtotal": {
+                "type": "number",
+                "example": 10000
+              },
+              "can_update_delivery_status": {
+                "type": "boolean",
+                "example": true
+              },
+              "paid_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time",
+                "example": "2026-04-06T10:00:00.000Z"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2026-04-06T10:00:00.000Z"
+              },
+              "updated_at": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2026-04-06T10:00:00.000Z"
+              },
+              "billing_address": {
+                "type": "object",
+                "properties": {
+                  "full_name": {
+                    "type": "string",
+                    "example": "Buyer One"
+                  },
+                  "phone_number": {
+                    "type": "string",
+                    "example": "08000000000"
+                  },
+                  "address_line_1": {
+                    "type": "string",
+                    "example": "1 Buyer St"
+                  },
+                  "address_line_2": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "example": null
+                  },
+                  "city": {
+                    "type": "string",
+                    "example": "Ikeja"
+                  },
+                  "state": {
+                    "type": "string",
+                    "example": "Lagos"
+                  },
+                  "country": {
+                    "type": "string",
+                    "example": "Nigeria"
+                  },
+                  "postal_code": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "example": null
+                  }
+                }
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "product_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "seller_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "category_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "category_name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "example": "Electronics"
+                    },
+                    "brand_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
+                    },
+                    "brand_name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "example": "Apple"
+                    },
+                    "product_name": {
+                      "type": "string",
+                      "example": "Phone"
+                    },
+                    "product_description": {
+                      "type": "string",
+                      "example": "Phone"
+                    },
+                    "sku": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "example": "PHONE-001"
+                    },
+                    "unit_price": {
+                      "type": "number",
+                      "example": 10000
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "line_subtotal": {
+                      "type": "number",
+                      "example": 10000
+                    },
+                    "currency": {
+                      "type": "string",
+                      "example": "NGN"
+                    },
+                    "condition": {
+                      "type": "string",
+                      "example": "new"
+                    },
+                    "weight_kg": {
+                      "type": "number",
+                      "example": 1
+                    },
+                    "delivery_status": {
+                      "$ref": "#/components/schemas/OrderItemDeliveryStatus"
+                    },
+                    "delivery_status_updated_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "example": null
+                    },
+                    "shipped_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "example": null
+                    },
+                    "delivered_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "example": null
+                    },
+                    "delivery_failed_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "example": null
+                    },
+                    "delivery_failure_reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "example": null
+                    },
+                    "can_update_delivery_status": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "images": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BuyerOrderItemImage"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "AdminOrderHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Orders fetched successfully."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "orders": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "buyer_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "status": {
+                      "$ref": "#/components/schemas/OrderStatus"
+                    },
+                    "shipping_mode": {
+                      "type": "string",
+                      "enum": [
+                        "PLATFORM",
+                        "VENDOR"
+                      ],
+                      "example": "PLATFORM"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "example": "NGN"
+                    },
+                    "total_items": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "raw_subtotal": {
+                      "type": "number",
+                      "example": 10000
+                    },
+                    "discounted_subtotal": {
+                      "type": "number",
+                      "example": 10000
+                    },
+                    "final_shipping_fee": {
+                      "type": "number",
+                      "example": 500
+                    },
+                    "total_paid": {
+                      "type": "number",
+                      "example": 10500
+                    },
+                    "free_shipping_applied": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "paid_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "example": "2026-04-06T10:00:00.000Z"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-04-06T10:00:00.000Z"
+                    },
+                    "items_preview": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "order_item_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "product_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "product_name": {
+                            "type": "string",
+                            "example": "Phone"
+                          },
+                          "quantity": {
+                            "type": "integer",
+                            "example": 1
+                          },
+                          "delivery_status": {
+                            "$ref": "#/components/schemas/OrderItemDeliveryStatus"
+                          },
+                          "primary_image": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "example": "products/seller-id/product-id/front.jpg"
+                          },
+                          "primary_image_public_url": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "example": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/product-id/front.jpg"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "pagination": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "example": 20
+                  },
+                  "total": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "total_pages": {
+                    "type": "integer",
+                    "example": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "AdminOrderDetailResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Order fetched successfully."
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "buyer_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "status": {
+                "$ref": "#/components/schemas/OrderStatus"
+              },
+              "payment_provider": {
+                "type": "string",
+                "example": "paystack"
+              },
+              "currency": {
+                "type": "string",
+                "example": "NGN"
+              },
+              "total_items": {
+                "type": "integer",
+                "example": 1
+              },
+              "raw_subtotal": {
+                "type": "number",
+                "example": 10000
+              },
+              "discounted_subtotal": {
+                "type": "number",
+                "example": 10000
+              },
+              "base_shipping_fee": {
+                "type": "number",
+                "example": 500
+              },
+              "final_shipping_fee": {
+                "type": "number",
+                "example": 500
+              },
+              "total_paid": {
+                "type": "number",
+                "example": 10500
+              },
+              "shipping_mode": {
+                "type": "string",
+                "enum": [
+                  "PLATFORM",
+                  "VENDOR"
+                ],
+                "example": "PLATFORM"
+              },
+              "category_shipping_mode": {
+                "type": "string",
+                "enum": [
+                  "HIGHEST",
+                  "ADDITIVE"
+                ],
+                "example": "HIGHEST"
+              },
+              "free_shipping": {
+                "type": "object",
+                "properties": {
+                  "applied": {
+                    "type": "boolean",
+                    "example": false
+                  },
+                  "rule_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid"
+                  },
+                  "rule_type": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "coupon",
+                      "threshold",
+                      null
+                    ]
+                  },
+                  "coupon_code": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "example": null
+                  }
+                }
+              },
+              "paid_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time",
+                "example": "2026-04-06T10:00:00.000Z"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2026-04-06T10:00:00.000Z"
+              },
+              "updated_at": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2026-04-06T10:00:00.000Z"
+              },
+              "billing_address": {
+                "type": "object",
+                "properties": {
+                  "full_name": {
+                    "type": "string",
+                    "example": "Buyer One"
+                  },
+                  "phone_number": {
+                    "type": "string",
+                    "example": "08000000000"
+                  },
+                  "address_line_1": {
+                    "type": "string",
+                    "example": "1 Buyer St"
+                  },
+                  "address_line_2": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "example": null
+                  },
+                  "city": {
+                    "type": "string",
+                    "example": "Ikeja"
+                  },
+                  "state": {
+                    "type": "string",
+                    "example": "Lagos"
+                  },
+                  "country": {
+                    "type": "string",
+                    "example": "Nigeria"
+                  },
+                  "postal_code": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "example": null
+                  }
+                }
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "product_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "seller_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "category_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "category_name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "example": "Electronics"
+                    },
+                    "brand_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
+                    },
+                    "brand_name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "example": "Apple"
+                    },
+                    "product_name": {
+                      "type": "string",
+                      "example": "Phone"
+                    },
+                    "product_description": {
+                      "type": "string",
+                      "example": "Phone"
+                    },
+                    "sku": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "example": "PHONE-001"
+                    },
+                    "unit_price": {
+                      "type": "number",
+                      "example": 10000
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "line_subtotal": {
+                      "type": "number",
+                      "example": 10000
+                    },
+                    "currency": {
+                      "type": "string",
+                      "example": "NGN"
+                    },
+                    "condition": {
+                      "type": "string",
+                      "example": "new"
+                    },
+                    "weight_kg": {
+                      "type": "number",
+                      "example": 1
+                    },
+                    "delivery_status": {
+                      "$ref": "#/components/schemas/OrderItemDeliveryStatus"
+                    },
+                    "delivery_status_updated_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "example": null
+                    },
+                    "shipped_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "example": null
+                    },
+                    "delivered_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "example": null
+                    },
+                    "delivery_failed_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time",
+                      "example": null
+                    },
+                    "delivery_failure_reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "example": null
+                    },
+                    "images": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BuyerOrderItemImage"
+                      }
+                    }
+                  }
+                }
+              },
+              "shipping_segments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "seller_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
+                    },
+                    "rule_owner_type": {
+                      "type": "string",
+                      "enum": [
+                        "platform",
+                        "vendor"
+                      ]
+                    },
+                    "final_shipping_owner_type": {
+                      "type": "string",
+                      "enum": [
+                        "platform",
+                        "vendor"
+                      ]
+                    },
+                    "used_fallback": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "matched_zone": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Lagos Urban"
+                        },
+                        "match_type": {
+                          "type": "string",
+                          "enum": [
+                            "state",
+                            "city"
+                          ]
+                        }
+                      }
+                    },
+                    "zone_fee": {
+                      "type": "number",
+                      "example": 500
+                    },
+                    "category_fee": {
+                      "type": "number",
+                      "example": 0
+                    },
+                    "base_shipping_fee": {
+                      "type": "number",
+                      "example": 500
+                    },
+                    "final_shipping_fee": {
+                      "type": "number",
+                      "example": 500
                     }
                   }
                 }

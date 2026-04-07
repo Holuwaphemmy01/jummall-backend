@@ -1,17 +1,24 @@
-import type { Pool } from "pg";
+import type { Pool, PoolClient } from "pg";
 
 import databasePool from "../client";
+import { deriveOrderStatus } from "../../../application/order/order-delivery-status";
 import type {
   CreateOrderInput,
   FindOrdersPageByBuyerIdInput,
+  FindOrdersPageBySellerIdInput,
+  FindOrdersPageInput,
   OrderDetailRecord,
   OrderHistoryPage,
   OrderHistoryRecord,
+  OrderItemDeliveryContextRecord,
+  OrderItemDeliveryStatus,
   OrderItemImageRecord,
   OrderItemRecord,
   OrderRecord,
   OrderRepository,
-  OrderShippingSegmentRecord
+  OrderShippingSegmentRecord,
+  SellerOrderDetailRecord,
+  SellerOrderHistoryPage
 } from "../../../ports/order-repository";
 import type {
   CategoryShippingMode,
@@ -19,7 +26,7 @@ import type {
 } from "../../../ports/shipping/shipping-settings-repository";
 import type { FreeShippingRuleType } from "../../../ports/shipping/shipping-models";
 
-type Queryable = Pick<Pool, "query">;
+type Executor = Pool | PoolClient;
 
 interface OrderRow {
   id: string;
@@ -27,7 +34,7 @@ interface OrderRow {
   buyerId: string;
   paymentProvider: string;
   paymentReference: string;
-  status: "pending_fulfillment";
+  status: OrderRecord["status"];
   currency: string;
   totalItems: number;
   rawSubtotal: string;
@@ -65,6 +72,14 @@ interface OrderItemRow {
   currency: string;
   condition: string;
   weightKg: string;
+  deliveryStatus: OrderItemDeliveryStatus;
+  deliveryStatusUpdatedAt: Date | null;
+  deliveryStatusUpdatedByUserId: string | null;
+  deliveryStatusUpdatedByRole: "admin" | "seller" | null;
+  shippedAt: Date | null;
+  deliveredAt: Date | null;
+  deliveryFailedAt: Date | null;
+  deliveryFailureReason: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -98,8 +113,16 @@ interface OrderShippingSegmentRow {
   updatedAt: Date;
 }
 
+interface OrderItemDeliveryContextRow {
+  id: string;
+  orderId: string;
+  sellerId: string;
+  shippingMode: ShippingMode;
+  deliveryStatus: OrderItemDeliveryStatus;
+}
+
 export class PostgresOrderRepository implements OrderRepository {
-  constructor(private readonly executor: Queryable = databasePool) {}
+  constructor(private readonly executor: Executor = databasePool) {}
 
   async create(input: CreateOrderInput): Promise<OrderDetailRecord> {
     const orderResult = await this.executor.query<OrderRow>(
@@ -223,6 +246,14 @@ export class PostgresOrderRepository implements OrderRepository {
             "currency",
             "condition",
             "weightKg",
+            "deliveryStatus",
+            "deliveryStatusUpdatedAt",
+            "deliveryStatusUpdatedByUserId",
+            "deliveryStatusUpdatedByRole",
+            "shippedAt",
+            "deliveredAt",
+            "deliveryFailedAt",
+            "deliveryFailureReason",
             "createdAt",
             "updatedAt"
         `,
@@ -323,6 +354,60 @@ export class PostgresOrderRepository implements OrderRepository {
     return this.findDetail({ orderId, buyerId });
   }
 
+  async findDetailByIdAndSellerId(
+    orderId: string,
+    sellerId: string
+  ): Promise<SellerOrderDetailRecord | null> {
+    const result = await this.executor.query<OrderRow>(
+      `
+        SELECT
+          "id",
+          "checkoutSessionId",
+          "buyerId",
+          "paymentProvider",
+          "paymentReference",
+          "status",
+          "currency",
+          "totalItems",
+          "rawSubtotal",
+          "discountedSubtotal",
+          "baseShippingFee",
+          "finalShippingFee",
+          "totalPaid",
+          "shippingMode",
+          "categoryShippingMode",
+          "freeShippingApplied",
+          "freeShippingRuleId",
+          "freeShippingRuleType",
+          "freeShippingCouponCode",
+          "paidAt",
+          "billingAddressSnapshot",
+          "createdAt",
+          "updatedAt"
+        FROM "Order"
+        WHERE "id" = $1
+          AND EXISTS (
+            SELECT 1
+            FROM "OrderItem"
+            WHERE "orderId" = "Order"."id"
+              AND "sellerId" = $2
+          )
+        LIMIT 1
+      `,
+      [orderId, sellerId]
+    );
+
+    const row = result.rows[0];
+
+    if (!row) {
+      return null;
+    }
+
+    const items = await this.findItemsByOrderId(row.id, sellerId);
+
+    return this.mapSellerOrderDetail(row, items);
+  }
+
   async findPageByBuyerId(
     input: FindOrdersPageByBuyerIdInput
   ): Promise<OrderHistoryPage> {
@@ -371,6 +456,62 @@ export class PostgresOrderRepository implements OrderRepository {
       [input.buyerId, input.limit, offset]
     );
 
+    return this.buildOrderHistoryPage(result.rows, total, input.page, input.limit);
+  }
+
+  async findPageBySellerId(
+    input: FindOrdersPageBySellerIdInput
+  ): Promise<SellerOrderHistoryPage> {
+    const totalResult = await this.executor.query<{ count: string }>(
+      `
+        SELECT COUNT(DISTINCT "orderId")::text AS "count"
+        FROM "OrderItem"
+        WHERE "sellerId" = $1
+      `,
+      [input.sellerId]
+    );
+    const total = Number(totalResult.rows[0]?.count ?? 0);
+    const offset = (input.page - 1) * input.limit;
+
+    const result = await this.executor.query<OrderRow>(
+      `
+        SELECT
+          "id",
+          "checkoutSessionId",
+          "buyerId",
+          "paymentProvider",
+          "paymentReference",
+          "status",
+          "currency",
+          "totalItems",
+          "rawSubtotal",
+          "discountedSubtotal",
+          "baseShippingFee",
+          "finalShippingFee",
+          "totalPaid",
+          "shippingMode",
+          "categoryShippingMode",
+          "freeShippingApplied",
+          "freeShippingRuleId",
+          "freeShippingRuleType",
+          "freeShippingCouponCode",
+          "paidAt",
+          "billingAddressSnapshot",
+          "createdAt",
+          "updatedAt"
+        FROM "Order"
+        WHERE EXISTS (
+          SELECT 1
+          FROM "OrderItem"
+          WHERE "orderId" = "Order"."id"
+            AND "sellerId" = $1
+        )
+        ORDER BY "createdAt" DESC
+        LIMIT $2 OFFSET $3
+      `,
+      [input.sellerId, input.limit, offset]
+    );
+
     if (result.rows.length === 0) {
       return {
         items: [],
@@ -381,12 +522,220 @@ export class PostgresOrderRepository implements OrderRepository {
     }
 
     const orderIds = result.rows.map((row) => row.id);
+    const sellerItemsByOrderId = await this.findItemsByOrderIds(orderIds, input.sellerId);
+    const previewByOrderId = await this.findItemsPreviewByOrderIds(
+      orderIds,
+      input.sellerId
+    );
+
+    return {
+      items: result.rows.map((row) =>
+        this.mapSellerOrderHistory(
+          row,
+          sellerItemsByOrderId.get(row.id) ?? [],
+          previewByOrderId.get(row.id) ?? []
+        )
+      ),
+      total,
+      page: input.page,
+      limit: input.limit
+    };
+  }
+
+  async findPage(input: FindOrdersPageInput): Promise<OrderHistoryPage> {
+    const totalResult = await this.executor.query<{ count: string }>(
+      `
+        SELECT COUNT(*)::text AS "count"
+        FROM "Order"
+      `
+    );
+    const total = Number(totalResult.rows[0]?.count ?? 0);
+    const offset = (input.page - 1) * input.limit;
+
+    const result = await this.executor.query<OrderRow>(
+      `
+        SELECT
+          "id",
+          "checkoutSessionId",
+          "buyerId",
+          "paymentProvider",
+          "paymentReference",
+          "status",
+          "currency",
+          "totalItems",
+          "rawSubtotal",
+          "discountedSubtotal",
+          "baseShippingFee",
+          "finalShippingFee",
+          "totalPaid",
+          "shippingMode",
+          "categoryShippingMode",
+          "freeShippingApplied",
+          "freeShippingRuleId",
+          "freeShippingRuleType",
+          "freeShippingCouponCode",
+          "paidAt",
+          "billingAddressSnapshot",
+          "createdAt",
+          "updatedAt"
+        FROM "Order"
+        ORDER BY "createdAt" DESC
+        LIMIT $1 OFFSET $2
+      `,
+      [input.limit, offset]
+    );
+
+    return this.buildOrderHistoryPage(result.rows, total, input.page, input.limit);
+  }
+
+  async findItemDeliveryContextById(
+    orderItemId: string
+  ): Promise<OrderItemDeliveryContextRecord | null> {
+    const result = await this.executor.query<OrderItemDeliveryContextRow>(
+      `
+        SELECT
+          "OrderItem"."id",
+          "OrderItem"."orderId",
+          "OrderItem"."sellerId",
+          "Order"."shippingMode",
+          "OrderItem"."deliveryStatus"
+        FROM "OrderItem"
+        INNER JOIN "Order"
+          ON "Order"."id" = "OrderItem"."orderId"
+        WHERE "OrderItem"."id" = $1
+        LIMIT 1
+      `,
+      [orderItemId]
+    );
+
+    const row = result.rows[0];
+
+    if (!row) {
+      return null;
+    }
+
+    return {
+      id: row.id,
+      orderId: row.orderId,
+      sellerId: row.sellerId,
+      shippingMode: row.shippingMode,
+      deliveryStatus: row.deliveryStatus
+    };
+  }
+
+  async updateItemDeliveryStatus(input: {
+    orderItemId: string;
+    deliveryStatus: OrderItemDeliveryStatus;
+    deliveryFailureReason: string | null;
+    updatedByUserId: string;
+    updatedByRole: "admin" | "seller";
+    updatedAt: Date;
+  }): Promise<void> {
+    await this.withTransaction(async (executor) => {
+      const contextResult = await executor.query<OrderItemDeliveryContextRow>(
+        `
+          SELECT
+            "OrderItem"."id",
+            "OrderItem"."orderId",
+            "OrderItem"."sellerId",
+            "Order"."shippingMode",
+            "OrderItem"."deliveryStatus"
+          FROM "OrderItem"
+          INNER JOIN "Order"
+            ON "Order"."id" = "OrderItem"."orderId"
+          WHERE "OrderItem"."id" = $1
+          FOR UPDATE
+        `,
+        [input.orderItemId]
+      );
+
+      const context = contextResult.rows[0];
+
+      if (!context) {
+        return;
+      }
+
+      await executor.query(
+        `
+          UPDATE "OrderItem"
+          SET
+            "deliveryStatus" = $2,
+            "deliveryStatusUpdatedAt" = $3,
+            "deliveryStatusUpdatedByUserId" = $4,
+            "deliveryStatusUpdatedByRole" = $5,
+            "shippedAt" = CASE
+              WHEN $2 = 'shipped' THEN $3
+              ELSE "shippedAt"
+            END,
+            "deliveredAt" = CASE
+              WHEN $2 = 'delivered' THEN $3
+              ELSE "deliveredAt"
+            END,
+            "deliveryFailedAt" = CASE
+              WHEN $2 = 'delivery_failed' THEN $3
+              WHEN $2 IN ('shipped', 'delivered') THEN NULL
+              ELSE "deliveryFailedAt"
+            END,
+            "deliveryFailureReason" = CASE
+              WHEN $2 = 'delivery_failed' THEN $6
+              WHEN $2 IN ('shipped', 'delivered') THEN NULL
+              ELSE "deliveryFailureReason"
+            END,
+            "updatedAt" = CURRENT_TIMESTAMP
+          WHERE "id" = $1
+        `,
+        [
+          input.orderItemId,
+          input.deliveryStatus,
+          input.updatedAt,
+          input.updatedByUserId,
+          input.updatedByRole,
+          input.deliveryFailureReason
+        ]
+      );
+
+      const statuses = await this.findOrderItemDeliveryStatusesByOrderId(
+        context.orderId,
+        executor
+      );
+
+      await executor.query(
+        `
+          UPDATE "Order"
+          SET
+            "status" = $2,
+            "updatedAt" = CURRENT_TIMESTAMP
+          WHERE "id" = $1
+        `,
+        [context.orderId, deriveOrderStatus(statuses)]
+      );
+    });
+  }
+
+  private async buildOrderHistoryPage(
+    rows: OrderRow[],
+    total: number,
+    page: number,
+    limit: number
+  ): Promise<OrderHistoryPage> {
+    if (rows.length === 0) {
+      return {
+        items: [],
+        total,
+        page,
+        limit
+      };
+    }
+
+    const orderIds = rows.map((row) => row.id);
     const itemsPreviewByOrderId = await this.findItemsPreviewByOrderIds(orderIds);
 
     return {
-      items: result.rows.map((row) => ({
+      items: rows.map((row) => ({
         id: row.id,
+        buyerId: row.buyerId,
         status: row.status,
+        shippingMode: row.shippingMode,
         currency: row.currency,
         totalItems: row.totalItems,
         rawSubtotal: Number(row.rawSubtotal),
@@ -399,8 +748,8 @@ export class PostgresOrderRepository implements OrderRepository {
         itemsPreview: itemsPreviewByOrderId.get(row.id) ?? []
       })),
       total,
-      page: input.page,
-      limit: input.limit
+      page,
+      limit
     };
   }
 
@@ -465,7 +814,18 @@ export class PostgresOrderRepository implements OrderRepository {
     };
   }
 
-  private async findItemsByOrderId(orderId: string): Promise<OrderItemRecord[]> {
+  private async findItemsByOrderId(
+    orderId: string,
+    sellerId?: string
+  ): Promise<OrderItemRecord[]> {
+    const values: Array<string> = [orderId];
+    let sellerFilter = "";
+
+    if (sellerId) {
+      values.push(sellerId);
+      sellerFilter = ` AND "sellerId" = $2`;
+    }
+
     const result = await this.executor.query<OrderItemRow>(
       `
         SELECT
@@ -486,41 +846,87 @@ export class PostgresOrderRepository implements OrderRepository {
           "currency",
           "condition",
           "weightKg",
+          "deliveryStatus",
+          "deliveryStatusUpdatedAt",
+          "deliveryStatusUpdatedByUserId",
+          "deliveryStatusUpdatedByRole",
+          "shippedAt",
+          "deliveredAt",
+          "deliveryFailedAt",
+          "deliveryFailureReason",
           "createdAt",
           "updatedAt"
         FROM "OrderItem"
-        WHERE "orderId" = $1
+        WHERE "orderId" = $1${sellerFilter}
         ORDER BY "createdAt" ASC
       `,
-      [orderId]
+      values
     );
 
     const imagesByOrderItemId = await this.findImagesByOrderItemIds(
       result.rows.map((row) => row.id)
     );
 
-    return result.rows.map((row) => ({
-      id: row.id,
-      orderId: row.orderId,
-      productId: row.productId,
-      sellerId: row.sellerId,
-      categoryId: row.categoryId,
-      categoryName: row.categoryName,
-      brandId: row.brandId,
-      brandName: row.brandName,
-      productName: row.productName,
-      productDescription: row.productDescription,
-      sku: row.sku,
-      unitPrice: Number(row.unitPrice),
-      quantity: row.quantity,
-      lineSubtotal: Number(row.lineSubtotal),
-      currency: row.currency,
-      condition: row.condition,
-      weightKg: Number(row.weightKg),
-      images: imagesByOrderItemId.get(row.id) ?? [],
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt
-    }));
+    return result.rows.map((row) =>
+      this.mapOrderItemRow(row, imagesByOrderItemId.get(row.id) ?? [])
+    );
+  }
+
+  private async findItemsByOrderIds(
+    orderIds: string[],
+    sellerId: string
+  ): Promise<Map<string, OrderItemRecord[]>> {
+    const itemsByOrderId = new Map<string, OrderItemRecord[]>();
+
+    if (orderIds.length === 0) {
+      return itemsByOrderId;
+    }
+
+    const result = await this.executor.query<OrderItemRow>(
+      `
+        SELECT
+          "id",
+          "orderId",
+          "productId",
+          "sellerId",
+          "categoryId",
+          "categoryName",
+          "brandId",
+          "brandName",
+          "productName",
+          "productDescription",
+          "sku",
+          "unitPrice",
+          "quantity",
+          "lineSubtotal",
+          "currency",
+          "condition",
+          "weightKg",
+          "deliveryStatus",
+          "deliveryStatusUpdatedAt",
+          "deliveryStatusUpdatedByUserId",
+          "deliveryStatusUpdatedByRole",
+          "shippedAt",
+          "deliveredAt",
+          "deliveryFailedAt",
+          "deliveryFailureReason",
+          "createdAt",
+          "updatedAt"
+        FROM "OrderItem"
+        WHERE "orderId" = ANY($1::text[])
+          AND "sellerId" = $2
+        ORDER BY "orderId" ASC, "createdAt" ASC
+      `,
+      [orderIds, sellerId]
+    );
+
+    for (const row of result.rows) {
+      const existing = itemsByOrderId.get(row.orderId) ?? [];
+      existing.push(this.mapOrderItemRow(row, []));
+      itemsByOrderId.set(row.orderId, existing);
+    }
+
+    return itemsByOrderId;
   }
 
   private async findImagesByOrderItemIds(
@@ -560,12 +966,21 @@ export class PostgresOrderRepository implements OrderRepository {
   }
 
   private async findItemsPreviewByOrderIds(
-    orderIds: string[]
+    orderIds: string[],
+    sellerId?: string
   ): Promise<Map<string, OrderHistoryRecord["itemsPreview"]>> {
     const itemsPreviewByOrderId = new Map<string, OrderHistoryRecord["itemsPreview"]>();
 
     if (orderIds.length === 0) {
       return itemsPreviewByOrderId;
+    }
+
+    const values: Array<string[] | string> = [orderIds];
+    let sellerFilter = "";
+
+    if (sellerId) {
+      values.push(sellerId);
+      sellerFilter = ` AND "sellerId" = $2`;
     }
 
     const result = await this.executor.query<OrderItemRow>(
@@ -588,13 +1003,21 @@ export class PostgresOrderRepository implements OrderRepository {
           "currency",
           "condition",
           "weightKg",
+          "deliveryStatus",
+          "deliveryStatusUpdatedAt",
+          "deliveryStatusUpdatedByUserId",
+          "deliveryStatusUpdatedByRole",
+          "shippedAt",
+          "deliveredAt",
+          "deliveryFailedAt",
+          "deliveryFailureReason",
           "createdAt",
           "updatedAt"
         FROM "OrderItem"
-        WHERE "orderId" = ANY($1::text[])
+        WHERE "orderId" = ANY($1::text[])${sellerFilter}
         ORDER BY "orderId" ASC, "createdAt" ASC
       `,
-      [orderIds]
+      values
     );
 
     const limitedRows: OrderItemRow[] = [];
@@ -622,6 +1045,7 @@ export class PostgresOrderRepository implements OrderRepository {
         productId: row.productId,
         productName: row.productName,
         quantity: row.quantity,
+        deliveryStatus: row.deliveryStatus,
         images: imagesByOrderItemId.get(row.id) ?? []
       });
       itemsPreviewByOrderId.set(row.orderId, existing);
@@ -677,6 +1101,22 @@ export class PostgresOrderRepository implements OrderRepository {
     }));
   }
 
+  private async findOrderItemDeliveryStatusesByOrderId(
+    orderId: string,
+    executor: Executor = this.executor
+  ): Promise<OrderItemDeliveryStatus[]> {
+    const result = await executor.query<{ deliveryStatus: OrderItemDeliveryStatus }>(
+      `
+        SELECT "deliveryStatus"
+        FROM "OrderItem"
+        WHERE "orderId" = $1
+      `,
+      [orderId]
+    );
+
+    return result.rows.map((row) => row.deliveryStatus);
+  }
+
   private mapOrderRow(row: OrderRow): OrderRecord {
     return {
       id: row.id,
@@ -705,6 +1145,42 @@ export class PostgresOrderRepository implements OrderRepository {
     };
   }
 
+  private mapOrderItemRow(
+    row: OrderItemRow,
+    images: OrderItemImageRecord[]
+  ): OrderItemRecord {
+    return {
+      id: row.id,
+      orderId: row.orderId,
+      productId: row.productId,
+      sellerId: row.sellerId,
+      categoryId: row.categoryId,
+      categoryName: row.categoryName,
+      brandId: row.brandId,
+      brandName: row.brandName,
+      productName: row.productName,
+      productDescription: row.productDescription,
+      sku: row.sku,
+      unitPrice: Number(row.unitPrice),
+      quantity: row.quantity,
+      lineSubtotal: Number(row.lineSubtotal),
+      currency: row.currency,
+      condition: row.condition,
+      weightKg: Number(row.weightKg),
+      deliveryStatus: row.deliveryStatus,
+      deliveryStatusUpdatedAt: row.deliveryStatusUpdatedAt,
+      deliveryStatusUpdatedByUserId: row.deliveryStatusUpdatedByUserId,
+      deliveryStatusUpdatedByRole: row.deliveryStatusUpdatedByRole,
+      shippedAt: row.shippedAt,
+      deliveredAt: row.deliveredAt,
+      deliveryFailedAt: row.deliveryFailedAt,
+      deliveryFailureReason: row.deliveryFailureReason,
+      images,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
+    };
+  }
+
   private mapOrderItemImageRow(row: OrderItemImageRow): OrderItemImageRecord {
     return {
       id: row.id,
@@ -716,5 +1192,70 @@ export class PostgresOrderRepository implements OrderRepository {
       createdAt: row.createdAt,
       updatedAt: row.updatedAt
     };
+  }
+
+  private mapSellerOrderHistory(
+    row: OrderRow,
+    items: OrderItemRecord[],
+    itemsPreview: OrderHistoryRecord["itemsPreview"]
+  ) {
+    return {
+      id: row.id,
+      status: deriveOrderStatus(items.map((item) => item.deliveryStatus)),
+      shippingMode: row.shippingMode,
+      currency: row.currency,
+      totalItems: items.reduce((sum, item) => sum + item.quantity, 0),
+      subtotal: items.reduce((sum, item) => sum + item.lineSubtotal, 0),
+      canUpdateDeliveryStatus: row.shippingMode === "VENDOR",
+      paidAt: row.paidAt,
+      createdAt: row.createdAt,
+      itemsPreview
+    };
+  }
+
+  private mapSellerOrderDetail(
+    row: OrderRow,
+    items: OrderItemRecord[]
+  ): SellerOrderDetailRecord {
+    return {
+      id: row.id,
+      status: deriveOrderStatus(items.map((item) => item.deliveryStatus)),
+      shippingMode: row.shippingMode,
+      currency: row.currency,
+      totalItems: items.reduce((sum, item) => sum + item.quantity, 0),
+      subtotal: items.reduce((sum, item) => sum + item.lineSubtotal, 0),
+      canUpdateDeliveryStatus: row.shippingMode === "VENDOR",
+      paidAt: row.paidAt,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      billingAddress: row.billingAddressSnapshot,
+      items
+    };
+  }
+
+  private async withTransaction<T>(
+    operation: (executor: PoolClient) => Promise<T>
+  ): Promise<T> {
+    if (this.isPool(this.executor)) {
+      const client = await this.executor.connect();
+
+      try {
+        await client.query("BEGIN");
+        const result = await operation(client);
+        await client.query("COMMIT");
+        return result;
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      } finally {
+        client.release();
+      }
+    }
+
+    return operation(this.executor);
+  }
+
+  private isPool(executor: Executor): executor is Pool {
+    return "connect" in executor;
   }
 }

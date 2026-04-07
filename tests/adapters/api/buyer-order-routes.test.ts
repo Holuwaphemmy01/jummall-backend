@@ -97,6 +97,7 @@ describe("buyer order routes", () => {
                 productId: "product-1",
                 productName: "Phone",
                 quantity: 1,
+                deliveryStatus: "pending_fulfillment" as const,
                 images: [
                   {
                     id: "order-image-1",
@@ -150,6 +151,7 @@ describe("buyer order routes", () => {
                 product_id: "product-1",
                 product_name: "Phone",
                 quantity: 1,
+                delivery_status: "pending_fulfillment",
                 primary_image: "products/seller-1/product-1/front.jpg",
                 primary_image_public_url: expect.stringContaining(
                   "/storage/v1/object/public/product-images/products/seller-1/product-1/front.jpg"
@@ -248,6 +250,14 @@ describe("buyer order routes", () => {
             currency: "NGN",
             condition: "new",
             weightKg: 1,
+            deliveryStatus: "pending_fulfillment" as const,
+            deliveryStatusUpdatedAt: null,
+            deliveryStatusUpdatedByUserId: null,
+            deliveryStatusUpdatedByRole: null,
+            shippedAt: null,
+            deliveredAt: null,
+            deliveryFailedAt: null,
+            deliveryFailureReason: null,
             images: [
               {
                 id: "order-image-1",
@@ -303,6 +313,12 @@ describe("buyer order routes", () => {
           expect.objectContaining({
             id: "order-item-1",
             product_id: "product-1",
+            delivery_status: "pending_fulfillment",
+            delivery_status_updated_at: null,
+            shipped_at: null,
+            delivered_at: null,
+            delivery_failed_at: null,
+            delivery_failure_reason: null,
             images: [
               expect.objectContaining({
                 storage_path: "products/seller-1/product-1/front.jpg"
