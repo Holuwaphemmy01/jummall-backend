@@ -4,8 +4,8 @@ import type { GetApprovedProductDetailUseCase } from "../../../application/produ
 import { GetApprovedProductDetailError } from "../../../application/product/get-approved-product-detail";
 import type { ListApprovedProductsUseCase } from "../../../application/product/list-approved-products";
 import { ListApprovedProductsError } from "../../../application/product/list-approved-products";
-import type { ListApprovedProductsByBrandNameUseCase } from "../../../application/product/list-approved-products-by-brand-name";
-import { ListApprovedProductsByBrandNameError } from "../../../application/product/list-approved-products-by-brand-name";
+import type { ListApprovedProductsByBrandIdUseCase } from "../../../application/product/list-approved-products-by-brand-id";
+import { ListApprovedProductsByBrandIdError } from "../../../application/product/list-approved-products-by-brand-id";
 import type { ListApprovedProductsByCategoryUseCase } from "../../../application/product/list-approved-products-by-category";
 import { ListApprovedProductsByCategoryError } from "../../../application/product/list-approved-products-by-category";
 import type { SearchApprovedProductSuggestionsUseCase } from "../../../application/product/search-approved-product-suggestions";
@@ -23,7 +23,7 @@ import { searchProductsSchema } from "../validation/search-products-schema";
 interface ProductRouterDependencies {
   getApprovedProductDetail: GetApprovedProductDetailUseCase;
   listApprovedProducts: ListApprovedProductsUseCase;
-  listApprovedProductsByBrandName: ListApprovedProductsByBrandNameUseCase;
+  listApprovedProductsByBrandId: ListApprovedProductsByBrandIdUseCase;
   listApprovedProductsByCategory: ListApprovedProductsByCategoryUseCase;
   listActiveSliders: ListActiveSlidersUseCase;
   searchApprovedProductSuggestions: SearchApprovedProductSuggestionsUseCase;
@@ -32,7 +32,7 @@ interface ProductRouterDependencies {
 export default function createProductRouter({
   getApprovedProductDetail,
   listApprovedProducts,
-  listApprovedProductsByBrandName,
+  listApprovedProductsByBrandId,
   listApprovedProductsByCategory,
   listActiveSliders,
   searchApprovedProductSuggestions
@@ -182,7 +182,7 @@ export default function createProductRouter({
     }
   });
 
-  productRouter.get("/brands/:brandName", async (req, res) => {
+  productRouter.get("/brands/:brandId", async (req, res) => {
     const { error, value } = listCategoryProductsSchema.validate(req.query, {
       abortEarly: false,
       stripUnknown: true,
@@ -200,8 +200,8 @@ export default function createProductRouter({
     }
 
     try {
-      const result = await listApprovedProductsByBrandName.execute({
-        brandName: req.params.brandName,
+      const result = await listApprovedProductsByBrandId.execute({
+        brandId: req.params.brandId,
         page: value.page,
         limit: value.limit
       });
@@ -231,7 +231,7 @@ export default function createProductRouter({
         }
       });
     } catch (caughtError) {
-      if (caughtError instanceof ListApprovedProductsByBrandNameError) {
+      if (caughtError instanceof ListApprovedProductsByBrandIdError) {
         return res.status(caughtError.statusCode).json({
           message: caughtError.message,
           field: caughtError.field

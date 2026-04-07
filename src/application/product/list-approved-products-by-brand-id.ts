@@ -4,31 +4,29 @@ import type {
 } from "../../ports/product-catalog-repository";
 import type { ProductBrandRepository } from "../../ports/product-brand-repository";
 
-export interface ListApprovedProductsByBrandNameInput {
-  brandName: string;
+export interface ListApprovedProductsByBrandIdInput {
+  brandId: string;
   page?: number;
   limit?: number;
 }
 
-export interface ListApprovedProductsByBrandNameUseCase {
-  execute(
-    input: ListApprovedProductsByBrandNameInput
-  ): Promise<ApprovedProductCatalogPage>;
+export interface ListApprovedProductsByBrandIdUseCase {
+  execute(input: ListApprovedProductsByBrandIdInput): Promise<ApprovedProductCatalogPage>;
 }
 
-export class ListApprovedProductsByBrandNameError extends Error {
+export class ListApprovedProductsByBrandIdError extends Error {
   constructor(
     message: string,
     public readonly statusCode: number,
     public readonly field?: string
   ) {
     super(message);
-    this.name = "ListApprovedProductsByBrandNameError";
+    this.name = "ListApprovedProductsByBrandIdError";
   }
 }
 
-export class ListApprovedProductsByBrandName
-  implements ListApprovedProductsByBrandNameUseCase
+export class ListApprovedProductsByBrandId
+  implements ListApprovedProductsByBrandIdUseCase
 {
   constructor(
     private readonly productBrandRepository: ProductBrandRepository,
@@ -36,25 +34,25 @@ export class ListApprovedProductsByBrandName
   ) {}
 
   async execute(
-    input: ListApprovedProductsByBrandNameInput
+    input: ListApprovedProductsByBrandIdInput
   ): Promise<ApprovedProductCatalogPage> {
-    const trimmedBrandName = input.brandName.trim();
+    const trimmedBrandId = input.brandId.trim();
 
-    if (!trimmedBrandName) {
-      throw new ListApprovedProductsByBrandNameError(
-        "Brand name is required.",
+    if (!trimmedBrandId) {
+      throw new ListApprovedProductsByBrandIdError(
+        "Brand ID is required.",
         400,
-        "brand_name"
+        "brand_id"
       );
     }
 
-    const brand = await this.productBrandRepository.findByName(trimmedBrandName);
+    const brand = await this.productBrandRepository.findById(trimmedBrandId);
 
     if (!brand) {
-      throw new ListApprovedProductsByBrandNameError(
+      throw new ListApprovedProductsByBrandIdError(
         "Product brand not found.",
         404,
-        "brand_name"
+        "brand_id"
       );
     }
 
@@ -62,7 +60,7 @@ export class ListApprovedProductsByBrandName
     const limit = input.limit ?? 20;
 
     if (page < 1) {
-      throw new ListApprovedProductsByBrandNameError(
+      throw new ListApprovedProductsByBrandIdError(
         "Page must be greater than or equal to 1.",
         400,
         "page"
@@ -70,7 +68,7 @@ export class ListApprovedProductsByBrandName
     }
 
     if (limit < 1 || limit > 100) {
-      throw new ListApprovedProductsByBrandNameError(
+      throw new ListApprovedProductsByBrandIdError(
         "Limit must be between 1 and 100.",
         400,
         "limit"

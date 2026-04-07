@@ -4876,17 +4876,17 @@
         }
       }
     },
-    "/products/brands/{brandName}": {
+    "/products/brands/{brandId}": {
       "get": {
         "tags": [
           "product-catalog"
         ],
-        "summary": "List approved products for a specific brand name",
-        "description": "Returns approved and in-stock products for one brand only using the brand name. Results are sorted newest first and support pagination.",
+        "summary": "List approved products for a specific brand",
+        "description": "Returns approved and in-stock products for one brand only using the brand ID. Results are sorted newest first and support pagination.",
         "parameters": [
           {
             "in": "path",
-            "name": "brandName",
+            "name": "brandId",
             "required": true,
             "schema": {
               "type": "string"

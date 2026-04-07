@@ -1,9 +1,9 @@
 import { describe, expect, it, jest } from "@jest/globals";
 
 import {
-  ListApprovedProductsByBrandName,
-  ListApprovedProductsByBrandNameError
-} from "../../../src/application/product/list-approved-products-by-brand-name";
+  ListApprovedProductsByBrandId,
+  ListApprovedProductsByBrandIdError
+} from "../../../src/application/product/list-approved-products-by-brand-id";
 import type {
   ApprovedProductCatalogPage,
   ListApprovedProductsInput,
@@ -44,10 +44,6 @@ class ProductBrandRepositoryDouble implements ProductBrandRepository {
 
   findById = jest
     .fn<(brandId: string) => Promise<ProductBrandRecord | null>>()
-    .mockResolvedValue(null);
-
-  findByName = jest
-    .fn<(name: string) => Promise<ProductBrandRecord | null>>()
     .mockResolvedValue({
       id: "brand-id",
       name: "Apple",
@@ -57,27 +53,31 @@ class ProductBrandRepositoryDouble implements ProductBrandRepository {
       updatedAt: new Date("2026-03-29T00:00:00.000Z")
     });
 
+  findByName = jest
+    .fn<(name: string) => Promise<ProductBrandRecord | null>>()
+    .mockResolvedValue(null);
+
   update = jest
     .fn<(input: UpdateProductBrandInput) => Promise<ProductBrandRecord | null>>()
     .mockResolvedValue(null);
 }
 
-describe("ListApprovedProductsByBrandName", () => {
-  it("returns approved products for a valid brand name", async () => {
+describe("ListApprovedProductsByBrandId", () => {
+  it("returns approved products for a valid brand id", async () => {
     const productBrandRepository = new ProductBrandRepositoryDouble();
     const productCatalogRepository = new ProductCatalogRepositoryDouble();
-    const listApprovedProductsByBrandName = new ListApprovedProductsByBrandName(
+    const listApprovedProductsByBrandId = new ListApprovedProductsByBrandId(
       productBrandRepository,
       productCatalogRepository
     );
 
-    const result = await listApprovedProductsByBrandName.execute({
-      brandName: "Apple",
+    const result = await listApprovedProductsByBrandId.execute({
+      brandId: "brand-id",
       page: 1,
       limit: 20
     });
 
-    expect(productBrandRepository.findByName).toHaveBeenCalledWith("Apple");
+    expect(productBrandRepository.findById).toHaveBeenCalledWith("brand-id");
     expect(productCatalogRepository.listApproved).toHaveBeenCalledWith({
       page: 1,
       limit: 20,
@@ -90,18 +90,18 @@ describe("ListApprovedProductsByBrandName", () => {
     });
   });
 
-  it("throws when the brand name does not exist", async () => {
+  it("throws when the brand id does not exist", async () => {
     const productBrandRepository = new ProductBrandRepositoryDouble();
-    productBrandRepository.findByName.mockResolvedValue(null);
-    const listApprovedProductsByBrandName = new ListApprovedProductsByBrandName(
+    productBrandRepository.findById.mockResolvedValue(null);
+    const listApprovedProductsByBrandId = new ListApprovedProductsByBrandId(
       productBrandRepository,
       new ProductCatalogRepositoryDouble()
     );
 
     await expect(
-      listApprovedProductsByBrandName.execute({
-        brandName: "Unknown Brand"
+      listApprovedProductsByBrandId.execute({
+        brandId: "missing-brand-id"
       })
-    ).rejects.toBeInstanceOf(ListApprovedProductsByBrandNameError);
+    ).rejects.toBeInstanceOf(ListApprovedProductsByBrandIdError);
   });
 });
