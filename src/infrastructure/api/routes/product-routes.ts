@@ -159,6 +159,7 @@ export default function createProductRouter({
         data: result.items.map((product) => ({
           id: product.id,
           category_id: product.categoryId,
+          category_name: product.categoryName,
           brand_id: product.brandId,
           brand_name: product.brandName,
           name: product.name,
@@ -221,6 +222,7 @@ export default function createProductRouter({
         data: result.items.map((product) => ({
           id: product.id,
           category_id: product.categoryId,
+          category_name: product.categoryName,
           brand_id: product.brandId,
           brand_name: product.brandName,
           name: product.name,
@@ -283,6 +285,7 @@ export default function createProductRouter({
         data: result.items.map((product) => ({
           id: product.id,
           category_id: product.categoryId,
+          category_name: product.categoryName,
           brand_id: product.brandId,
           brand_name: product.brandName,
           name: product.name,
