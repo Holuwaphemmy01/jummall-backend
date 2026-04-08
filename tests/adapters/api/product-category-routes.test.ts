@@ -5,6 +5,7 @@ import type { AddressInfo } from "node:net";
 
 import { ProductCategoryError } from "../../../src/application/admin/product-category-errors";
 import createAdminRouter from "../../../src/infrastructure/api/routes/admin-routes";
+import createProductRouter from "../../../src/infrastructure/api/routes/product-routes";
 import { createProtectedSellerCategoryRouter } from "../../../src/infrastructure/api/routes/seller-routes";
 import type { ProductCategoryRecord } from "../../../src/ports/product-category-repository";
 
@@ -406,6 +407,55 @@ describe("product category routes", () => {
         }
       ]
     });
+  });
+
+  it("returns a slim public category list for the product catalog", async () => {
+    process.env.SUPABASE_URL = "https://example.supabase.co";
+
+    const listCatalogProductCategories = {
+      execute: jest.fn(async () => [makeCategory()])
+    };
+    const { server, baseUrl } = await createServer((app) => {
+      app.use(
+        "/products",
+        createProductRouter({
+          getApprovedProductDetail: createUnusedUseCase() as never,
+          listCatalogProductBrands: createUnusedUseCase() as never,
+          listCatalogProductCategories: listCatalogProductCategories as never,
+          listActiveSliders: createUnusedUseCase() as never,
+          listApprovedProducts: createUnusedUseCase() as never,
+          listApprovedProductsByBrandId: createUnusedUseCase() as never,
+          listApprovedProductsByCategory: createUnusedUseCase() as never,
+          searchApprovedProductSuggestions: createUnusedUseCase() as never
+        })
+      );
+    });
+    openServers.push(server);
+
+    const response = await fetch(`${baseUrl}/products/categories`);
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      message: "Product categories fetched successfully.",
+      data: [
+        {
+          id: "category-id",
+          name: "Electronics",
+          description: "Phones, gadgets, and accessories",
+          image: {
+            storage_path: "product-categories/electronics/electronics.jpg",
+            public_url:
+              "https://example.supabase.co/storage/v1/object/public/product-category-images/product-categories/electronics/electronics.jpg",
+            mime_type: "image/jpeg",
+            original_file_name: "electronics.jpg"
+          },
+          created_at: "2026-04-03T00:00:00.000Z",
+          updated_at: "2026-04-03T00:00:00.000Z"
+        }
+      ]
+    });
+    expect(body.data[0]).not.toHaveProperty("deduction_percentage");
   });
 
   it("maps category image parse failures to a product-category validation response", async () => {

@@ -5,6 +5,7 @@ import type { AddressInfo } from "node:net";
 
 import { ProductBrandError } from "../../../src/application/admin/product-brand-errors";
 import createAdminRouter from "../../../src/infrastructure/api/routes/admin-routes";
+import createProductRouter from "../../../src/infrastructure/api/routes/product-routes";
 import { createProtectedSellerBrandRouter } from "../../../src/infrastructure/api/routes/seller-routes";
 import type { ProductBrandRecord } from "../../../src/ports/product-brand-repository";
 
@@ -380,6 +381,54 @@ describe("product brand routes", () => {
     openServers.push(server);
 
     const response = await fetch(`${baseUrl}/sellers/product-brands`);
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      message: "Product brands fetched successfully.",
+      data: [
+        {
+          id: "brand-id",
+          name: "Apple",
+          description: "Consumer electronics brand",
+          image: {
+            storage_path: "product-brands/apple/apple.jpg",
+            public_url:
+              "https://example.supabase.co/storage/v1/object/public/product-brand-images/product-brands/apple/apple.jpg",
+            mime_type: "image/jpeg",
+            original_file_name: "apple.jpg"
+          },
+          created_at: "2026-04-03T00:00:00.000Z",
+          updated_at: "2026-04-03T00:00:00.000Z"
+        }
+      ]
+    });
+  });
+
+  it("returns a slim public brand list for the product catalog", async () => {
+    process.env.SUPABASE_URL = "https://example.supabase.co";
+
+    const listCatalogProductBrands = {
+      execute: jest.fn(async () => [makeBrand()])
+    };
+    const { server, baseUrl } = await createServer((app) => {
+      app.use(
+        "/products",
+        createProductRouter({
+          getApprovedProductDetail: createUnusedUseCase() as never,
+          listCatalogProductBrands: listCatalogProductBrands as never,
+          listCatalogProductCategories: createUnusedUseCase() as never,
+          listActiveSliders: createUnusedUseCase() as never,
+          listApprovedProducts: createUnusedUseCase() as never,
+          listApprovedProductsByBrandId: createUnusedUseCase() as never,
+          listApprovedProductsByCategory: createUnusedUseCase() as never,
+          searchApprovedProductSuggestions: createUnusedUseCase() as never
+        })
+      );
+    });
+    openServers.push(server);
+
+    const response = await fetch(`${baseUrl}/products/brands`);
     const body = await response.json();
 
     expect(response.status).toBe(200);

@@ -4784,6 +4784,45 @@
         }
       }
     },
+    "/products/categories": {
+      "get": {
+        "tags": [
+          "product-catalog"
+        ],
+        "summary": "List product categories for the catalog",
+        "description": "Returns all marketplace product categories for buyers and guest users. Categories are returned in alphabetical order and include public image metadata when available.",
+        "responses": {
+          "200": {
+            "description": "Product categories fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicProductCategoryListResponse"
+                },
+                "example": {
+                  "message": "Product categories fetched successfully.",
+                  "data": [
+                    {
+                      "id": "category-id",
+                      "name": "Electronics",
+                      "description": "Phones, gadgets, and accessories",
+                      "image": {
+                        "storage_path": "product-categories/electronics/1712140800000-electronics.jpg",
+                        "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-category-images/product-categories/electronics/1712140800000-electronics.jpg",
+                        "mime_type": "image/jpeg",
+                        "original_file_name": "electronics.jpg"
+                      },
+                      "created_at": "2026-04-03T00:00:00.000Z",
+                      "updated_at": "2026-04-03T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/products/categories/{categoryId}": {
       "get": {
         "tags": [
@@ -4872,6 +4911,45 @@
           },
           "404": {
             "description": "Product category not found"
+          }
+        }
+      }
+    },
+    "/products/brands": {
+      "get": {
+        "tags": [
+          "product-catalog"
+        ],
+        "summary": "List product brands for the catalog",
+        "description": "Returns all marketplace product brands for buyers and guest users. Brands are returned in alphabetical order and include public image metadata when available.",
+        "responses": {
+          "200": {
+            "description": "Product brands fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicProductBrandListResponse"
+                },
+                "example": {
+                  "message": "Product brands fetched successfully.",
+                  "data": [
+                    {
+                      "id": "brand-id",
+                      "name": "Apple",
+                      "description": "Consumer electronics brand",
+                      "image": {
+                        "storage_path": "product-brands/apple/1712140800000-apple.jpg",
+                        "public_url": "https://your-project.supabase.co/storage/v1/object/public/product-brand-images/product-brands/apple/1712140800000-apple.jpg",
+                        "mime_type": "image/jpeg",
+                        "original_file_name": "apple.jpg"
+                      },
+                      "created_at": "2026-04-03T00:00:00.000Z",
+                      "updated_at": "2026-04-03T00:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
           }
         }
       }
@@ -8419,6 +8497,51 @@
           }
         }
       },
+      "PublicProductCategoryResponseData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Electronics"
+          },
+          "description": {
+            "type": "string",
+            "example": "Phones, gadgets, and accessories"
+          },
+          "image": {
+            "$ref": "#/components/schemas/ProductCategoryImageResponse"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-04-03T00:00:00.000Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-04-03T00:00:00.000Z"
+          }
+        }
+      },
+      "PublicProductCategoryListResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Product categories fetched successfully."
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicProductCategoryResponseData"
+            }
+          }
+        }
+      },
       "ProductBrandImageUploadRequest": {
         "type": "object",
         "required": [
@@ -8466,6 +8589,51 @@
           "original_file_name": {
             "type": "string",
             "example": "apple.jpg"
+          }
+        }
+      },
+      "PublicProductBrandResponseData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Apple"
+          },
+          "description": {
+            "type": "string",
+            "example": "Consumer electronics brand"
+          },
+          "image": {
+            "$ref": "#/components/schemas/ProductBrandImageResponse"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-04-03T00:00:00.000Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-04-03T00:00:00.000Z"
+          }
+        }
+      },
+      "PublicProductBrandListResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Product brands fetched successfully."
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicProductBrandResponseData"
+            }
           }
         }
       },
