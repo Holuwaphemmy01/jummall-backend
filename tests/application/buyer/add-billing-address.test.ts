@@ -11,7 +11,8 @@ import type {
 import type {
   BillingAddressRecord,
   BillingAddressRepository,
-  CreateBillingAddressInput
+  CreateBillingAddressInput,
+  UpdateBillingAddressInput
 } from "../../../src/ports/billing-address-repository";
 
 function makeBuyer(): AuthUser {
@@ -95,6 +96,10 @@ class BillingAddressRepositoryDouble implements BillingAddressRepository {
     .fn<
       (billingAddressId: string, buyerId: string) => Promise<BillingAddressRecord | null>
     >()
+    .mockResolvedValue(makeBillingAddress());
+
+  update = jest
+    .fn<(input: UpdateBillingAddressInput) => Promise<BillingAddressRecord | null>>()
     .mockResolvedValue(makeBillingAddress());
 }
 

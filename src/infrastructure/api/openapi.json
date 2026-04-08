@@ -4518,7 +4518,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/BillingAddressListResponse"
                 },
                 "example": {
                   "message": "Billing addresses fetched successfully.",
@@ -4580,7 +4580,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/BillingAddressSingleResponse"
                 },
                 "example": {
                   "message": "Billing address added successfully.",
@@ -4618,6 +4618,86 @@
       }
     },
     "/buyers/billing-addresses/{billingAddressId}": {
+      "patch": {
+        "tags": [
+          "buyer-billing-addresses"
+        ],
+        "summary": "Update buyer billing address",
+        "description": "Updates one saved billing address belonging to the authenticated buyer. Buyers can patch any subset of the address fields, and nullable fields can be cleared by sending null.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "billingAddressId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBillingAddressRequest"
+              },
+              "example": {
+                "full_name": "Jane Doe",
+                "phone_number": "+2348099999999",
+                "city": "Abuja",
+                "state": "FCT",
+                "address_line_2": null
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Billing address updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingAddressSingleResponse"
+                },
+                "example": {
+                  "message": "Billing address updated successfully.",
+                  "data": {
+                    "id": "billing-address-id",
+                    "buyer_id": "buyer-id",
+                    "full_name": "Jane Doe",
+                    "phone_number": "+2348099999999",
+                    "address_line_1": "12 Allen Avenue",
+                    "address_line_2": null,
+                    "city": "Abuja",
+                    "state": "FCT",
+                    "country": "Nigeria",
+                    "postal_code": "100271",
+                    "created_at": "2026-03-30T00:00:00.000Z",
+                    "updated_at": "2026-04-08T12:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer account or billing address not found"
+          }
+        }
+      },
       "delete": {
         "tags": [
           "buyer-billing-addresses"
@@ -9502,6 +9582,118 @@
           "postal_code": {
             "type": "string",
             "example": "100271"
+          }
+        }
+      },
+      "UpdateBillingAddressRequest": {
+        "type": "object",
+        "minProperties": 1,
+        "properties": {
+          "full_name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "phone_number": {
+            "type": "string",
+            "example": "+2348012345678"
+          },
+          "address_line_1": {
+            "type": "string",
+            "example": "12 Allen Avenue"
+          },
+          "address_line_2": {
+            "type": "string",
+            "nullable": true,
+            "example": "2nd Floor"
+          },
+          "city": {
+            "type": "string",
+            "example": "Ikeja"
+          },
+          "state": {
+            "type": "string",
+            "example": "Lagos"
+          },
+          "country": {
+            "type": "string",
+            "example": "Nigeria"
+          },
+          "postal_code": {
+            "type": "string",
+            "nullable": true,
+            "example": "100271"
+          }
+        }
+      },
+      "BillingAddressData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "buyer_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "full_name": {
+            "type": "string"
+          },
+          "phone_number": {
+            "type": "string"
+          },
+          "address_line_1": {
+            "type": "string"
+          },
+          "address_line_2": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "postal_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "BillingAddressSingleResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/BillingAddressData"
+          }
+        }
+      },
+      "BillingAddressListResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingAddressData"
+            }
           }
         }
       },

@@ -401,7 +401,10 @@ function createBillingAddressRepository(
         (address) =>
           address.id === billingAddressId && address.buyerId === buyerId
       ) ?? null,
-    deleteByIdAndBuyerId: async () => null
+    deleteByIdAndBuyerId: async () => null,
+    update: async () => {
+      throw new Error("Not implemented in this test.");
+    }
   };
 }
 

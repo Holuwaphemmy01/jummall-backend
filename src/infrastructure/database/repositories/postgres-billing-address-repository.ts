@@ -4,7 +4,8 @@ import databasePool from "../client";
 import type {
   BillingAddressRecord,
   BillingAddressRepository,
-  CreateBillingAddressInput
+  CreateBillingAddressInput,
+  UpdateBillingAddressInput
 } from "../../../ports/billing-address-repository";
 
 interface BillingAddressRow {
@@ -153,5 +154,85 @@ export class PostgresBillingAddressRepository
     );
 
     return result.rows[0];
+  }
+
+  async update(input: UpdateBillingAddressInput): Promise<BillingAddressRecord | null> {
+    const assignments: string[] = [];
+    const values: Array<string | null> = [];
+
+    if (input.fullName !== undefined) {
+      values.push(input.fullName);
+      assignments.push(`"fullName" = $${values.length}`);
+    }
+
+    if (input.phoneNumber !== undefined) {
+      values.push(input.phoneNumber);
+      assignments.push(`"phoneNumber" = $${values.length}`);
+    }
+
+    if (input.addressLine1 !== undefined) {
+      values.push(input.addressLine1);
+      assignments.push(`"addressLine1" = $${values.length}`);
+    }
+
+    if (input.addressLine2 !== undefined) {
+      values.push(input.addressLine2);
+      assignments.push(`"addressLine2" = $${values.length}`);
+    }
+
+    if (input.city !== undefined) {
+      values.push(input.city);
+      assignments.push(`"city" = $${values.length}`);
+    }
+
+    if (input.state !== undefined) {
+      values.push(input.state);
+      assignments.push(`"state" = $${values.length}`);
+    }
+
+    if (input.country !== undefined) {
+      values.push(input.country);
+      assignments.push(`"country" = $${values.length}`);
+    }
+
+    if (input.postalCode !== undefined) {
+      values.push(input.postalCode);
+      assignments.push(`"postalCode" = $${values.length}`);
+    }
+
+    if (assignments.length === 0) {
+      return this.findByIdAndBuyerId(input.billingAddressId, input.buyerId);
+    }
+
+    values.push(input.billingAddressId);
+    const billingAddressIdParameter = values.length;
+    values.push(input.buyerId);
+    const buyerIdParameter = values.length;
+
+    const result = await this.pool.query<BillingAddressRow>(
+      `
+        UPDATE "BillingAddress"
+        SET
+          ${assignments.join(", ")},
+          "updatedAt" = NOW()
+        WHERE "id" = $${billingAddressIdParameter} AND "buyerId" = $${buyerIdParameter}
+        RETURNING
+          "id",
+          "buyerId",
+          "fullName",
+          "phoneNumber",
+          "addressLine1",
+          "addressLine2",
+          "city",
+          "state",
+          "country",
+          "postalCode",
+          "createdAt",
+          "updatedAt"
+      `,
+      values
+    );
+
+    return result.rows[0] ?? null;
   }
 }

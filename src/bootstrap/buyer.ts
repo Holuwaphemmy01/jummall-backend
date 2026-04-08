@@ -18,6 +18,7 @@ import { InitiateEmailVerification } from "../application/auth/initiate-email-ve
 import { RemoveProductFromCart } from "../application/buyer/remove-product-from-cart";
 import { RemoveProductFromWishlist } from "../application/buyer/remove-product-from-wishlist";
 import { RegisterBuyer } from "../application/buyer/register-buyer";
+import { UpdateBillingAddress } from "../application/buyer/update-billing-address";
 import { UpdateProductQuantityInCart } from "../application/buyer/update-product-quantity-in-cart";
 import { SendWelcomeEmail } from "../application/notification/send-welcome-email";
 import { createAuthMiddleware } from "../infrastructure/api/middleware/create-auth-middleware";
@@ -94,6 +95,10 @@ export function createBuyerModule() {
     billingAddressRepository
   );
   const deleteBillingAddress = new DeleteBillingAddress(
+    authenticationRepository,
+    billingAddressRepository
+  );
+  const updateBillingAddress = new UpdateBillingAddress(
     authenticationRepository,
     billingAddressRepository
   );
@@ -188,7 +193,8 @@ export function createBuyerModule() {
     createProtectedBuyerBillingAddressRouter({
       addBillingAddress,
       deleteBillingAddress,
-      getBillingAddresses
+      getBillingAddresses,
+      updateBillingAddress
     })
   );
   buyerRouter.use(
