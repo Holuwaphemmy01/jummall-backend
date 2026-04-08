@@ -394,6 +394,8 @@ describe("slider routes", () => {
         "/products",
         createProductRouter({
           getApprovedProductDetail: createUnusedUseCase() as never,
+          listCatalogProductBrands: createUnusedUseCase() as never,
+          listCatalogProductCategories: createUnusedUseCase() as never,
           listActiveSliders: listActiveSliders as never,
           listApprovedProducts: createUnusedUseCase() as never,
           listApprovedProductsByBrandId: createUnusedUseCase() as never,

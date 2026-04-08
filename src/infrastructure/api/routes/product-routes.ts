@@ -1,7 +1,9 @@
 import { Router } from "express";
 
 import type { GetApprovedProductDetailUseCase } from "../../../application/product/get-approved-product-detail";
+import type { ListCatalogProductBrandsUseCase } from "../../../application/product/list-catalog-product-brands";
 import { GetApprovedProductDetailError } from "../../../application/product/get-approved-product-detail";
+import type { ListCatalogProductCategoriesUseCase } from "../../../application/product/list-catalog-product-categories";
 import type { ListApprovedProductsUseCase } from "../../../application/product/list-approved-products";
 import { ListApprovedProductsError } from "../../../application/product/list-approved-products";
 import type { ListApprovedProductsByBrandIdUseCase } from "../../../application/product/list-approved-products-by-brand-id";
@@ -11,6 +13,10 @@ import { ListApprovedProductsByCategoryError } from "../../../application/produc
 import type { SearchApprovedProductSuggestionsUseCase } from "../../../application/product/search-approved-product-suggestions";
 import { SearchApprovedProductSuggestionsError } from "../../../application/product/search-approved-product-suggestions";
 import type { ListActiveSlidersUseCase } from "../../../application/slider/list-active-sliders";
+import {
+  buildProductBrandImagePublicUrl,
+  buildProductCategoryImagePublicUrl
+} from "../../storage/build-public-storage-url";
 import {
   toPrimaryProductImageResponse,
   toProductImageResponse
@@ -22,6 +28,8 @@ import { searchProductsSchema } from "../validation/search-products-schema";
 
 interface ProductRouterDependencies {
   getApprovedProductDetail: GetApprovedProductDetailUseCase;
+  listCatalogProductBrands: ListCatalogProductBrandsUseCase;
+  listCatalogProductCategories: ListCatalogProductCategoriesUseCase;
   listApprovedProducts: ListApprovedProductsUseCase;
   listApprovedProductsByBrandId: ListApprovedProductsByBrandIdUseCase;
   listApprovedProductsByCategory: ListApprovedProductsByCategoryUseCase;
@@ -31,6 +39,8 @@ interface ProductRouterDependencies {
 
 export default function createProductRouter({
   getApprovedProductDetail,
+  listCatalogProductBrands,
+  listCatalogProductCategories,
   listApprovedProducts,
   listApprovedProductsByBrandId,
   listApprovedProductsByCategory,
@@ -38,6 +48,68 @@ export default function createProductRouter({
   searchApprovedProductSuggestions
 }: ProductRouterDependencies) {
   const productRouter = Router();
+
+  productRouter.get("/brands", async (_req, res) => {
+    try {
+      const brands = await listCatalogProductBrands.execute();
+
+      return res.status(200).json({
+        message: "Product brands fetched successfully.",
+        data: brands.map((brand) => ({
+          id: brand.id,
+          name: brand.name,
+          description: brand.description,
+          image: brand.image
+            ? {
+                storage_path: brand.image.storagePath,
+                public_url: buildProductBrandImagePublicUrl(
+                  brand.image.storagePath
+                ),
+                mime_type: brand.image.mimeType,
+                original_file_name: brand.image.originalFileName
+              }
+            : null,
+          created_at: brand.createdAt.toISOString(),
+          updated_at: brand.updatedAt.toISOString()
+        }))
+      });
+    } catch {
+      return res.status(500).json({
+        message: "Unable to fetch product brands."
+      });
+    }
+  });
+
+  productRouter.get("/categories", async (_req, res) => {
+    try {
+      const categories = await listCatalogProductCategories.execute();
+
+      return res.status(200).json({
+        message: "Product categories fetched successfully.",
+        data: categories.map((category) => ({
+          id: category.id,
+          name: category.name,
+          description: category.description,
+          image: category.image
+            ? {
+                storage_path: category.image.storagePath,
+                public_url: buildProductCategoryImagePublicUrl(
+                  category.image.storagePath
+                ),
+                mime_type: category.image.mimeType,
+                original_file_name: category.image.originalFileName
+              }
+            : null,
+          created_at: category.createdAt.toISOString(),
+          updated_at: category.updatedAt.toISOString()
+        }))
+      });
+    } catch {
+      return res.status(500).json({
+        message: "Unable to fetch product categories."
+      });
+    }
+  });
 
   productRouter.get("/sliders", async (_req, res) => {
     try {
