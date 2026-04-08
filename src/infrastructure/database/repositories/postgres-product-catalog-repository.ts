@@ -15,6 +15,7 @@ interface ProductRow {
   id: string;
   sellerId: string;
   categoryId: string;
+  categoryName: string | null;
   brandId: string | null;
   brandName: string | null;
   name: string;
@@ -59,6 +60,7 @@ export class PostgresProductCatalogRepository
           p."id",
           p."sellerId",
           p."categoryId",
+          pc."name" AS "categoryName",
           p."brandId",
           pb."name" AS "brandName",
           p."name",
@@ -75,6 +77,7 @@ export class PostgresProductCatalogRepository
           p."createdAt",
           p."updatedAt"
         FROM "Product" p
+        LEFT JOIN "ProductCategory" pc ON pc."id" = p."categoryId"
         LEFT JOIN "ProductBrand" pb ON pb."id" = p."brandId"
         WHERE p."id" = $1
           AND p."status" = 'approved'
@@ -145,6 +148,7 @@ export class PostgresProductCatalogRepository
           p."id",
           p."sellerId",
           p."categoryId",
+          pc."name" AS "categoryName",
           p."brandId",
           pb."name" AS "brandName",
           p."name",
@@ -161,6 +165,7 @@ export class PostgresProductCatalogRepository
           p."createdAt",
           p."updatedAt"
         FROM "Product" p
+        LEFT JOIN "ProductCategory" pc ON pc."id" = p."categoryId"
         LEFT JOIN "ProductBrand" pb ON pb."id" = p."brandId"
         ${whereClause}
         ORDER BY COALESCE(p."reviewedAt", p."updatedAt", p."createdAt") DESC, p."createdAt" DESC
@@ -200,6 +205,7 @@ export class PostgresProductCatalogRepository
           p."id",
           p."sellerId",
           p."categoryId",
+          pc."name" AS "categoryName",
           p."brandId",
           pb."name" AS "brandName",
           p."name",
@@ -216,6 +222,7 @@ export class PostgresProductCatalogRepository
           p."createdAt",
           p."updatedAt"
         FROM "Product" p
+        LEFT JOIN "ProductCategory" pc ON pc."id" = p."categoryId"
         LEFT JOIN "ProductBrand" pb ON pb."id" = p."brandId"
         WHERE
           p."status" = 'approved'
@@ -275,6 +282,7 @@ export class PostgresProductCatalogRepository
       id: product.id,
       sellerId: product.sellerId,
       categoryId: product.categoryId,
+      categoryName: product.categoryName,
       brandId: product.brandId,
       brandName: product.brandName,
       name: product.name,

@@ -4738,7 +4738,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/PublicCatalogProductListResponse"
                 },
                 "example": {
                   "message": "Products fetched successfully.",
@@ -4746,6 +4746,7 @@
                     {
                       "id": "product-id",
                       "category_id": "category-id",
+                      "category_name": "Electronics",
                       "brand_id": "brand-id",
                       "brand_name": "Apple",
                       "name": "Wireless Headset",
@@ -4866,7 +4867,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/PublicCatalogProductListResponse"
                 },
                 "example": {
                   "message": "Products fetched successfully.",
@@ -4874,6 +4875,7 @@
                     {
                       "id": "product-id",
                       "category_id": "category-id",
+                      "category_name": "Electronics",
                       "brand_id": "brand-id",
                       "brand_name": "Apple",
                       "name": "Wireless Headset",
@@ -8633,6 +8635,146 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PublicProductBrandResponseData"
+            }
+          }
+        }
+      },
+      "PublicCatalogProductImageResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "storage_path": {
+            "type": "string",
+            "example": "products/seller-id/front.jpg"
+          },
+          "public_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "https://your-project.supabase.co/storage/v1/object/public/product-images/products/seller-id/front.jpg"
+          },
+          "mime_type": {
+            "type": "string",
+            "example": "image/jpeg"
+          },
+          "original_file_name": {
+            "type": "string",
+            "example": "front.jpg"
+          },
+          "position": {
+            "type": "integer",
+            "example": 0
+          }
+        }
+      },
+      "PublicCatalogProductResponseData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "category_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "category_name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Electronics"
+          },
+          "brand_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "brand_name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Apple"
+          },
+          "name": {
+            "type": "string",
+            "example": "Wireless Headset"
+          },
+          "description": {
+            "type": "string",
+            "example": "Noise-cancelling wireless headset with long battery life."
+          },
+          "price": {
+            "type": "number",
+            "example": 85000
+          },
+          "quantity": {
+            "type": "integer",
+            "example": 10
+          },
+          "currency": {
+            "type": "string",
+            "example": "NGN"
+          },
+          "condition": {
+            "type": "string",
+            "example": "new"
+          },
+          "weight_kg": {
+            "type": "number",
+            "example": 0.4
+          },
+          "status": {
+            "type": "string",
+            "example": "approved"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicCatalogProductImageResponse"
+            }
+          }
+        }
+      },
+      "PublicCatalogProductListResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Products fetched successfully."
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicCatalogProductResponseData"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "integer",
+                "example": 1
+              },
+              "limit": {
+                "type": "integer",
+                "example": 20
+              },
+              "total": {
+                "type": "integer",
+                "example": 1
+              },
+              "total_pages": {
+                "type": "integer",
+                "example": 1
+              }
             }
           }
         }
