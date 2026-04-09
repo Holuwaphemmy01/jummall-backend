@@ -1,4 +1,4 @@
-import { describe, expect, it } from "@jest/globals";
+import { describe, expect, it, jest } from "@jest/globals";
 
 import { AddProductToCart } from "../../../src/application/buyer/add-product-to-cart";
 import { ClearBuyerCart } from "../../../src/application/buyer/clear-buyer-cart";
@@ -49,9 +49,7 @@ class CheckoutSessionRepositoryDouble implements CheckoutSessionRepository {
     throw new Error("Not implemented.");
   }
 
-  async findInitializedByBuyerId(): Promise<CheckoutSessionRecord | null> {
-    return this.session;
-  }
+  findInitializedByBuyerId = jest.fn(async (): Promise<CheckoutSessionRecord | null> => this.session);
 
   async findByReference() {
     return null;
@@ -65,9 +63,7 @@ class CheckoutSessionRepositoryDouble implements CheckoutSessionRepository {
     return null;
   }
 
-  async markFailed() {
-    return null;
-  }
+  markFailed = jest.fn(async () => this.session);
 }
 
 class CartRepositoryDouble implements CartRepository {
@@ -113,7 +109,14 @@ class CartRepositoryDouble implements CartRepository {
   }
 
   async updateCartItemQuantity() {
-    return null;
+    return {
+      id: "cart-item-1",
+      cartId: "cart-1",
+      productId: "product-1",
+      quantity: 2,
+      createdAt: new Date("2026-04-05T00:00:00.000Z"),
+      updatedAt: new Date("2026-04-05T00:00:00.000Z")
+    };
   }
 }
 
@@ -160,7 +163,9 @@ class ProductRepositoryDouble implements ProductRepository {
   }
 }
 
-function makeOpenSession(): CheckoutSessionRecord {
+function makeOpenSession(
+  overrides: Partial<CheckoutSessionRecord> = {}
+): CheckoutSessionRecord {
   return {
     id: "checkout-session-1",
     reference: "chk_ref_1",
@@ -196,9 +201,10 @@ function makeOpenSession(): CheckoutSessionRecord {
       postalCode: null
     },
     shippingBreakdown: [],
-    createdAt: new Date("2026-04-05T00:00:00.000Z"),
-    updatedAt: new Date("2026-04-05T00:00:00.000Z"),
-    completedAt: null
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    completedAt: null,
+    ...overrides
   };
 }
 
@@ -280,6 +286,45 @@ describe("cart mutation guard with open checkout session", () => {
       })
     ).rejects.toMatchObject({
       statusCode: 409
+    });
+  });
+
+  it("expires old checkout sessions before allowing cart changes", async () => {
+    const staleSession = makeOpenSession({
+      createdAt: new Date(Date.now() - 5 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 5 * 60 * 1000)
+    });
+    const staleCheckoutSessionRepository = new CheckoutSessionRepositoryDouble(
+      staleSession
+    );
+    const useCase = new AddProductToCart(
+      authenticationRepository,
+      productRepository,
+      cartRepository,
+      staleCheckoutSessionRepository
+    );
+
+    await expect(
+      useCase.execute({
+        buyerId: "buyer-1",
+        productId: "product-1",
+        quantity: 1
+      })
+    ).resolves.toMatchObject({
+      cart: {
+        id: "cart-1"
+      },
+      item: {
+        productId: "product-1",
+        quantity: 2
+      }
+    });
+    const markFailedCall =
+      (staleCheckoutSessionRepository.markFailed.mock.calls as unknown[][])[0]?.[0];
+
+    expect(markFailedCall).toEqual({
+      sessionId: staleSession.id,
+      failureReason: "checkout_session_expired"
     });
   });
 });

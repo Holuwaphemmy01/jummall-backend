@@ -193,6 +193,7 @@ describe("GetActiveCart", () => {
         status: "active"
       },
       totalItems: 2,
+      totalProducts: 1,
       subtotal: 170000,
       currency: "NGN"
     });
@@ -227,6 +228,7 @@ describe("GetActiveCart", () => {
       cart: null,
       items: [],
       totalItems: 0,
+      totalProducts: 0,
       subtotal: 0,
       currency: null
     });

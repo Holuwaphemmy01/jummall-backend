@@ -1,4 +1,5 @@
 import type { CheckoutSessionRepository } from "../../ports/checkout-session-repository";
+import { findBlockingInitializedCheckoutSession } from "./checkout-session-expiry";
 
 export async function ensureNoOpenCheckoutSession(
   checkoutSessionRepository: CheckoutSessionRepository,
@@ -6,7 +7,10 @@ export async function ensureNoOpenCheckoutSession(
   errorFactory: (message: string, field?: string) => Error
 ) {
   const activeCheckout =
-    await checkoutSessionRepository.findInitializedByBuyerId(buyerId);
+    await findBlockingInitializedCheckoutSession(
+      checkoutSessionRepository,
+      buyerId
+    );
 
   if (activeCheckout) {
     throw errorFactory(

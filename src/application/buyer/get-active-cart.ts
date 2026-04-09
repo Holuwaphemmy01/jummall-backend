@@ -45,6 +45,7 @@ export interface GetActiveCartResult {
   cart: CartRecord | null;
   items: GetActiveCartItemResult[];
   totalItems: number;
+  totalProducts: number;
   subtotal: number;
   currency: string | null;
 }
@@ -93,6 +94,7 @@ export class GetActiveCart implements GetActiveCartUseCase {
         cart: null,
         items: [],
         totalItems: 0,
+        totalProducts: 0,
         subtotal: 0,
         currency: null
       };
@@ -117,11 +119,13 @@ export class GetActiveCart implements GetActiveCartUseCase {
 
     const subtotal = itemResults.reduce((sum, item) => sum + item.subtotal, 0);
     const totalItems = itemResults.reduce((sum, item) => sum + item.quantity, 0);
+    const totalProducts = itemResults.length;
 
     return {
       cart,
       items: itemResults,
       totalItems,
+      totalProducts,
       subtotal,
       currency: itemResults[0]?.currency ?? null
     };

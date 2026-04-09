@@ -43,27 +43,37 @@ export class PaystackPaymentProvider implements PaymentProvider {
   ): Promise<InitializePaymentTransactionResult> {
     this.assertConfigured();
 
+    const payload = {
+      email: input.customerEmail,
+      amount: Math.round(input.amount * 100),
+      currency: input.currency,
+      reference: input.reference,
+      callback_url: input.callbackUrl ?? this.callbackUrl,
+      metadata: input.metadata ?? {}
+    };
+
     const response = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${this.secretKey}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        email: input.customerEmail,
-        amount: Math.round(input.amount * 100),
-        currency: input.currency,
-        reference: input.reference,
-        callback_url: input.callbackUrl ?? this.callbackUrl,
-        metadata: input.metadata ?? {}
-      })
+      body: JSON.stringify(payload)
     });
+
+    const rawBody = await response.text();
 
     if (!response.ok) {
       throw new Error("Paystack transaction initialization failed.");
     }
 
-    const body = (await response.json()) as PaystackInitializeResponse;
+    let body: PaystackInitializeResponse;
+
+    try {
+      body = JSON.parse(rawBody) as PaystackInitializeResponse;
+    } catch {
+      throw new Error("Paystack transaction initialization failed.");
+    }
 
     if (!body.status || !body.data?.authorization_url) {
       throw new Error(body.message || "Paystack transaction initialization failed.");

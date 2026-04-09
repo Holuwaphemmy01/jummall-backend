@@ -49,7 +49,10 @@ describe("initialize checkout", () => {
 
   it("blocks initialization when another checkout session is already open", async () => {
     const checkoutSessionRepository = createCheckoutSessionRepositoryDouble({
-      existingSession: makeSession()
+      existingSession: makeSession({
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
     });
     const useCase = new InitializeCheckout(
       {
@@ -70,6 +73,44 @@ describe("initialize checkout", () => {
         statusCode: 409
       })
     );
+  });
+
+  it("expires an old initialized session and allows a new checkout attempt", async () => {
+    const staleSession = makeSession({
+      createdAt: new Date(Date.now() - 5 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 5 * 60 * 1000)
+    });
+    const checkoutSessionRepository = createCheckoutSessionRepositoryDouble({
+      existingSession: staleSession
+    });
+    const paymentProvider = createPaymentProviderDouble();
+    const prepareCheckoutData = {
+      execute: jest.fn(async () => ({
+        buyer: {
+          id: "buyer-1",
+          email: "buyer@example.com"
+        },
+        summary: makeSummary()
+      }))
+    } as unknown as PrepareCheckoutData;
+    const useCase = new InitializeCheckout(
+      prepareCheckoutData,
+      checkoutSessionRepository,
+      paymentProvider
+    );
+
+    const result = await useCase.execute({
+      buyerId: "buyer-1",
+      billingAddressId: "address-1"
+    });
+
+    expect(checkoutSessionRepository.markFailed).toHaveBeenCalledWith({
+      sessionId: staleSession.id,
+      failureReason: "checkout_session_expired"
+    });
+    expect(checkoutSessionRepository.create).toHaveBeenCalled();
+    expect(paymentProvider.initializeTransaction).toHaveBeenCalled();
+    expect(result.authorizationUrl).toBe("https://paystack.test/authorize");
   });
 });
 
@@ -154,7 +195,9 @@ function makeSummary(): CheckoutOrderSummary {
   };
 }
 
-function makeSession(): CheckoutSessionRecord {
+function makeSession(
+  overrides: Partial<CheckoutSessionRecord> = {}
+): CheckoutSessionRecord {
   return {
     id: "session-1",
     reference: "chk_1",
@@ -192,6 +235,7 @@ function makeSession(): CheckoutSessionRecord {
     shippingBreakdown: [],
     createdAt: new Date("2026-04-05T00:00:00.000Z"),
     updatedAt: new Date("2026-04-05T00:00:00.000Z"),
-    completedAt: null
+    completedAt: null,
+    ...overrides
   };
 }
