@@ -25,6 +25,19 @@ export interface CreateBillingAddressInput {
   postalCode?: string;
 }
 
+export interface UpdateBillingAddressInput {
+  billingAddressId: string;
+  buyerId: string;
+  fullName?: string;
+  phoneNumber?: string;
+  addressLine1?: string;
+  addressLine2?: string | null;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string | null;
+}
+
 export interface BillingAddressRepository {
   create(input: CreateBillingAddressInput): Promise<BillingAddressRecord>;
   findByBuyerId(buyerId: string): Promise<BillingAddressRecord[]>;
@@ -36,4 +49,5 @@ export interface BillingAddressRepository {
     billingAddressId: string,
     buyerId: string
   ): Promise<BillingAddressRecord | null>;
+  update(input: UpdateBillingAddressInput): Promise<BillingAddressRecord | null>;
 }

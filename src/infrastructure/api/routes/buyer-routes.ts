@@ -30,12 +30,16 @@ import type { DeleteBillingAddressUseCase } from "../../../application/buyer/del
 import { DeleteBillingAddressError } from "../../../application/buyer/delete-billing-address";
 import type { GetBillingAddressesUseCase } from "../../../application/buyer/get-billing-addresses";
 import { GetBillingAddressesError } from "../../../application/buyer/get-billing-addresses";
+import type { UpdateBillingAddressUseCase } from "../../../application/buyer/update-billing-address";
+import { UpdateBillingAddressError } from "../../../application/buyer/update-billing-address";
 import type { GetBuyerWishlistUseCase } from "../../../application/buyer/get-buyer-wishlist";
 import { GetBuyerWishlistError } from "../../../application/buyer/get-buyer-wishlist";
 import type { RemoveProductFromWishlistUseCase } from "../../../application/buyer/remove-product-from-wishlist";
 import { RemoveProductFromWishlistError } from "../../../application/buyer/remove-product-from-wishlist";
 import type { RegisterBuyerUseCase } from "../../../application/buyer/register-buyer";
 import { RegisterBuyerError } from "../../../application/buyer/register-buyer";
+import type { UpdateBuyerProfileUseCase } from "../../../application/buyer/update-buyer-profile";
+import { UpdateBuyerProfileError } from "../../../application/buyer/update-buyer-profile";
 import {
   toBuyerOrderDetailResponse,
   toBuyerOrderHistoryResponse
@@ -48,6 +52,8 @@ import { addProductToWishlistSchema } from "../validation/add-product-to-wishlis
 import { calculateCartShippingSchema } from "../validation/calculate-cart-shipping-schema";
 import { listBuyerOrdersSchema } from "../validation/list-buyer-orders-schema";
 import { registerBuyerSchema } from "../validation/register-buyer-schema";
+import { updateBuyerProfileSchema } from "../validation/update-buyer-profile-schema";
+import { updateBillingAddressSchema } from "../validation/update-billing-address-schema";
 import { updateProductQuantityInCartSchema } from "../validation/update-product-quantity-in-cart-schema";
 
 interface BuyerRouterDependencies {
@@ -60,10 +66,15 @@ interface BuyerWishlistRouterDependencies {
   removeProductFromWishlist: RemoveProductFromWishlistUseCase;
 }
 
+interface BuyerProfileRouterDependencies {
+  updateBuyerProfile: UpdateBuyerProfileUseCase;
+}
+
 interface BuyerBillingAddressRouterDependencies {
   addBillingAddress: AddBillingAddressUseCase;
   deleteBillingAddress: DeleteBillingAddressUseCase;
   getBillingAddresses: GetBillingAddressesUseCase;
+  updateBillingAddress: UpdateBillingAddressUseCase;
 }
 
 interface BuyerOrderRouterDependencies {
@@ -151,6 +162,36 @@ function toCheckoutSummaryResponse(
   };
 }
 
+function toBillingAddressResponse(billingAddress: {
+  id: string;
+  buyerId: string;
+  fullName: string;
+  phoneNumber: string;
+  addressLine1: string;
+  addressLine2: string | null;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: billingAddress.id,
+    buyer_id: billingAddress.buyerId,
+    full_name: billingAddress.fullName,
+    phone_number: billingAddress.phoneNumber,
+    address_line_1: billingAddress.addressLine1,
+    address_line_2: billingAddress.addressLine2,
+    city: billingAddress.city,
+    state: billingAddress.state,
+    country: billingAddress.country,
+    postal_code: billingAddress.postalCode,
+    created_at: billingAddress.createdAt.toISOString(),
+    updated_at: billingAddress.updatedAt.toISOString()
+  };
+}
+
 export default function createBuyerRouter({
   registerBuyer
 }: BuyerRouterDependencies) {
@@ -213,6 +254,69 @@ export default function createBuyerRouter({
   });
 
   return buyerRouter;
+}
+
+export function createProtectedBuyerProfileRouter({
+  updateBuyerProfile
+}: BuyerProfileRouterDependencies) {
+  const buyerProfileRouter = Router();
+
+  buyerProfileRouter.patch("/", async (req, res) => {
+    const { error, value } = updateBuyerProfileSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      const buyer = await updateBuyerProfile.execute({
+        buyerId: authUser.sub,
+        firstName: value.first_name,
+        lastName: value.last_name,
+        phone: value.phone
+      });
+
+      return res.status(200).json({
+        message: "Buyer profile updated successfully.",
+        data: {
+          id: buyer.id,
+          first_name: buyer.firstName,
+          last_name: buyer.lastName,
+          username: buyer.username,
+          email: buyer.email,
+          phone: buyer.phone,
+          role: buyer.role,
+          account_status: buyer.accountStatus,
+          account_type: null,
+          kyc_status: null
+        }
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof UpdateBuyerProfileError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to update buyer profile."
+      });
+    }
+  });
+
+  return buyerProfileRouter;
 }
 
 export function createProtectedBuyerWishlistRouter({
@@ -354,7 +458,8 @@ export function createProtectedBuyerWishlistRouter({
 export function createProtectedBuyerBillingAddressRouter({
   addBillingAddress,
   deleteBillingAddress,
-  getBillingAddresses
+  getBillingAddresses,
+  updateBillingAddress
 }: BuyerBillingAddressRouterDependencies) {
   const buyerBillingAddressRouter = Router();
 
@@ -368,20 +473,9 @@ export function createProtectedBuyerBillingAddressRouter({
 
       return res.status(200).json({
         message: "Billing addresses fetched successfully.",
-        data: result.addresses.map((billingAddress) => ({
-          id: billingAddress.id,
-          buyer_id: billingAddress.buyerId,
-          full_name: billingAddress.fullName,
-          phone_number: billingAddress.phoneNumber,
-          address_line_1: billingAddress.addressLine1,
-          address_line_2: billingAddress.addressLine2,
-          city: billingAddress.city,
-          state: billingAddress.state,
-          country: billingAddress.country,
-          postal_code: billingAddress.postalCode,
-          created_at: billingAddress.createdAt.toISOString(),
-          updated_at: billingAddress.updatedAt.toISOString()
-        }))
+        data: result.addresses.map((billingAddress) =>
+          toBillingAddressResponse(billingAddress)
+        )
       });
     } catch (caughtError) {
       if (caughtError instanceof GetBillingAddressesError) {
@@ -430,20 +524,7 @@ export function createProtectedBuyerBillingAddressRouter({
 
       return res.status(201).json({
         message: "Billing address added successfully.",
-        data: {
-          id: billingAddress.id,
-          buyer_id: billingAddress.buyerId,
-          full_name: billingAddress.fullName,
-          phone_number: billingAddress.phoneNumber,
-          address_line_1: billingAddress.addressLine1,
-          address_line_2: billingAddress.addressLine2,
-          city: billingAddress.city,
-          state: billingAddress.state,
-          country: billingAddress.country,
-          postal_code: billingAddress.postalCode,
-          created_at: billingAddress.createdAt.toISOString(),
-          updated_at: billingAddress.updatedAt.toISOString()
-        }
+        data: toBillingAddressResponse(billingAddress)
       });
     } catch (caughtError) {
       if (caughtError instanceof AddBillingAddressError) {
@@ -455,6 +536,64 @@ export function createProtectedBuyerBillingAddressRouter({
 
       return res.status(500).json({
         message: "Unable to add billing address."
+      });
+    }
+  });
+
+  buyerBillingAddressRouter.patch("/:billingAddressId", async (req, res) => {
+    const { error, value } = updateBillingAddressSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    const authUser = res.locals.authUser as AuthenticatedUser;
+    const hasAddressLine2 = Object.prototype.hasOwnProperty.call(
+      value,
+      "address_line_2"
+    );
+    const hasPostalCode = Object.prototype.hasOwnProperty.call(
+      value,
+      "postal_code"
+    );
+
+    try {
+      const billingAddress = await updateBillingAddress.execute({
+        buyerId: authUser.sub,
+        billingAddressId: req.params.billingAddressId,
+        fullName: value.full_name,
+        phoneNumber: value.phone_number,
+        addressLine1: value.address_line_1,
+        addressLine2: hasAddressLine2 ? value.address_line_2 || null : undefined,
+        city: value.city,
+        state: value.state,
+        country: value.country,
+        postalCode: hasPostalCode ? value.postal_code || null : undefined
+      });
+
+      return res.status(200).json({
+        message: "Billing address updated successfully.",
+        data: toBillingAddressResponse(billingAddress)
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof UpdateBillingAddressError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to update billing address."
       });
     }
   });

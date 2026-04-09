@@ -10,7 +10,9 @@ import type {
 } from "../../../src/ports/authentication-repository";
 import type {
   BillingAddressRecord,
-  BillingAddressRepository
+  BillingAddressRepository,
+  CreateBillingAddressInput,
+  UpdateBillingAddressInput
 } from "../../../src/ports/billing-address-repository";
 import type {
   CartItemRecord,
@@ -50,8 +52,8 @@ class AuthenticationRepositoryDouble implements AuthenticationRepository {
 class BillingAddressRepositoryDouble implements BillingAddressRepository {
   constructor(private readonly address: BillingAddressRecord | null = makeAddress()) {}
 
-  async create(): Promise<never> {
-    throw new Error("Not implemented.");
+  async create(_input: CreateBillingAddressInput): Promise<BillingAddressRecord> {
+    return this.address ?? makeAddress();
   }
 
   async findByBuyerId() {
@@ -64,6 +66,12 @@ class BillingAddressRepositoryDouble implements BillingAddressRepository {
 
   async deleteByIdAndBuyerId() {
     return null;
+  }
+
+  async update(
+    _input: UpdateBillingAddressInput
+  ): Promise<BillingAddressRecord | null> {
+    return this.address;
   }
 }
 

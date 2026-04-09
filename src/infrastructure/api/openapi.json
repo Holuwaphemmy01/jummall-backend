@@ -3620,6 +3620,77 @@
         }
       }
     },
+    "/buyers/profile": {
+      "patch": {
+        "tags": [
+          "buyer-account"
+        ],
+        "summary": "Update buyer profile",
+        "description": "Updates the authenticated buyer profile. Buyers can patch only `first_name`, `last_name`, and `phone`. `username` and `email` are read-only and are rejected if included in the payload.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBuyerProfileRequest"
+              },
+              "example": {
+                "first_name": "Jane",
+                "last_name": "Doe",
+                "phone": "+2348099999999"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Buyer profile updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                },
+                "example": {
+                  "message": "Buyer profile updated successfully.",
+                  "data": {
+                    "id": "buyer-id",
+                    "first_name": "Jane",
+                    "last_name": "Doe",
+                    "username": "john.doe",
+                    "email": "john@example.com",
+                    "phone": "+2348099999999",
+                    "role": "buyer",
+                    "account_status": "verified",
+                    "account_type": null,
+                    "kyc_status": null
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer account not found"
+          },
+          "409": {
+            "description": "Phone is already in use"
+          }
+        }
+      }
+    },
     "/buyers/cart": {
       "get": {
         "tags": [
@@ -4518,7 +4589,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/BillingAddressListResponse"
                 },
                 "example": {
                   "message": "Billing addresses fetched successfully.",
@@ -4580,7 +4651,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/BillingAddressSingleResponse"
                 },
                 "example": {
                   "message": "Billing address added successfully.",
@@ -4618,6 +4689,86 @@
       }
     },
     "/buyers/billing-addresses/{billingAddressId}": {
+      "patch": {
+        "tags": [
+          "buyer-billing-addresses"
+        ],
+        "summary": "Update buyer billing address",
+        "description": "Updates one saved billing address belonging to the authenticated buyer. Buyers can patch any subset of the address fields, and nullable fields can be cleared by sending null.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "billingAddressId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBillingAddressRequest"
+              },
+              "example": {
+                "full_name": "Jane Doe",
+                "phone_number": "+2348099999999",
+                "city": "Abuja",
+                "state": "FCT",
+                "address_line_2": null
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Billing address updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingAddressSingleResponse"
+                },
+                "example": {
+                  "message": "Billing address updated successfully.",
+                  "data": {
+                    "id": "billing-address-id",
+                    "buyer_id": "buyer-id",
+                    "full_name": "Jane Doe",
+                    "phone_number": "+2348099999999",
+                    "address_line_1": "12 Allen Avenue",
+                    "address_line_2": null,
+                    "city": "Abuja",
+                    "state": "FCT",
+                    "country": "Nigeria",
+                    "postal_code": "100271",
+                    "created_at": "2026-03-30T00:00:00.000Z",
+                    "updated_at": "2026-04-08T12:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Buyer access required"
+          },
+          "404": {
+            "description": "Buyer account or billing address not found"
+          }
+        }
+      },
       "delete": {
         "tags": [
           "buyer-billing-addresses"
@@ -5253,7 +5404,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/UserProfileResponse"
                 },
                 "example": {
                   "message": "User profile fetched successfully.",
@@ -8097,7 +8248,7 @@
     },
     {
       "name": "buyer-account",
-      "description": "Buyer onboarding endpoints."
+      "description": "Buyer onboarding and self-service account endpoints."
     },
     {
       "name": "buyer-cart",
@@ -9398,6 +9549,24 @@
           }
         }
       },
+      "UpdateBuyerProfileRequest": {
+        "type": "object",
+        "minProperties": 1,
+        "properties": {
+          "first_name": {
+            "type": "string",
+            "example": "Jane"
+          },
+          "last_name": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+2348099999999"
+          }
+        }
+      },
       "BuyerRegisterResponse": {
         "type": "object",
         "properties": {
@@ -9460,6 +9629,60 @@
           }
         }
       },
+      "UserProfileResponseData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "first_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "last_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string"
+          },
+          "account_status": {
+            "type": "string"
+          },
+          "account_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "kyc_status": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "UserProfileResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/UserProfileResponseData"
+          }
+        }
+      },
       "AddBillingAddressRequest": {
         "type": "object",
         "required": [
@@ -9502,6 +9725,118 @@
           "postal_code": {
             "type": "string",
             "example": "100271"
+          }
+        }
+      },
+      "UpdateBillingAddressRequest": {
+        "type": "object",
+        "minProperties": 1,
+        "properties": {
+          "full_name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "phone_number": {
+            "type": "string",
+            "example": "+2348012345678"
+          },
+          "address_line_1": {
+            "type": "string",
+            "example": "12 Allen Avenue"
+          },
+          "address_line_2": {
+            "type": "string",
+            "nullable": true,
+            "example": "2nd Floor"
+          },
+          "city": {
+            "type": "string",
+            "example": "Ikeja"
+          },
+          "state": {
+            "type": "string",
+            "example": "Lagos"
+          },
+          "country": {
+            "type": "string",
+            "example": "Nigeria"
+          },
+          "postal_code": {
+            "type": "string",
+            "nullable": true,
+            "example": "100271"
+          }
+        }
+      },
+      "BillingAddressData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "buyer_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "full_name": {
+            "type": "string"
+          },
+          "phone_number": {
+            "type": "string"
+          },
+          "address_line_1": {
+            "type": "string"
+          },
+          "address_line_2": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "postal_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "BillingAddressSingleResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/BillingAddressData"
+          }
+        }
+      },
+      "BillingAddressListResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillingAddressData"
+            }
           }
         }
       },
