@@ -20,7 +20,9 @@ import type {
   BuyerRepository,
   CreateBuyerInput,
   ExistingBuyerIdentifiers,
-  FindExistingBuyerIdentifiersInput
+  FindExistingBuyerIdentifiersInput,
+  FindExistingBuyerPhoneByAnotherUserInput,
+  UpdateBuyerProfileInput
 } from "../../../src/ports/buyer-repository";
 import type { PasswordHasher } from "../../../src/ports/password-hasher";
 import type { VerificationCodeGenerator } from "../../../src/ports/verification-code-generator";
@@ -33,6 +35,12 @@ class BuyerRepositoryDouble implements BuyerRepository {
       username: false,
       phone: false
     });
+
+  isPhoneInUseByAnotherUser = jest
+    .fn<
+      (input: FindExistingBuyerPhoneByAnotherUserInput) => Promise<boolean>
+    >()
+    .mockResolvedValue(false);
 
   createBuyer = jest
     .fn<(input: CreateBuyerInput) => Promise<BuyerRecord>>()
@@ -48,6 +56,10 @@ class BuyerRepositoryDouble implements BuyerRepository {
       createdAt: new Date("2026-03-24T00:00:00.000Z"),
       updatedAt: new Date("2026-03-24T00:00:00.000Z")
     }));
+
+  updateBuyerProfile = jest
+    .fn<(input: UpdateBuyerProfileInput) => Promise<BuyerRecord | null>>()
+    .mockResolvedValue(null);
 }
 
 class PasswordHasherDouble implements PasswordHasher {

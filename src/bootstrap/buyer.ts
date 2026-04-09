@@ -18,6 +18,7 @@ import { InitiateEmailVerification } from "../application/auth/initiate-email-ve
 import { RemoveProductFromCart } from "../application/buyer/remove-product-from-cart";
 import { RemoveProductFromWishlist } from "../application/buyer/remove-product-from-wishlist";
 import { RegisterBuyer } from "../application/buyer/register-buyer";
+import { UpdateBuyerProfile } from "../application/buyer/update-buyer-profile";
 import { UpdateBillingAddress } from "../application/buyer/update-billing-address";
 import { UpdateProductQuantityInCart } from "../application/buyer/update-product-quantity-in-cart";
 import { SendWelcomeEmail } from "../application/notification/send-welcome-email";
@@ -26,6 +27,7 @@ import createBuyerRouter, {
   createProtectedBuyerBillingAddressRouter,
   createProtectedBuyerCartRouter,
   createProtectedBuyerOrderRouter,
+  createProtectedBuyerProfileRouter,
   createProtectedBuyerWishlistRouter
 } from "../infrastructure/api/routes/buyer-routes";
 import { PostgresAuthenticationRepository } from "../infrastructure/database/repositories/postgres-authentication-repository";
@@ -84,6 +86,10 @@ export function createBuyerModule() {
     passwordHasher,
     initiateEmailVerification,
     sendWelcomeEmail
+  );
+  const updateBuyerProfile = new UpdateBuyerProfile(
+    authenticationRepository,
+    buyerRepository
   );
   const addProductToWishlist = new AddProductToWishlist(
     authenticationRepository,
@@ -187,6 +193,13 @@ export function createBuyerModule() {
   const authenticateBuyer = createAuthMiddleware(tokenVerifier, "buyer");
 
   buyerRouter.use(createBuyerRouter({ registerBuyer }));
+  buyerRouter.use(
+    "/profile",
+    authenticateBuyer,
+    createProtectedBuyerProfileRouter({
+      updateBuyerProfile
+    })
+  );
   buyerRouter.use(
     "/billing-addresses",
     authenticateBuyer,

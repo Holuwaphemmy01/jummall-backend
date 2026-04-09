@@ -38,6 +38,8 @@ import type { RemoveProductFromWishlistUseCase } from "../../../application/buye
 import { RemoveProductFromWishlistError } from "../../../application/buyer/remove-product-from-wishlist";
 import type { RegisterBuyerUseCase } from "../../../application/buyer/register-buyer";
 import { RegisterBuyerError } from "../../../application/buyer/register-buyer";
+import type { UpdateBuyerProfileUseCase } from "../../../application/buyer/update-buyer-profile";
+import { UpdateBuyerProfileError } from "../../../application/buyer/update-buyer-profile";
 import {
   toBuyerOrderDetailResponse,
   toBuyerOrderHistoryResponse
@@ -50,6 +52,7 @@ import { addProductToWishlistSchema } from "../validation/add-product-to-wishlis
 import { calculateCartShippingSchema } from "../validation/calculate-cart-shipping-schema";
 import { listBuyerOrdersSchema } from "../validation/list-buyer-orders-schema";
 import { registerBuyerSchema } from "../validation/register-buyer-schema";
+import { updateBuyerProfileSchema } from "../validation/update-buyer-profile-schema";
 import { updateBillingAddressSchema } from "../validation/update-billing-address-schema";
 import { updateProductQuantityInCartSchema } from "../validation/update-product-quantity-in-cart-schema";
 
@@ -61,6 +64,10 @@ interface BuyerWishlistRouterDependencies {
   getBuyerWishlist: GetBuyerWishlistUseCase;
   addProductToWishlist: AddProductToWishlistUseCase;
   removeProductFromWishlist: RemoveProductFromWishlistUseCase;
+}
+
+interface BuyerProfileRouterDependencies {
+  updateBuyerProfile: UpdateBuyerProfileUseCase;
 }
 
 interface BuyerBillingAddressRouterDependencies {
@@ -247,6 +254,69 @@ export default function createBuyerRouter({
   });
 
   return buyerRouter;
+}
+
+export function createProtectedBuyerProfileRouter({
+  updateBuyerProfile
+}: BuyerProfileRouterDependencies) {
+  const buyerProfileRouter = Router();
+
+  buyerProfileRouter.patch("/", async (req, res) => {
+    const { error, value } = updateBuyerProfileSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation failed.",
+        errors: error.details.map((detail) => ({
+          field: detail.path.join("."),
+          message: detail.message
+        }))
+      });
+    }
+
+    const authUser = res.locals.authUser as AuthenticatedUser;
+
+    try {
+      const buyer = await updateBuyerProfile.execute({
+        buyerId: authUser.sub,
+        firstName: value.first_name,
+        lastName: value.last_name,
+        phone: value.phone
+      });
+
+      return res.status(200).json({
+        message: "Buyer profile updated successfully.",
+        data: {
+          id: buyer.id,
+          first_name: buyer.firstName,
+          last_name: buyer.lastName,
+          username: buyer.username,
+          email: buyer.email,
+          phone: buyer.phone,
+          role: buyer.role,
+          account_status: buyer.accountStatus,
+          account_type: null,
+          kyc_status: null
+        }
+      });
+    } catch (caughtError) {
+      if (caughtError instanceof UpdateBuyerProfileError) {
+        return res.status(caughtError.statusCode).json({
+          message: caughtError.message,
+          field: caughtError.field
+        });
+      }
+
+      return res.status(500).json({
+        message: "Unable to update buyer profile."
+      });
+    }
+  });
+
+  return buyerProfileRouter;
 }
 
 export function createProtectedBuyerWishlistRouter({
