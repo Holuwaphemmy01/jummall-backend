@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import type { CheckoutSessionRepository } from "../../ports/checkout-session-repository";
 import type { PaymentProvider } from "../../ports/payment/payment-provider";
 import type { CheckoutOrderSummary } from "./checkout-types";
+import { findBlockingInitializedCheckoutSession } from "./checkout-session-expiry";
 import type { PrepareCheckoutDataInput } from "./prepare-checkout-data";
 import {
   PrepareCheckoutData,
@@ -44,7 +45,10 @@ export class InitializeCheckout implements InitializeCheckoutUseCase {
     input: InitializeCheckoutInput
   ): Promise<InitializeCheckoutResult> {
     const existingSession =
-      await this.checkoutSessionRepository.findInitializedByBuyerId(input.buyerId);
+      await findBlockingInitializedCheckoutSession(
+        this.checkoutSessionRepository,
+        input.buyerId
+      );
 
     if (existingSession) {
       throw new InitializeCheckoutError(
@@ -163,4 +167,3 @@ export class InitializeCheckout implements InitializeCheckoutUseCase {
     return `chk_${Date.now()}_${randomUUID().replace(/-/g, "")}`;
   }
 }
-

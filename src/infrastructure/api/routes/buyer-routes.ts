@@ -769,6 +769,7 @@ export function createProtectedBuyerCartRouter({
           })),
           summary: {
             total_items: result.totalItems,
+            total_products: result.totalProducts,
             subtotal: result.subtotal,
             currency: result.currency
           }

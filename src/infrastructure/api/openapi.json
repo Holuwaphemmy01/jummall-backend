@@ -3751,11 +3751,12 @@
                         "updated_at": "2026-03-30T00:00:00.000Z"
                       }
                     ],
-                    "summary": {
-                      "total_items": 2,
-                      "subtotal": 170000,
-                      "currency": "NGN"
-                    }
+                      "summary": {
+                        "total_items": 2,
+                        "total_products": 1,
+                        "subtotal": 170000,
+                        "currency": "NGN"
+                      }
                   }
                 }
               }
